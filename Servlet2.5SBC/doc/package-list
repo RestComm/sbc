@@ -1,0 +1,12 @@
+org.restcomm.sbc
+org.restcomm.sbc.adapter
+org.restcomm.sbc.adapter.impl
+org.restcomm.sbc.bo
+org.restcomm.sbc.chain
+org.restcomm.sbc.chain.impl.registrar
+org.restcomm.sbc.helper
+org.restcomm.sbc.processor
+org.restcomm.sbc.processor.impl
+org.restcomm.sbc.router
+org.restcomm.sbc.router.impl
+org.restcomm.sbc.servlet.sip

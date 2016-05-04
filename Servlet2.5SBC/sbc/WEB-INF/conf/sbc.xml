@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is free software; you can redistribute it and/or modify it under
+        the terms of the GNU Lesser General Public License as published by the Free
+        Software Foundation; either version 2.1 of the License, or (at your option)
+        any later version. This software is distributed in the hope that it will
+        be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General
+        Public License for more details. You should have received a copy of the GNU
+        Lesser General Public License along with this software; if not, write to
+        the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+        MA 02110-1301 USA, or see the FSF site: http://www.fsf.org. -->
+<sbc>
+        <runtime-settings>
+                <!-- The API version that will be used. -->
+                <api-version>2012-04-24</api-version>
+
+               
+                <!-- Cache settings. -->
+                <cache-path>${sbc:home}/cache</cache-path>
+                <cache-uri>/sbc/cache</cache-uri>
+
+               
+                <!-- The URL to the errors dictionary. -->
+                <error-dictionary-uri>/sbc/errors</error-dictionary-uri>
+
+                <!-- The IP to use for out-bound SIP REGISTER requests. This is useful
+                        when you want to report a different IP than the one RestComm picked by default. -->
+                <external-ip>192.168.0.6</external-ip>
+
+                <!-- If set to true RestComm will use the To header to determine the destination.
+                        If set to false RestComm will use the Request URI to determine the destination. -->
+                <use-to>true</use-to>
+
+                <!-- If set to true Restcomm will use the Local Address (or external address
+                        if available) in the host part of the From header for calls to the outbound
+                        proxy. Default is False, which means that Restcomm will use outbound proxy
+                        for the host part of From header -->
+                <use-local-address>false</use-local-address>
+
+                <!-- If set to true Restcomm will authenticate users and incoming messages
+                        from those users -->
+                <authenticate>true</authenticate>
+
+                <!-- Interval time in seconds that Restcomm will send keepalive messages (OPTIONS) to registered clients -->
+                <ping-interval>60</ping-interval>
+
+                <!-- If set to FALSE Restcomm wont normalize phone numbers (prepend +1)
+                        when creating an outbound call -->
+                <normalize-numbers-for-outbound-calls>false</normalize-numbers-for-outbound-calls>
+                <!--If set to TRUE Restcomm will use the From address of initial call as
+                        caller-id for calls created with Dial Number. Caller A (callerId A) dials
+                        DID XYZ that is bind to RCML that Dials Number 4321. If from-address-to-proxied-calls
+                        is TRUE Restcomm will pass callerId A to the created call -->
+                <from-address-to-proxied-calls>true</from-address-to-proxied-calls>
+
+                <!-- Control whether Restcomm will try to patch the Request-URI and SDP
+ 			for B2BUA sessions with the discovered external IP Address of the peer -->
+                <!-- Default value: true -->
+                <patch-for-nat-b2bua-sessions>true</patch-for-nat-b2bua-sessions>
+
+                <routing-policy>
+                        <!-- Parameters for static routing policiy provider -->
+                        <militarized-zone-target>
+	                        <ip-address>192.168.0.6</ip-address>
+	                        <transport>udp</transport>
+	                        <port>5080</port>
+	                        
+	                        <failover-ip-address>192.168.0.6</failover-ip-address>
+	                        <failover-transport>tcp</failover-transport>
+	                        <failover-port>5080</failover-port>
+
+	                        <!-- Allow failover to backup target -->
+	                        <allow-failover>false</allow-failover>
+	                        <!-- Number of maximum failed calls before switching from primary to the failover target -->
+	                        <max-failed-calls>20</max-failed-calls>
+	                        <!-- Allow failover recover to primary backup target fails also -->
+	                        <allow-failover-to-primary>true</allow-failover-to-primary>
+                        </militarized-zone-target>
+                </routing-policy>
+                
+                <militarized-zone>
+                	<iface-name>eth0</iface-name>
+                	<ip-address>192.168.88.2</ip-address>
+                	<transport>udp</transport>
+                	<port>5080</port>
+                </militarized-zone>
+                
+                <de-militarized-zone>
+                	<iface-name>eth1</iface-name>
+                	<ip-address>192.168.88.3</ip-address>
+                	<transport>udp</transport>
+                	<port>5060</port>
+                </de-militarized-zone>
+               
+				
+        </runtime-settings>
+        
+		<registrar-throttle>
+                <enable>true</enable>
+                <min-registrar-expiration>120</min-registrar-expiration>
+                <max-ua-expiration>30</max-ua-expiration>
+        </registrar-throttle>
+       
+        <smtp-notify>
+                <host></host>
+                <user></user>
+                <password></password>
+        </smtp-notify>
+
+        <smtp-service>
+                <host>smtp.googlemail.com</host>
+                <user>nn@eolos.la</user>
+                <password>xxxxx</password>
+                <port>465</port>
+        </smtp-service>
+<!--
+        <dao-manager class="org.mobicents.servlet.sbc.dao.mybatis.MybatisDaoManager">
+                <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml</configuration-file>
+                <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
+                <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
+        </dao-manager>
+-->
+        <dao-manager class="org.mobicents.servlet.sbc.dao.mybatis.MybatisDaoManager">
+                <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml
+                </configuration-file>
+                <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
+                <sql-files>${sbc:home}/WEB-INF/scripts/mariadb/sql</sql-files>
+        </dao-manager>
+                
+        
+        <!-- Defines how RestComm communicates with the Media Server Control layer.
+                Accepted values: XMS (Dialogic XMS using JSR-309 driver) or MMS (Mobicents
+                Media Server using MGCP driver) -->
+        <mscontrol>
+                <compatibility>mms</compatibility>
+                <media-server name="Dialogic XMS" class="com.dialogic.dlg309">
+                        <address></address>
+                        <port>5060</port>
+                        <transport>udp</transport>
+                        <timeout>5</timeout>
+                </media-server>
+        </mscontrol>
+
+        <!-- The media server manager is responsible for managing the media servers
+                in use by RestComm. The default way to control media servers is using the
+                MGCP stack. The MGCP stack MUST have a name and the following parameters:
+                <stack-address> - The local IP address for the MGCP stack. <stack-port> -
+                The local port for the MGCP stack. <remote-address> - The IP address for
+                the media server. <remote-port> - The port for the media server. <external-address>
+                - Sometimes there is interest to use a different address in the SDP than
+                the IP address the media server is reporting. This parameter if set tells
+                RestComm to patch the Connection attribute in the SDP on behalf of the media
+                server to the specified IP address. Note: RestComm will only do NAT resolution
+                when necessary so if your server already has a routable IP address setting
+                this parameter will have no effect. <max-response-time> - In milliseconds
+                the maximum amount of time to wait for a response from the media server before
+                abandoning the request. This does NOT apply to RQNT/NOTIFY request/response. -->
+        <media-server-manager>
+                <mgcp-server class="org.mobicents.servlet.sbc.mgcp.MediaGateway" name="Mobicents Media Server">
+                        <local-address>192.168.0.6</local-address>
+                        <local-port>2727</local-port>
+                        <remote-address>192.168.0.6</remote-address>
+                        <remote-port>2427</remote-port>
+                        <response-timeout>500</response-timeout>
+                        <external-address>192.168.0.6</external-address>
+                </mgcp-server>
+        </media-server-manager>
+
+        <!-- Adjust http client behaviour for outgoing requests -->
+        <http-client>
+                <!-- Control peer certificate verification for https connections. Two modes are supported:
+                        'allowall' : Disables peer certificate verification. Use it when testing.
+                        'strict' : Fails requests if peer certificate is not trusted. Use it in production. -->
+                <ssl-mode>allowall</ssl-mode>
+                <!-- Control whether relative URL should be resolved using hostname instead of IP Address.
+                If for any reason hostname resolution fails, IP Address will be used -->
+                <use-hostname-to-resolve-relative-url>true</use-hostname-to-resolve-relative-url>
+                                <!-- Optionally provide the hostname to be used, otherwise Java will try to get the hostname of the machine JVM is running -->
+                <hostname></hostname>
+        </http-client>
+
+
+        
+</sbc>
+                
