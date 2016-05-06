@@ -3,6 +3,16 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# CVS
+CVS/
+
+# Class files
+*.class
+
+# Eclipse settings
+.seetings
+.project
+
 # Package Files #
 *.jar
 *.war
