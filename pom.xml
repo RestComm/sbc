@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+	<artifactId>restcomm-parent</artifactId>
+	<groupId>org.mobicents</groupId>
+	<version>2.27.36</version>
+  </parent>
 
-  <groupId>org</groupId>
+  <groupId>org.mobicents</groupId>
   <artifactId>restcomm-sbc</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>RestComm SBC</name>
   <url>http://www.restcomm.org</url>
@@ -48,18 +54,7 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<distributionManagement>
-		<repository>
-			<id>telscale-releases-repository</id>
-			<name>TelScale Releases Repository</name>
-			<url>http://telestax.artifactoryonline.com/telestax/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>telscale-snapshots-repository</id>
-			<name>TelScale Snapshots Repository</name>
-			<url>http://telestax.artifactoryonline.com/telestax/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+	
 	<properties>
 		<log4j.version>1.2.16</log4j.version>
 		<slf4j.version>1.5.5</slf4j.version>
@@ -67,9 +62,9 @@
 		<commons-io.version>2.4</commons-io.version>
 		<javamail.version>1.4</javamail.version>
 		<servletapi.version>2.5</servletapi.version>
-    	<sipservletapi.version>3.1.695</sipservletapi.version>
+    		<sipservletapi.version>3.1.695</sipservletapi.version>
 		<servlet-api.version>7.0.50</servlet-api.version>
-    	<sip-ri.version>1.2.277</sip-ri.version>
+    		<sip-ri.version>1.2.277</sip-ri.version>
 		<!--tomcat.version>6.0.35</tomcat.version -->
 		<tomcat7.version>7.0.64</tomcat7.version>
 		<mobicents.checkstyle.version>1.0.0.FINAL</mobicents.checkstyle.version>
@@ -239,10 +234,10 @@
 					<version>2.17</version>
 					<configuration>
 						<argLine>-Xms1024m -Xmx2048m -XX:MaxPermSize=1024m</argLine>
-						<excludes>
+						<!--excludes>
 							<exclude>**/ClientDialTest.java</exclude>
 							<exclude>**/ClientsEndpointTest.java</exclude>
-						</excludes>
+						</excludes-->
 						<forkCount>1</forkCount>
 						<reuseForks>false</reuseForks>
 					</configuration>
@@ -259,85 +254,18 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>set-git-hash</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>buildnumber-maven-plugin</artifactId>
-						<version>1.0</version>
-						<executions>
-							<execution>
-								<phase>validate</phase>
-								<goals>
-									<goal>create</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<doCheck>false</doCheck>
-							<doUpdate>false</doUpdate>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<id>maven-release</id>
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>generate-javadoc</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.7</version>
 						<configuration>
-							<nohelp>true</nohelp>
+							<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+							<preparationGoals>clean install</preparationGoals>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<arguments>-Dmaven.test.skip</arguments>
 						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadoc</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>install</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
