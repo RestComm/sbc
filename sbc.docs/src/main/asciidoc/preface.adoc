@@ -2,4 +2,4 @@
 == Preface
 
 Designing an SBC is not an easy work. So many tasks must analise, disect, mangle and parse messages in order to decide policy messaging flow. Other tasks are not related to atomic instances of messages but to certain message collections that has to be treated as a whole entity in the shortest time period possible in order not to be an obstacle to information flow.
-Let's see a design model approach to implement an SBC on top of Mobicents SIP servlets framework.
+Let's see a design model approach to implement an SBC on top of Restcomm SIP servlets framework.
