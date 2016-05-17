@@ -158,7 +158,13 @@
       <scope>provided</scope>
     </dependency>
 
-    <!--Override MMS transitive dependencies -->
+    <dependency>
+	<groupId>org.mobicents</groupId>
+	<artifactId>sbc.application</artifactId>
+	<version>${project.version}</version>
+	<classifier>classes</classifier>
+	<scope>test</scope>
+    </dependency>
 
 
 
