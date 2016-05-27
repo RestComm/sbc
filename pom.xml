@@ -8,7 +8,6 @@
 	<version>2.27.36</version>
   </parent>
 
-  <groupId>org.mobicents</groupId>
   <artifactId>restcomm-sbc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -187,6 +186,12 @@
 			<version>5.1</version> </dependency -->
 	</dependencies>
 
+	<modules>
+		<module>application</module>
+		<module>testsuite</module>
+		<module>docs</module>
+	</modules>
+
 	<build>
 		<finalName>restcomm-sbc</finalName>
 		<plugins>
@@ -250,7 +255,7 @@
 		<profile>
 			<id>docs</id>
 			<modules>
-				<module>restcomm.sbc.docs</module>
+				<module>docs</module>
 			</modules>
 		</profile>
 		<profile>

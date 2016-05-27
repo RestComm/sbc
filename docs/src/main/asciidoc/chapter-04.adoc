@@ -1,0 +1,50 @@
+== The Processor Callback
+
+Processors reacts to method execution, from the implementation view, just much more likely the Java _Runnable_ interface, in other words, they provide an inner _start()_ method to be invoked by the implementation layer itself, while the user layer implements a _run()_ method containing the business logic. When you invoke the _start()_ method, the _run()_ method is called back from the runtime system to the user layer implementation.
+
+Similar analogy could be applied to the _process()_ method, which is an insight behavior of the Processor model base implementation, in relation with the _doProcess()_ method left to higher user level implementation for the business logic.
+
+This technical approach is so called _callback_ and is a useful way to hide the complexities of the execution task and leave to the user just those parts of the implementation focused on the business model of the application itself.
+
+The chain subsystem uses this approach to make things simpler at the business layer logic and let developers focus on the logic associated with domain of competence.
+
+.ProcessorCallBack.java
+[source,java]
+----
+public interface ProcessorCallBack {
+	public Message doProcess(Message message) throws ProcessorParsingException;
+}
+----
+[TIP]
+====
+This way a Processor logic is simpler to implement in its business logic and the complexities of the execution view are left to the framework implementation layer on the DefaulProcessor class.
+====
+
+
+.SimpleProcessor.java
+[source,java]
+----
+public class SimpleProcessor extends DefaultProcessor implements ProcessorCallBack {
+
+	private static transient Logger LOG = Logger.getLogger(SimpleProcessor.class);
+	...
+
+	public void doProcess(Message message) throws ProcessorParsingException  { 
+		LOG.debug(">> doProcess() Callback from processor: "+getName());	
+		
+		if(message==null||message instanceof ImmutableMessage) {
+			throw new ProcessorParsingException("Illegal Message data content");
+		}
+		MutableMessage m=(MutableMessage) message;;
+		
+		String content=(String) m.getWrappedObject();
+		content="*"+content.replaceAll("little", "big");
+		m.setWrappedObject(content);
+		LOG.debug("<< doProcess() Callback from processor: "+getName());
+		
+		
+	}
+
+
+----
+	
