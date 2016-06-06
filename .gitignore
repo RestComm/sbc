@@ -25,6 +25,8 @@ target/
 # Build dirs
 
 build/
+build.properties
+
 
 
 

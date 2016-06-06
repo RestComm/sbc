@@ -1,0 +1,182 @@
+== The Threat Concept
+
+
+The main purpose of an SBC is to be able to detect abnormal activity within the traffic flow in order to take an action based on each scenario.
+
+This suspicious activity is called _Threat_ and, could be classified in two main classes:
+
+* Message related
+* Message collection related
+
+.Threat.java
+[source,java]
+----
+public class Threat {
+	
+	public enum Type {
+		DOS_ATTACK,
+		DDOS_ATTACK,
+		DIAL_SPOOF,
+		USER_ENUM,
+		SERVICE_SCAN,
+		BRUTE_FORCE_CRACK_ATTEMPT,
+		HEURISTIC,
+		POTENTIAL
+	}
+	
+	public static long	ACTION_DISCARD        = 00000000L;
+	public static long	ACTION_BLACKLIST_HOST = 00000001L;
+	public static long	ACTION_NOTIFY         = 00000010L;
+	public static long	ACTION_ALERT          = 00000100L;
+	public static long	ACTION_ACCOUNT        = 00001000L;
+
+	protected String host;
+	protected int port;
+	protected Type type;
+	protected String user;
+	protected String userAgent;
+	protected String transport;
+	protected long action;
+	
+	
+	public String getHost() {
+		return host;
+	}
+	public void setHost(String host) {
+		this.host = host;
+	}
+	public int getPort() {
+		return port;
+	}
+	public void setPort(int port) {
+		this.port = port;
+	}
+	public Type getType() {
+		return type;
+	}
+	public void setType(Type type) {
+		this.type = type;
+	}
+	public String getUser() {
+		return user;
+	}
+	public void setUser(String user) {
+		this.user = user;
+	}
+	public String getUserAgent() {
+		return userAgent;
+	}
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+	public String getTransport() {
+		return transport;
+	}
+	public void setTransport(String transport) {
+		this.transport = transport;
+	}
+	public long getAction() {
+		return action;
+	}
+	public void setAction(long action) {
+		this.action = action;
+	}	
+	
+}
+
+----
+
+=== Message related Threat
+
+This kind of threats could be detected at early stage during chain processing and immediatly unlinked.
+For instance: ACLs based on IP address sources like black lists, ACLs based on prohibited dialing patterns, undesirable User-Agents fingerprints, etc.
+
+=== Message collection related Threat
+
+This kind of threats are not message related and involves most of the usual threat intrusion techniques developed by VoIP crackers.
+For instance: DOS/DDOS attacks, Dial Spoofing, User enumeration, Stack fingerprint detection, etc.
+
+This skilled threats require an statistical analisys of the suspicious activity produced in a certain period of time regarding a message collection.
+
+=== The Suspect Activity approach model
+
+This approach consists in the use of a transient in-memory synchronized cache to store all atomic 4XX error responses from the backoffice side of the SBC.
+This cache will be loosly coupled with processor chains in order not to impact on traffic flow throughput and will be used by the _Threat Monitor thread_ to evaluate periodically if the suspecious activity becomes a real Threat.
+
+.SuspectActivityElectable.java
+[source,java]
+----
+public interface SuspectActivityElectable {
+	
+	/**
+	 * Record must be dismissed due to time-to-live
+	 * expiration in cache without becoming a real
+	 * threat.
+	 * @return boolean
+	 */
+	boolean isExpired();
+	
+	/**
+	 * A real typified threat
+	 * has been detected
+	 * @return Threat
+	 */
+	Threat isThreatCandidate();
+	
+	/**
+	 * Gets Suspect host
+	 * @return String
+	 */
+	String getHost();
+	
+	/**
+	 * Gets authorization denial count
+	 * @return count
+	 */
+	int getUnauthorizedAccessCount();
+	
+	/**
+	 * Gets last message
+	 * @return message
+	 */
+	SipServletMessage getLastMessage();
+
+}
+----
+
+.Some SIP Error Responses
+[width="100%",options="header,footer"]
+|====================
+|Client Error(4xx)|Description.
+| 400 Bad Request |  *   It indicates that the request was not understood by the server.
+
+*   Request might be missing required header fields such as To, From, Call-ID, or CSeq.
+| 401 Unauthorized | *   It indicates that the request requires the user to perform authentication.
+
+*   401 Unauthorized is normally sent by a registrar server for REGISTER request.
+
+*   The response contains WWW-Authenticate header field which requests for correct credentials from the calling user agent.
+
+*   A subsequent REGISTER will trigger from the User Agent with correct credentials. 
+|403 Forbidden  | *   403 Forbidden is sent when the server has understood the request, found the request to be correctly formulated, but will not service the request.
+
+*   This response is not used when authorization is required. 
+| 404 Not Found | *   404 Not Found indicates that the user identified by the SIP URI in the Request-URI cannot be located by the server or that the user is not currently signed on with the user agent. 
+| 405 Method Not Allowed | *   It indicates that the server or user agent has received and understood a request but is not willing to fulfil the request.
+
+*   Example: A REGISTER request might be sent to a user agent.
+
+*   An **Allow** field must be present to inform the UAC as to what methods are acceptable. 
+|406 Not Acceptable  | *   This response indicates that the request cannot be processed due to a requirement in the request message.
+
+*   The Accept header field in the request did not contain any options supported by the UAS. 
+|407 Proxy Authentication Required  | *   This request sent by a proxy indicates that the UAC must first authenticate itself with the proxy before the request can be processed.
+
+*   The response should contain information about the type of credentials required by the proxy in a **Proxy-Authenticate** header field.
+
+*   The request can be resubmitted with the proper credentials in a **Proxy-Authorization header** field. 
+|  |  
+|====================
+
+
+

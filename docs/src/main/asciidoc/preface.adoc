@@ -1,0 +1,54 @@
+[preface]
+= Preface
+
+Designing an SBC is not an easy work. So many tasks must analise, disect, mangle and parse messages in order to decide policy messaging flow. Other tasks are not related to atomic instances of messages but to certain message collections that has to be treated as a whole entity in the shortest time period possible in order not to be an obstacle to information flow.
+Let's see a design model approach to implement an SBC on top of Mobicents SIP servlets framework.
+
+== Introduction
+
+A Session Border Controller is a security device responsible to filter unwanted session establishment from unstrusted networks and let this traffic flow to internal networks based on a bunch of security rules. This traffic must be en queued at the input interface, processed against a collection of rules and delivered to its final destination after being transformed to fit the output contract of the target endpoint.
+
+For this purpose we need some way to deal with incoming traffic and perform these activities, in a short period of time, without becoming ourselves in a bottleneck threat.
+
+We will discuss, in further chapters, an SBC design approach to perform these tasks regarding traffic management, analysis, transformation and delivery.
+
+== Message flow in SBC topology
+
+[source,java]
+----
+UA     User Agent
+MPU    Message Processor Unit
+MTA    Message Transport Adapter
+B2BUA  Back to Back User Agent
+MZ     Miltarized Zone (LAN)
+DMZ    Demilitarized Zone (WAN)
+SBC    Session Border Controller
+----
+
+.SBC Message flow
+[ditaa,sbc,png]
+--
+				DOWNSTREAM------------->
+                                     
+                                            |-----TO Militarized Zone-->
+                           SBC              |
+                           +----------------+-----------------+                  +---------+
+    +----+                 | +------+   +---+---+   +---+---+ |                  |         |
+    |    +---DMZ Request-->+ |      |   |   |   |   |   |   | +<---MZ Request----+ PROXY   |
+    | UA |                 | |  MPU |   | B2BUA |   |MTA|MPU| |                  | SERVER  |
+    |    +<--DMZ Response--+ |      |   |   |   |   |   |   | +----MZ Response-->+         |
+    +----+                 | +------+   +---+---+   +---+---+ |                  |         |
+                           +----------------+-----------------+                  +---------+
+                                            |
+               <--To Demilitarized Zone-----|
+               
+               			<---------------UPSTREAM
+--
+
+
+Figure 1. SBC Message flow
+Figure 1 shows the basic arquitectural components of an SBC together with some references related to information flow. On Request/Response scenarios such as HTTP, SIP, etc., traffic flow is always bidirectional. A request in one direction is replied by a Response to the Request originator. The conventions of this book will treat traffic flow direction from the Request viewpoint:
+
+Downstream traffic is the traffic coming to the SBC from the untrusted network WAN (Normally from a User Agent endpoint) asking for VoiP service on Proxy/Server backend. Upstream traffic is the traffic coming to the SBC from the trusted network LAN delivering service from Proxy/Server to user agent endpoints.
+
+In this way we can think of traffic flow as comming from a **Militarized Zone** (MZ) behind the security border we stablish with the SBC to a **De-Militarized Zone** (DMZ) and viceversa. It is the same concept of **Border** stablished by a Firewall device at the TCP/IP layers but, in this particular case, related to higher level VoIP traffic.

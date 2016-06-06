@@ -8,7 +8,6 @@
 	<version>2.27.36</version>
   </parent>
 
-  <groupId>org.mobicents</groupId>
   <artifactId>restcomm-sbc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -188,8 +187,9 @@
 	</dependencies>
 
 	<modules>
-		<module>sbc.application</module>
-		<module>sbc.testsuite</module>
+		<module>application</module>
+		<module>testsuite</module>
+		<module>docs</module>
 	</modules>
 
 	<build>
@@ -255,7 +255,7 @@
 		<profile>
 			<id>docs</id>
 			<modules>
-				<module>sbc.docs</module>
+				<module>docs</module>
 			</modules>
 		</profile>
 		<profile>
@@ -279,8 +279,8 @@
 
 	<repositories>
 		<repository>
-			<id>mobicents-public-repository-group</id>
-			<name>Mobicens Public Maven Repository Group</name>
+			<id>restcomm-public-repository-group</id>
+			<name>Restcomm Public Maven Repository Group</name>
 			<url>https://oss.sonatype.org/content/groups/public</url>
 			<layout>default</layout>
 			<releases>
