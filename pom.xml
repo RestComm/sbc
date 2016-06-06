@@ -5,9 +5,10 @@
   <parent>
 	<artifactId>restcomm-parent</artifactId>
 	<groupId>org.mobicents</groupId>
-	<version>2.27.36</version>
+	<version>3.0.4</version>
   </parent>
 
+  <groupId>org.restcomm</groupId>
   <artifactId>restcomm-sbc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -47,9 +48,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git@bitbucket.org:telestax/sbc.git</connection>
-		<developerConnection>scm:git:git@bitbucket.org:telestax/sbc.git</developerConnection>
-		<url>https://bitbucket.org/telestax/telscale-restcomm</url>
+		<connection>scm:git:git@github.com:RestComm/sbc.git</connection>
+		<developerConnection>scm:git:git@github.com:RestComm/sbc.git</developerConnection>
+		<url>https://github.com/Restcomm/sbc</url>
 		<tag>HEAD</tag>
 	</scm>
 
