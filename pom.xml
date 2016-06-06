@@ -4,7 +4,7 @@
   
   <parent>
 	<artifactId>restcomm-parent</artifactId>
-	<groupId>org.mobicents</groupId>
+	<groupId>org.restcomm</groupId>
 	<version>3.0.4</version>
   </parent>
 
