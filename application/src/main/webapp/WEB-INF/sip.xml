@@ -10,9 +10,9 @@
 	the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, 
 	MA 02110-1301 USA, or see the FSF site: http://www.fsf.org. -->
 <sip-app>
-	<app-name>Servlet2.5SBC</app-name>
-	<display-name>Eolos SBC</display-name>
-	<description>Eolos SIP Session Border Controller.</description>
+	<app-name>RestcommSBC</app-name>
+	<display-name>Restcomm SBC</display-name>
+	<description>Restcomm SIP Session Border Controller.</description>
 	<servlet-selection>
 	    
 		<servlet-mapping>
