@@ -19,6 +19,7 @@
  *******************************************************************************/
 package org.restcomm.chain.processor.impl;
 
+
 import org.restcomm.chain.processor.Message;
 
 
@@ -28,15 +29,7 @@ import org.restcomm.chain.processor.Message;
  * @class   ImmutableMessage.java
  *
  */
-public final class ImmutableMessage implements Message {
-	
-	final Object wrappedObject;
-	
-	public ImmutableMessage(Object wrappedObject) {
-		this.wrappedObject=wrappedObject;
-	}
-	public final Object getWrappedObject() {
-		return wrappedObject;
-	}
+public interface ImmutableMessage extends Message {
+	Object getProperty(Object property) ;
 	
 }

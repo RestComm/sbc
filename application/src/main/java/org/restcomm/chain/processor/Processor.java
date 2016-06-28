@@ -25,15 +25,6 @@ import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 
-
-/**
- * 
- * @author  Oscar Andres Carriles <ocarriles@eolos.la>
- * @date    24/4/2016 22:41:10
- * @class   MessageProcessor.java
- *
- */
-
 /**
  * A Message Processor is a component of a chain of responsibility
  * that acts as a pipe, receives a message, process it and feeds
@@ -42,26 +33,25 @@ import org.restcomm.chain.processor.impl.ProcessorParsingException;
  * MessageProcessors in the chain.
  * 
  */
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    13/6/2016 14:32:22
+ * @class   Processor.java
+ *
+ */
 public interface Processor {
 	
-	enum Status {
-		IDLE,
-		PROCESSING,
-		TERMINATED,
-		ABORTED
-	}
 	
 	enum Type {
 		CHAIN,
 		SINGLE_PROCESSOR
 	}
-	
 	/**
-	 * Gets name
+	 * Gets Processor version
 	 * 
-	 * @return name
+	 * @return version
 	 */
-	Status getStatus();
+	String getVersion();
 	
 	/**
 	 * Gets type
@@ -107,7 +97,11 @@ public interface Processor {
 	
 	void process(MutableMessage message) throws ProcessorParsingException;
 	
-	
+	/**
+	 * Gets Callback
+	 * to calling processor
+	 * 
+	 */
 	ProcessorCallBack getCallback();	
 	
 }

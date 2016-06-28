@@ -65,15 +65,13 @@ public abstract class DefaultDPIProcessor extends DefaultProcessor   {
 		
 		LOG.debug(">> process() message ["+message+"]");
 		
-		ImmutableMessage immutableMessage=message.getImmutable();
+		ImmutableMessage immutableMessage=(ImmutableMessage)message;
 		
-		status=Status.PROCESSING;
 	
 		fireProcessingEvent(immutableMessage, (Processor) getCallback());
 		
 		getCallback().doProcess(immutableMessage);
 		
-		status=Status.TERMINATED;
 		fireEndEvent(immutableMessage, (Processor) getCallback());
 		
 		

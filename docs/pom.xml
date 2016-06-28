@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.mobicents</groupId>
+		<groupId>org.restcomm</groupId>
 		<artifactId>restcomm-sbc</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
@@ -69,7 +69,7 @@
 				    </goals>
 					<configuration>
 					<backend>html5</backend>
-					    <outputDirectory>${project.build.directory}/generated-docs/html-website</outputDirectory>
+					    <outputDirectory>target/generated-docs/html-website</outputDirectory>
 					<!--doctype>book</doctype-->
 					    <requires>
       						<require>asciidoctor-diagram</require>
@@ -105,7 +105,7 @@
 				    </goals>
 					<configuration>
 					<backend>html5</backend>
-					    <outputDirectory>${project.build.directory}/generated-docs/html-book</outputDirectory>
+					    <outputDirectory>target/generated-docs/html-book</outputDirectory>
 					<!--doctype>book</doctype-->
 					<requires>
       						<require>asciidoctor-diagram</require>
@@ -141,7 +141,7 @@
 				        </goals>
 				        <configuration>
 				            <backend>pdf</backend>
-					    <outputDirectory>${project.build.directory}/generated-docs/pdf</outputDirectory>
+					    <outputDirectory>target/generated-docs/pdf</outputDirectory>
 				            <!-- Since 1.5.0-alpha.9 PDF back-end can use 'rouge' as well as 'coderay'
 				            source highlighting -->
 				            <requires>
@@ -149,7 +149,7 @@
     					    </requires>
     					    <sourceHighlighter>coderay</sourceHighlighter>
 				            <attributes>
-						<imagesdir>./images/..</imagesdir>
+						<imagesdir>./</imagesdir>
 				                <icons>font</icons>
 				                <pagenums/>
 				                <toc/>

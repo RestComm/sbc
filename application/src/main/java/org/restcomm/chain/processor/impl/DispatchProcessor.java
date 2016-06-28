@@ -20,9 +20,13 @@
 
 package org.restcomm.chain.processor.impl;
 
+import java.io.IOException;
+
+import javax.servlet.sip.SipServletMessage;
+
+import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
-import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 
 
@@ -39,8 +43,10 @@ import org.restcomm.chain.processor.ProcessorCallBack;
  */
 public class DispatchProcessor extends DefaultProcessor 
 	implements ProcessorCallBack {
-
-	Processor.Status status=Processor.Status.IDLE;	
+	
+	private static transient Logger LOG = Logger.getLogger(DispatchProcessor.class);
+	
+	
 	private String name="#Low level dispatcher";
 	
 	public DispatchProcessor(String name,	ProcessorChain chain) {
@@ -57,17 +63,18 @@ public class DispatchProcessor extends DefaultProcessor
 	}
 
 	@Override
-	public Status getStatus() {
-		return status; 
-	}
-
-	@Override
 	public ProcessorCallBack getCallback() {
 		return this;
 	}
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
+		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		try {
+			m.send();
+		} catch (IOException e) {
+			LOG.error(e.getMessage());
+		}
 		
 	}
 
@@ -77,5 +84,8 @@ public class DispatchProcessor extends DefaultProcessor
 		
 	}
 
-	
+	@Override
+	public String getVersion() {
+		return "1.0.0";
+	}
 }

@@ -19,8 +19,16 @@
  *******************************************************************************/
 package org.restcomm.sbc.notification;
 
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    4/6/2016 13:13:15
+ * @class   Accountable.java
+ *
+ */
 public interface Accountable {
 	
+	long getUid();
 	void save();
 	
 	

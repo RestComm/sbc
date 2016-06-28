@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>restcomm-sbc</artifactId>
-    <groupId>org.mobicents</groupId>
+    <groupId>org.restcomm</groupId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -21,7 +21,7 @@
 	<dependency>
 		<groupId>junit</groupId>
 		<artifactId>junit</artifactId>
-		<version>4.10</version>
+		<version>${junit.version}</version>
 	</dependency>    
 
     <dependency>
@@ -159,37 +159,13 @@
     </dependency>
 
     <dependency>
-	<groupId>org.mobicents</groupId>
-<<<<<<< HEAD:testsuite/pom.xml
+	<groupId>org.restcomm</groupId>
 	<artifactId>sbc-application</artifactId>
 	<version>${project.version}</version>
 	<classifier>classes</classifier>
 	<scope>test</scope>
-	<type>war</type>
-=======
-	<artifactId>sbc.application</artifactId>
-	<version>${project.version}</version>
-	<classifier>classes</classifier>
-	<scope>test</scope>
->>>>>>> RestComm/master:sbc.testsuite/pom.xml
+	<!--type>war</type-->
     </dependency>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   </dependencies>
 
   <build>
@@ -232,8 +208,8 @@
 
   <repositories>
     <repository>
-      <id>mobicents-public-repository-group</id>
-      <name>Mobicens Public Maven Repository Group</name>
+      <id>restcomm-public-repository-group</id>
+      <name>Restcomm Public Maven Repository Group</name>
       <url>https://oss.sonatype.org/content/groups/public</url>
       <layout>default</layout>
       <releases>
@@ -262,8 +238,8 @@
   </repositories>
   <pluginRepositories>
     <pluginRepository>
-      <id>mobicents-public-repository-group</id>
-      <name>Mobicens Public Maven Repository Group</name>
+      <id>restcomm-public-repository-group</id>
+      <name>Restcomm Public Maven Repository Group</name>
       <url>https://oss.sonatype.org/content/groups/public</url>
       <layout>default</layout>
       <releases>

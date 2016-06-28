@@ -20,40 +20,38 @@
 package org.restcomm.chain.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ParallelProcessorChain;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
-import org.restcomm.chain.processor.impl.DispatchProcessor;
 import org.restcomm.chain.processor.impl.ImmutableMessage;
 import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 
 
+
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:46:25
- * @class   ProcessorChainImpl.java
+ * @date    8/6/2016 18:02:24
+ * @class   DefaultParallelProcessorChain.java
  *
  */
-
 public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor  
 	implements ParallelProcessorChain  {
 	
-	private static transient Logger LOG = Logger.getLogger(DefaultSerialProcessorChain.class);
+	private static transient Logger LOG = Logger.getLogger(DefaultParallelProcessorChain.class);
 	
 	private Processor nextLink;
 	
-	private ArrayList<Thread> threads= new ArrayList<Thread>();
+	private List<Thread> threads = Collections.synchronizedList(new ArrayList<Thread>());
 	
 	private Hashtable<Integer, Processor> processors=new Hashtable<Integer, Processor>();
-	
-	private Processor.Status status=Processor.Status.IDLE;
-	
 	
 	public DefaultParallelProcessorChain() {
 		super();
@@ -66,26 +64,21 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 		
 	}
 	
-	
-	public void unlink(Processor processor) {
-		status=Processor.Status.ABORTED;
-		processors.put(processor.getId(), new DispatchProcessor("Dispatch", this));
-		
-	}
-	
 	@Override
-	public void process(MutableMessage message) throws ProcessorParsingException  {	
-			final ImmutableMessage immutableMessage=message.getImmutable();
-		    status=Processor.Status.PROCESSING;
-		    fireProcessingEvent(immutableMessage, (Processor) getCallback());
+	public void process(MutableMessage message) throws ProcessorParsingException  {
+		
+			
+			final ImmutableMessage immutableMessage=(ImmutableMessage)message;
+		    
+			
+			fireProcessingEvent(immutableMessage, (Processor) getCallback());
 			
 			for(final Processor processor:processors.values()) {
 				
 					Thread thread=new Thread(
 							  new Runnable() {
 							      public void run() {			
-									try {
-										status=Status.PROCESSING;				
+									try {			
 										fireProcessingEvent(immutableMessage, processor);
 										//processor.process(message);
 										processor.getCallback().doProcess(immutableMessage);
@@ -106,19 +99,20 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 					thread.start();
 					
 				}
-			
-			for(Thread t:threads) {
-				try {
-					t.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			synchronized(threads) {
+				for(Thread t:threads) {
+					try {
+						t.join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 			if(message!=null) {
 				LOG.debug("<< DPC "+type+" output message ["+message+"]");
 			}
-			status=Status.TERMINATED;
+			
 			fireEndEvent(message, (Processor) getCallback());
 			Processor nextLink = null;
 			
@@ -133,11 +127,6 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 		
 	}
 	
-
-	@Override
-	public Status getStatus() {
-		return status;
-	}
 
 	@Override
 	public String getName() {
