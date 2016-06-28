@@ -160,11 +160,18 @@
 
     <dependency>
 	<groupId>org.mobicents</groupId>
+<<<<<<< HEAD:testsuite/pom.xml
 	<artifactId>sbc-application</artifactId>
 	<version>${project.version}</version>
 	<classifier>classes</classifier>
 	<scope>test</scope>
 	<type>war</type>
+=======
+	<artifactId>sbc.application</artifactId>
+	<version>${project.version}</version>
+	<classifier>classes</classifier>
+	<scope>test</scope>
+>>>>>>> RestComm/master:sbc.testsuite/pom.xml
     </dependency>
 
 

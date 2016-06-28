@@ -187,9 +187,14 @@
 	</dependencies>
 
 	<modules>
+<<<<<<< HEAD
 		<module>application</module>
 		<module>testsuite</module>
 		<module>docs</module>
+=======
+		<module>sbc.application</module>
+		<module>sbc.testsuite</module>
+>>>>>>> RestComm/master
 	</modules>
 
 	<build>
@@ -255,7 +260,11 @@
 		<profile>
 			<id>docs</id>
 			<modules>
+<<<<<<< HEAD
 				<module>docs</module>
+=======
+				<module>sbc.docs</module>
+>>>>>>> RestComm/master
 			</modules>
 		</profile>
 		<profile>
