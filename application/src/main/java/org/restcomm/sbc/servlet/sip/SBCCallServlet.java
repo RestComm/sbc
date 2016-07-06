@@ -39,24 +39,38 @@ import javax.servlet.sip.SipSession;
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
+import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
+import org.restcomm.sbc.chain.impl.registrar.DownstreamRegistrarProcessorChain;
+import org.restcomm.sbc.chain.impl.registrar.UpstreamRegistrarProcessorChain;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
 
 public class SBCCallServlet extends SipServlet {	
 	private static final long serialVersionUID = 1L;	
 	
-	private String MZIP  ="192.168.0.6";
+	private String MZIP  ="192.168.0.2";
 	private String DMZIP ="192.168.88.2";
 	private int DMZPORT=5080;
 	private int MZPORT =5080;
 	
-	private static transient Logger logger = Logger.getLogger(SBCCallServlet.class);
+	private static transient Logger LOG = Logger.getLogger(SBCCallServlet.class);
+	
+	private UpstreamInviteProcessorChain upChain;
+	private DownstreamInviteProcessorChain dwChain;
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		
-		logger.info("the simple sip servlet has been started");
+		LOG.info("the simple sip servlet has been started");
 		super.init(servletConfig);
+		
+		upChain=new UpstreamInviteProcessorChain();
+		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
+		dwChain=new DownstreamInviteProcessorChain();
+		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
+		
 		
 		
 	}
@@ -65,53 +79,10 @@ public class SBCCallServlet extends SipServlet {
 	@Override
 	protected void doInvite(SipServletRequest request) throws ServletException,
 			IOException {
-		
-		logger.info("Got request:\n" + request);
-		if(((SipURI)request.getFrom().getURI()).getUser().contains("generateResponses")) {
-			SipServletResponse ringing = request.createResponse(SipServletResponse.SC_RINGING);
-			SipServletResponse ok = request.createResponse(SipServletResponse.SC_OK);
-			ringing.send();
-			ok.send();
-		}
-		
-		Map<String, List<String>> headers=new HashMap<String, List<String>>();
-		List<String> toHeaderList = new ArrayList<String>();
-		toHeaderList.add("sip:aa@sip-servlets.com");
-		headers.put("To", toHeaderList);
-		
-		B2buaHelper helper = request.getB2buaHelper();
-		SipServletRequest forkedRequest = helper.createRequest(request, true,
-				headers);				
-		
-		SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(
-				SIP_FACTORY);				
-		SipURI sipUri = (SipURI) sipFactory.createURI("sip:aa@" + System.getProperty("org.mobicents.testsuite.testhostaddr") + ":5059");	
-		if(request.getTo().toString().contains("cancel-no-response")) {
-			sipUri = (SipURI) sipFactory.createURI("sip:cancel-no-respo-receiver@" + System.getProperty("org.mobicents.testsuite.testhostaddr") + ":9368");
-		}
-		forkedRequest.setRequestURI(sipUri);
-		if(request.getTo().toString().contains("cancel-no-response")) {
-			forkedRequest.send();
-			try {
-				Thread.sleep(4000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			forkedRequest.createCancel().send();
-			return;
-		}
-		
-			System.err.println("forkedRequest = " + forkedRequest);
-		
-		// Issue 1151 : making sure the contact is present in the B2BUAHelper newly created request
-		if(forkedRequest.getParameterableHeaders("Contact").hasNext()) {
-			forkedRequest.getSession().setAttribute("originalRequest", request);
-			forkedRequest.send();
-		} else {
-			request.createResponse(500, "Contact not present in newly created request").send();
-		}
 
+		if(request.isInitial()) {
+		    upChain.process(new SIPMutableMessage(request));
+		}
 	}
 
 	/**
@@ -119,29 +90,9 @@ public class SBCCallServlet extends SipServlet {
 	 */
 	protected void doResponse(SipServletResponse sipServletResponse)
 			throws ServletException, IOException {
-		MessageUtil.tracer(sipServletResponse);
-		//System.err.println("Got : " + sipServletResponse.getStatus() + " "
-		//		+ sipServletResponse.getMethod());		
-		if (sipServletResponse.getStatus() == SipServletResponse.SC_OK) {			
-			//if this is a response to an INVITE we ack it and forward the OK 
-			if(sipServletResponse.getMethod().equalsIgnoreCase("INVITE")) {
-				SipServletRequest ackRequest = sipServletResponse.createAck();
-				ackRequest.send();
-				if(!((SipURI)sipServletResponse.getTo().getURI()).getUser().contains("generateResponses")) {
-					B2buaHelper helper = sipServletResponse.getRequest().getB2buaHelper();
-					//create and sends OK for the first call leg
-					SipSession originalSession =   
-					    helper.getLinkedSession(sipServletResponse.getSession());					
-					SipServletResponse responseToOriginalRequest = 
-						helper.createResponseToOriginalRequest(originalSession, sipServletResponse.getStatus(), "OK");
-					
-					responseToOriginalRequest.send();
-				}
-			}
-			
-		}  else {
-			super.doResponse(sipServletResponse);
-		}
+		
+		dwChain.process(new SIPMutableMessage(sipServletResponse));
+		super.doResponse(sipServletResponse);
 	}
 	
 	/**

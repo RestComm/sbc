@@ -25,7 +25,7 @@
 
                 <!-- The IP to use for out-bound SIP REGISTER requests. This is useful
                         when you want to report a different IP than the one RestComm picked by default. -->
-                <external-ip>192.168.0.6</external-ip>
+                <external-ip>192.168.0.2</external-ip>
 
                 <!-- If set to true RestComm will use the To header to determine the destination.
                         If set to false RestComm will use the Request URI to determine the destination. -->
@@ -61,9 +61,9 @@
                 <routing-policy>
                         <!-- Parameters for static routing policiy provider -->
                         <militarized-zone-target>
-	                        <ip-address>192.168.0.6</ip-address>
+	                        <ip-address>192.168.0.2</ip-address>
 	                        <transport>udp</transport>
-	                        <port>5080</port>
+	                        <port>5060</port>
 	                        
 	                        <failover-ip-address>192.168.0.6</failover-ip-address>
 	                        <failover-transport>tcp</failover-transport>

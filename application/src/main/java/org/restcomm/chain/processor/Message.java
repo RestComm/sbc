@@ -19,6 +19,8 @@
  *******************************************************************************/
 package org.restcomm.chain.processor;
 
+
+
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    27/5/2016 13:34:57
@@ -27,7 +29,18 @@ package org.restcomm.chain.processor;
  */
 public interface Message {
 	
-	Object getWrappedObject();
+	Object getProperty(Object property) ;
 	
-
+	/**
+	 * unlinks itself from its processor container
+	 * disabling any further processing of the message. 
+	 */
+	
+	void unlink();
+	
+	/**
+	 * Gets link message state
+	 */
+	
+	boolean isLinked();
 }

@@ -25,6 +25,7 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
+import org.restcomm.chain.processor.EndpointProcessor;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorListener;
@@ -42,8 +43,7 @@ public abstract class DefaultProcessor implements Processor {
 	private static transient Logger LOG = Logger.getLogger(DefaultProcessor.class);
 	
 	private EventListenerList listenerList = new EventListenerList();
-
-	Status status=Status.IDLE;	
+	
 	protected ProcessorChain chain;
 	protected String name;
 	protected Type type;
@@ -111,14 +111,14 @@ public abstract class DefaultProcessor implements Processor {
 	     }
 	 }
 	
-	protected void fireAbortEvent(Message message, Processor processor) {
+	protected void fireAbortEvent(Processor processor) {
 	     // Guaranteed to return a non-null array
 	     Object[] listeners = listenerList.getListenerList();
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==ProcessorListener.class) {             
-	             ((ProcessorListener)listeners[i+1]).onProcessorAbort(message, processor);
+	             ((ProcessorListener)listeners[i+1]).onProcessorAbort(processor);
 	         }
 	         
 	     }
@@ -127,18 +127,20 @@ public abstract class DefaultProcessor implements Processor {
 	
 	
 	public void process(MutableMessage message) throws ProcessorParsingException {
+		if(message==null) {
+			throw new ProcessorParsingException("null Messages not allowed");
+		}
 		LOG.debug(">> process() message ["+message+"]");
 		
-		
-		status=Status.PROCESSING;
-	
-		fireProcessingEvent(message, (Processor) getCallback());
-		
-		getCallback().doProcess(message);
-		
-		status=Status.TERMINATED;
-		fireEndEvent(message, (Processor) getCallback());
-		
+		if(!message.isLinked()&& !(this instanceof EndpointProcessor )) {	
+			LOG.debug("ABORT message ["+message+"] on chain "+chain.getName()+" on processor "+this);
+			fireAbortEvent((Processor) getCallback());
+		}
+		else {
+			fireProcessingEvent(message, (Processor) getCallback());
+			getCallback().doProcess(message);
+			fireEndEvent(message, (Processor) getCallback());
+		}
 		
 		Processor nextLink = null;
 		if(chain!=null) {
@@ -157,31 +159,8 @@ public abstract class DefaultProcessor implements Processor {
 	
 	
 	@Override
-	public Status getStatus() {
-		return status;
-	}
-	
-	@Override
 	public Type getType() {
 		return type;
 	}
-	/*
-	private boolean contains(ProcessorListener listener) {
-	    for(Object pl : listenerList.getListenerList()) {
-	        if(pl != null && ((DefaultProcessor)pl).equals(listener)) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
-	@Override
-	public boolean equals(Object dp) {
-		DefaultProcessor processor = (DefaultProcessor)dp;
-		if(processor.getName().equals(name) &&
-				processor.getId()==getId())
-			return true;
-		return false;
-		
-	}
-	*/
+	
 }

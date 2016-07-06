@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
+    version="2.2">
+	<application>
+     	   <locale-config>
+     	        <default-locale>en</default-locale>
+     	   </locale-config>
+	   <resource-bundle>
+		<base-name>org.restcomm.sbc.resources.sbc</base-name>
+		<var>msg</var>
+	   </resource-bundle>
+     </application>
+
+	<managed-bean>
+		<managed-bean-name>gaugeBean</managed-bean-name>
+		<managed-bean-class>org.restcomm.sbc.bean.GaugeBean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+	<render-kit>
+	</render-kit>
+
+</faces-config>

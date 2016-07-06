@@ -39,11 +39,11 @@ public class Threat {
 		POTENTIAL
 	}
 	
-	public static long	ACTION_DISCARD        = 00000000L;
-	public static long	ACTION_BLACKLIST_HOST = 00000001L;
-	public static long	ACTION_NOTIFY         = 00000010L;
-	public static long	ACTION_ALERT          = 00000100L;
-	public static long	ACTION_ACCOUNT        = 00001000L;
+	public static long	ACTION_IGNORE         = 00000001L;
+	public static long	ACTION_BLACKLIST_HOST = 00000010L;
+	public static long	ACTION_NOTIFY         = 00000100L;
+	public static long	ACTION_ALERT          = 00001000L;
+	public static long	ACTION_ACCOUNT        = 00010000L;
 	
 	
 	

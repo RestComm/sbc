@@ -32,10 +32,10 @@ import javax.servlet.sip.SipServletResponse;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
-import org.restcomm.chain.processor.impl.MutableMessage;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.chain.impl.registrar.UpstreamRegistrarRequestProcessChain;
-import org.restcomm.sbc.chain.impl.registrar.UpstreamRegistrarResponseProcessChain;
+import org.restcomm.sbc.chain.impl.registrar.UpstreamRegistrarProcessorChain;
+import org.restcomm.sbc.chain.impl.registrar.DownstreamRegistrarProcessorChain;
 
 
 /**
@@ -60,6 +60,8 @@ public class SBCRegistrarServlet extends SipServlet {
 	private int dmzPort;
 	private String routeMZIPAddress;
 	
+	private UpstreamRegistrarProcessorChain upChain;
+	private DownstreamRegistrarProcessorChain dwChain;
 	
 	private static transient Logger LOG = Logger.getLogger(SBCRegistrarServlet.class);
 	
@@ -88,15 +90,19 @@ public class SBCRegistrarServlet extends SipServlet {
 		routeMZTransport=ConfigurationCache.getRouteMZTransport();
 		routeMZPort     =ConfigurationCache.getRouteMZPort();
 		
-		if(LOG.isDebugEnabled()){
-			LOG.debug("MZ :"+mzIface+", "+mzIPAddress+":"+mzPort+", "+mzTransport);
-			LOG.debug("DMZ:"+dmzIface+", "+dmzIPAddress+":"+dmzPort+", "+dmzTransport);
-			LOG.debug("Route MZ Target:"+routeMZIPAddress+":"+routeMZPort+", "+routeMZTransport);
-			LOG.debug("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
-			LOG.debug("MaxUATTL:"+ConfigurationCache.getRegThrottleMaxUATTL());
-			LOG.debug("MinRETTL:"+ConfigurationCache.getRegThrottleMinRegistartTTL());
-	    }
+		//if(LOG.isDebugEnabled()){
+			LOG.info("MZ :"+mzIface+", "+mzIPAddress+":"+mzPort+", "+mzTransport);
+			LOG.info("DMZ:"+dmzIface+", "+dmzIPAddress+":"+dmzPort+", "+dmzTransport);
+			LOG.info("Route MZ Target:"+routeMZIPAddress+":"+routeMZPort+", "+routeMZTransport);
+			LOG.info("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
+			LOG.info("MaxUATTL:"+ConfigurationCache.getRegThrottleMaxUATTL());
+			LOG.info("MinRETTL:"+ConfigurationCache.getRegThrottleMinRegistartTTL());
+	    //}
 		
+		upChain=new UpstreamRegistrarProcessorChain();
+		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
+		dwChain=new DownstreamRegistrarProcessorChain();
+		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
 		
 		
 		
@@ -106,8 +112,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	protected void doRegister(SipServletRequest sipServletRequest) throws ServletException, IOException {
 		
 		if(sipServletRequest.isInitial()) {
-			UpstreamRegistrarRequestProcessChain chain=new UpstreamRegistrarRequestProcessChain();
-		    chain.process(new MutableMessage(sipServletRequest));
+		    upChain.process(new SIPMutableMessage(sipServletRequest));
 		}
 		
 	}
@@ -118,7 +123,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	 */
 	protected void doResponse(SipServletResponse sipServletResponse) throws ServletException, IOException {
 			
-		new UpstreamRegistrarResponseProcessChain().process(new MutableMessage(sipServletResponse));
+		dwChain.process(new SIPMutableMessage(sipServletResponse));
 		
 		super.doResponse(sipServletResponse);
 	}

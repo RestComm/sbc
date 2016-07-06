@@ -20,10 +20,22 @@
 
 package org.restcomm.sbc.managers;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 
+
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.infinispan.Cache;
+import org.infinispan.commons.util.CloseableIteratorCollection;
+import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 
 /**
@@ -35,11 +47,12 @@ import org.restcomm.sbc.bo.Location;
  */
 public class LocationManager {
 	
-	private Hashtable<String, Location> registers=new Hashtable<String, Location>();
-	
+	//private Hashtable<String, Location> registers=new Hashtable<String, Location>();
+	private Cache<Object, Object> registers;
 	private static LocationManager locationManager;
 	
 	private LocationManager() {
+		registers = new DefaultCacheManager().getCache("location");
 		
 	}
 	
@@ -47,11 +60,12 @@ public class LocationManager {
 		if(locationManager==null) {
 			locationManager=new LocationManager();
 		}
+		locationManager.register("00", "192.168.0.2", 5060, "friendly-scanner", "udp", 30);
 		return locationManager;
 	}
 	
 	
-	public Location register(String user, String host, int port, String userAgent, String transport) {
+	public Location register(String user, String host, int port, String userAgent, String transport, int ttl) {
 		Location location=new Location();
 		location.setHost(host);
 		location.setPort(port);
@@ -59,14 +73,20 @@ public class LocationManager {
 		location.setTransport(transport);
 		location.setUser(user);
 		
-		registers.put(user, location);
+		registers.put(user, location, ttl, TimeUnit.SECONDS);
 		
 		return location;
 			
 	}
 	
 	public Location getLocation(String user) {
-		return registers.get(user);
+		return (Location) registers.get(user);
+	}
+	
+	public Collection<Location> getLocations() {
+		ArrayList al=new ArrayList(registers.values());
+		//Collections.sort(al);
+		return al;
 	}
 	
 	public boolean isMzAlive(String user) {
@@ -94,10 +114,8 @@ public class LocationManager {
 		
 	}
 
-	public Location unregister(String user) {
-		
-		return registers.remove(user);
-		
+	public Location unregister(String user) {	
+		return (Location) registers.remove(user);	
 	}
 	
 	public void setDmzExpirationTimeInSeconds(String user, int expires) {

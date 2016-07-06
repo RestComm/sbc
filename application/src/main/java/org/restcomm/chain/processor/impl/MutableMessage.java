@@ -19,8 +19,6 @@
  *******************************************************************************/
 package org.restcomm.chain.processor.impl;
 
-import org.restcomm.chain.processor.Message;
-
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -28,23 +26,7 @@ import org.restcomm.chain.processor.Message;
  * @class   MutableMessage.java
  *
  */
-public class MutableMessage implements Message {
+public interface MutableMessage extends ImmutableMessage {
 	
-	private Object wrappedObject;
-	
-	public MutableMessage() {
-		
-	}
-	public MutableMessage(Object wrappedObject) {
-		this.wrappedObject=wrappedObject;
-	}
-	public Object getWrappedObject() {
-		return wrappedObject;
-	}
-	public void setWrappedObject(Object wrappedObject) {
-		this.wrappedObject=wrappedObject;
-	}
-	public final ImmutableMessage getImmutable() {
-		return new ImmutableMessage(wrappedObject);
-	}
+	void setProperty(Object property, Object value);
 }

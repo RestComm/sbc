@@ -24,15 +24,6 @@ import org.restcomm.chain.processor.Processor;
 
 
 /**
- * 
- * @author  Oscar Andres Carriles <ocarriles@eolos.la>
- * @date    24/4/2016 22:41:10
- * @class   MessageProcessor.java
- * @project Servlet2.5SBC
- *
- */
-
-/**
  * A ProcessorChain is a component of a chain of responsibility
  * responsible in the construction of the chain of Processors
  * that will interact in the transformation of the message.
@@ -40,8 +31,19 @@ import org.restcomm.chain.processor.Processor;
  * 
  * 
  */
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    10/6/2016 8:58:43
+ * @class   ProcessorChain.java
+ *
+ */
 public interface ProcessorChain extends Processor {
 	
+	enum FlowDirection {
+		UPSTREAM,
+		DOWNSTREAM,
+		BOTH
+	}
 	
 	/**
 	 * Gets next Message processor in the chain
@@ -50,16 +52,6 @@ public interface ProcessorChain extends Processor {
 	 */
 	Processor getNextLink(Processor processor);
 	
-	
-	
-	/**
-	 * unlinks from the chain
-	 * breaking its prefixed sequence
-	 * causing immediate message process
-	 * termination. 
-	 */
-	
-	void unlink(Processor processor);
 	
 	
 	

@@ -20,10 +20,15 @@
 
 package org.restcomm.chain.processor.impl;
 
+import java.io.IOException;
+
+import javax.servlet.sip.SipServletMessage;
+
+import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
-import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
+
 
 
 /**
@@ -37,15 +42,17 @@ import org.restcomm.chain.processor.ProcessorCallBack;
  * @class   DispatchDPIProcessor.java
  *
  */
-public class DispatchDPIProcessor extends DefaultDPIProcessor 
+public class DispatchDPIProcessor extends DefaultEndpointProcessor 
 	implements ProcessorCallBack {
+	
 
-	Processor.Status status=Processor.Status.IDLE;	
+	private static transient Logger LOG = Logger.getLogger(DispatchDPIProcessor.class);
+	
 	private String name="#Low level DPI dispatcher";
 	
-	public DispatchDPIProcessor(String name,	ProcessorChain chain) {
+	
+	public DispatchDPIProcessor(String name, ProcessorChain chain) {
 		super(name, chain);
-		setName(name);
 	}
 
 	public String getName() {
@@ -56,10 +63,6 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor
 		return this.hashCode();
 	}
 
-	@Override
-	public Status getStatus() {
-		return status; 
-	}
 
 	@Override
 	public ProcessorCallBack getCallback() {
@@ -76,8 +79,18 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		// TODO Auto-generated method stub
+		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		try {
+			m.send();
+		} catch (IOException e) {
+			LOG.error(e.getMessage());
+		}
 		
+	}
+
+	@Override
+	public String getVersion() {
+		return "1.0.0";
 	}
 
 	

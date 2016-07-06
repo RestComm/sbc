@@ -22,8 +22,8 @@ package org.restcomm.sbc.notification;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    14/5/2016 12:36:51
- * @class   Notification.java
+ * @date    4/6/2016 13:12:58
+ * @class   Notifiable.java
  *
  */
 public interface Notifiable {

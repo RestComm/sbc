@@ -33,7 +33,7 @@ package org.restcomm.sbc.managers;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 /*
- * $Header: /home/cvs/obelix/Servlet2.5SBC/application/src/main/java/org/restcomm/sbc/managers/MD5.java,v 1.1 2016/05/23 11:01:42 cvs Exp $
+ * $Header: /home/cvs/obelix/SBC/src/org/restcomm/sbc/managers/MD5.java,v 1.1 2016/06/09 09:34:26 cvs Exp $
  *
  * MD5 in Java JDK Beta-2
  * written Santeri Paavolainen, Helsinki Finland 1996
@@ -68,6 +68,9 @@ package org.restcomm.sbc.managers;
  *
  *
  * $Log: MD5.java,v $
+ * Revision 1.1  2016/06/09 09:34:26  cvs
+ * *** empty log message ***
+ *
  * Revision 1.1  2016/05/23 11:01:42  cvs
  * *** empty log message ***
  *

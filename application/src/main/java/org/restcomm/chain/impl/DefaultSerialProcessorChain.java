@@ -26,7 +26,6 @@ import org.restcomm.chain.ParallelProcessorChain;
 import org.restcomm.chain.SerialProcessorChain;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
-import org.restcomm.chain.processor.impl.DispatchProcessor;
 import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
@@ -44,7 +43,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 	
 	
 	private Processor startPoint;
-	Processor.Status status=Processor.Status.IDLE;	
+
 	
 	private Hashtable<Integer, Processor> processors=new Hashtable<Integer, Processor>();
 	
@@ -79,6 +78,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		if(processors.isEmpty()) {
 			startPoint=processor;
 		}
+		
 		if(processor instanceof ParallelProcessorChain) {
 			ParallelProcessorChain ppc=(ParallelProcessorChain) processor;
 			ppc.setNextLink(nextInChain);
@@ -88,21 +88,12 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		
 		
 	}
-	
-	
-	public void unlink(Processor processor) {
-		status=Processor.Status.ABORTED;	
-		processors.put(processor.getId(), new DispatchProcessor("Dispatch", this));
-		
-	}
-	
-	
 
 	public Processor getNextLink(Processor processor) {
 		return processors.get(processor.getId());
 	}
 	
-
+	
 	@Override
 	public int getId() {
 		return this.hashCode();
@@ -113,8 +104,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		
 		LOG.debug(">> DSC "+getType()+" input message ["+message+"]");
 		
-		status=Status.PROCESSING;
-	
+		
 		fireProcessingEvent(message, (Processor) getCallback());
 		
 		getCallback().doProcess(message);
@@ -132,7 +122,6 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		}
 		
 		
-		status=Status.TERMINATED;
 		fireEndEvent(message, (Processor) getCallback());
 
 		
