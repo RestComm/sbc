@@ -18,10 +18,8 @@
  *
  *******************************************************************************/
 package org.restcomm.sbc.notification;
-
 import javax.servlet.sip.SipServletMessage;
 
-import org.restcomm.sbc.threat.Threat;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -32,6 +30,12 @@ import org.restcomm.sbc.threat.Threat;
 public interface SuspectActivityElectable {
 	
 	/**
+	 * Gets Record Unique ID
+	 * @return
+	 */
+	long getUid();
+	
+	/**
 	 * Record must be dismissed due to time-to-live
 	 * expiration in cache without becoming a real
 	 * threat.
@@ -40,11 +44,17 @@ public interface SuspectActivityElectable {
 	boolean isExpired();
 	
 	/**
-	 * A real typified threat
-	 * has been detected
-	 * @return Threat
+	 * Record is marked as processed
+	 * by the Monitor thread
+	 * 
 	 */
-	Threat becomesThreatCandidate();
+	void markAsProcessed();
+	
+	/**
+	 * Check if record has been processed
+	 * @return
+	 */
+	public boolean isProcessed();
 	
 	/**
 	 * Gets Suspect host
@@ -53,15 +63,15 @@ public interface SuspectActivityElectable {
 	String getHost();
 	
 	/**
-	 * Gets authorization denial count
-	 * @return count
-	 */
-	int getUnauthorizedAccessCount();
-	
-	/**
-	 * Gets last message
+	 * Gets message status
 	 * @return message
 	 */
-	SipServletMessage getLastMessage();
+	int getStatus();
+	
+	/**
+	 * Gets message status
+	 * @return message
+	 */
+	SipServletMessage getMessage();
 
 }

@@ -61,7 +61,7 @@ An MPU is a module responsible of taking an incoming message, process it, and re
 --
 
            +------------------+
-           |                  |
+           |cGRE              |
            |                  |
 ---------> +       MPU        + --------->      
  Message   |                  |  Message
@@ -78,24 +78,17 @@ From Java perspective:
 ----
 public interface Processor {
 	
-	enum Status {
-		IDLE,
-		PROCESSING,
-		TERMINATED,
-		ABORTED
-	}
 	
 	enum Type {
 		CHAIN,
 		SINGLE_PROCESSOR
 	}
-	
 	/**
-	 * Gets name
+	 * Gets Processor version
 	 * 
-	 * @return name
+	 * @return version
 	 */
-	Status getStatus();
+	String getVersion();
 	
 	/**
 	 * Gets type
@@ -142,9 +135,9 @@ public interface Processor {
 	void process(MutableMessage message) throws ProcessorParsingException;
 	
 	/**
-	 * Gets a reference of the processor
+	 * Gets Callback
+	 * to calling processor
 	 * 
-	 * @return callback
 	 */
 	ProcessorCallBack getCallback();	
 	
@@ -172,7 +165,7 @@ An MTA is a module responsible of taking an incoming message carried by certain 
 --
 
            +------------------+
-           |                  |
+           | cGRE             |
            |                  |
 ---------> +       MTA        + --------->      
  Message   |                  |  Message
@@ -223,15 +216,6 @@ public interface ProcessorChain extends Processor {
 	 */
 	Processor getNextLink(Processor processor);
 	
-	/**
-	 * unlinks from the chain
-	 * breaking its prefixed sequence
-	 * causing immediate message process
-	 * termination. 
-	 */
-	
-	void unlink(Processor processor);
-	
 }
 ----
 
@@ -266,7 +250,7 @@ public SimpleSerialProcessChain() {
 			                //Processor c2 is the next execution point
 			link(c2, c3);   //Processor c3 is executed after c2 terminates
 			link(c3, c4);
-			link(c4, new DispatchProcessor("Dispatch", this));
+			link(c4, new DispatchDPIProcessor("Dispatch", this));
 		} catch (MalformedProcessorChainException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -303,7 +287,36 @@ public interface SerialProcessorChain extends ProcessorChain {
 _Parallel Chains_ are designed to execute Processors in parallel or _concurrent_ mode.
 Processors *are not sequenced* and they process the incoming message in a separate processor thread at the same time. This kind of chains fits better in a message sniffing scenario, where the processors of its ownership just have to deep inspect the message content in order to determine further actions, without the need to make a message transformation.
 
-
+.SimpleParallelProcessorChain.java
+[source,java]
+----
+public SimpleParallelProcessorChain() {
+		   super();
+		   setName("Parallel");
+		// initialize the chain
+		// works with original message
+		   Processor       c5=  new SimpleDPIProcessor("DPI-c5", this);
+		   c5.addProcessorListener(this);
+		   Processor       c6=  new SimpleDPIProcessor("DPI-c6", this);
+		   c6.addProcessorListener(this);
+		   Processor       c7=  new SimpleDPIProcessor("DPI-c7", this);
+		   c7.addProcessorListener(this);
+		
+		// set the chain of responsibility
+		
+		try {
+			link(c5);
+			link(c6);
+			link(c7);
+			
+		} catch (MalformedProcessorChainException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	}
+	
+----
 
 .ParallelProcessChain.java
 [source,java]
@@ -355,7 +368,7 @@ If the output of a chain is linked to another chain (of any kind), the message k
 
 If everything is consistent with the implemented business logic in all processors that the chains traverses and we reach the output of the last subchain or processor linked the the main backbone chain, the complete cycle of the chain is over.
 
-If any Processor in any chain find a rule violation to its logic contract, it is able to ask the chain to be unlinked and enforce the interruption of the processing flow causing an immediate termination of the chain and the complete cycle of the chain is over.
+If any Processor in any chain find a rule violation to its logic contract, it is able to mark the message to be in the unlinked state and enforce the interruption of the processing flow causing an immediate termination of the chain and the complete cycle of the chain is over.
 
 ====
 [CAUTION]
@@ -368,37 +381,38 @@ It is a good practice to always terminate the backbone chain in a dispatcher pro
 .Complex Chain
 [ditaa,complexchain,png]
 --
-             +-------------------------------------+
-             |     Serial Chain Backbone           |
+             /-------------------------------------+
+             |cGRE    Serial Chain Backbone        |
              |  +------------------------------+   |
-             |  |                              |   | unlink
+             |  |cYEL                          |   | unlink
              |  |  P1--> P2--> P3--> P4--> P5  +-+-|------+
              |  |  Serial Chain                | | |      |
              |  +------------------------------+ | |      |
              |                  +----------------+ |      |
              |                  |     link         |      |
-             |                  v                  |      |
+             |cGRE              v                  |      |
              |  +---------------+--------------+   |      |
-             |  |                              |   |      |
+             |  |cYEL                          |   |      |
              |  |              P6              +-+-|----+ |
              |  |  Single Processor            | | |    | |
              |  +------------------------------+ | |    | |
              |                  +----------------+ |    | |
              |                  |     link         |    | |
-             |                  v                  |    | |
+             |cGRE              v                  |    | |
              |  +---------------+--------------+   |    | |
-             |  |        P7.1  P7.2  P7.3      |   |    | |
+             |  |cYEL    P7.1  P7.2  P7.3      |   |    | |
              |  |                              |   |    | |
              |  |          |    |     |        |   |    | |
              |  |          v    v     v        +---|--+ | |
              |  |  Parallel Chain              |   |  | | |
              |  +---------------+--------------+   |  | | |
-             |                  |                  |  | | |
+             |cGRE              |                  |  | | |
              |                  |     link         |  | | |
              |                  v                  |  | | |
              |  +---------------+--------------+<--|--+ | |
-             |  |      Dispatch  Processor     |<--|----+ |
+             |  |cRED  Dispatch  Processor     |<--|----+ |
              |  +------------------------------+<--|------+
+             |cGRE                                 |
              +-------------------------------------+
               
 --
@@ -426,42 +440,56 @@ Usually doing a mix of the User-Agent name, tag pattern format and SIP MESSAGE c
 .DPIUserAgentACLProcessor.java
 [source,java]
 ----
+/*******************************************************************************
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * by the @authors tag.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ *******************************************************************************/
+
 package org.restcomm.sbc.chain.processor.impl;
 
 import javax.servlet.sip.SipServletMessage;
+
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
+import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
-import org.restcomm.chain.processor.impl.DefaultProcessor;
+import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
+
 
 /**
- * 
- * @author  Oscar Andres Carriles <ocarriles@eolos.la>
- * @date    25/4/2016 9:54:10
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27/5/2016 14:33:56
  * @class   DPIUserAgentACLProcessor.java
- */
-/**
- * Specialized Message Processor responsible to check grammar and syntax
- * health of the UAC incoming sip message. 
  *
  */
 public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
 
 	private String name="Simple ACL UA Processor";
-	
 	private static transient Logger LOG = Logger.getLogger(DPIUserAgentACLProcessor.class);
 
-	private ProcessorChain chain;
-	
 	public DPIUserAgentACLProcessor(ProcessorChain processorChain) {
 			super(processorChain);
-			chain=processorChain;
 	}
 	
 	public DPIUserAgentACLProcessor(String name, ProcessorChain processorChain) {
 			super(name, processorChain);
-			chain=processorChain;
 	}
 
 	public String getName() {
@@ -472,22 +500,24 @@ public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements Pro
 		return this.hashCode();
 	}
 
-
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
+	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> doProcess()");
-	    }	
-		String userAgent=message.getHeader("User-Agent");
+	    }
+		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		
+		String userAgent=m.getHeader("User-Agent");
 		if (userAgent.contains("Bad-Guy")) {
-			chain.unlink(this);
+			message.unlink();
 			
 		}
-		return message;
+		return m;
 	}
 
 	@Override
 	public void setName(String name) {
 		this.name=name;
+		
 	}
 
 	@Override
@@ -497,7 +527,12 @@ public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements Pro
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		doProcess((SipServletMessage)message.getWrappedObject());
+		doProcess((SIPMutableMessage)message);
+	}
+	
+	@Override
+	public String getVersion() {
+		return "1.0.0";
 	}
 
 }

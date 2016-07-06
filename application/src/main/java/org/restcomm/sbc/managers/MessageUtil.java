@@ -20,14 +20,10 @@
  *******************************************************************************/
 package org.restcomm.sbc.managers;
 
-import javax.servlet.sip.Address;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 
-
-
-import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 

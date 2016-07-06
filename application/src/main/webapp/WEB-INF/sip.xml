@@ -18,16 +18,19 @@
 		<servlet-mapping>
 			<servlet-name>CallManager</servlet-name>
 			<pattern>
-				<or>
 					<equal>
 						<var>request.method</var>
 						<value>INVITE</value>
 					</equal>
+			</pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>OptionsManager</servlet-name>
+			<pattern>
 					<equal>
 						<var>request.method</var>
 						<value>OPTIONS</value>
-					</equal>
-				</or>
+					</equal>	
 			</pattern>
 		</servlet-mapping>
 		<servlet-mapping>
@@ -63,13 +66,22 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
+		<servlet-name>OptionsManager</servlet-name>
+		<display-name>OptionsManager</display-name>
+		<description>SBC Options Manager</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCOptionsServlet
+		</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet>
 		<servlet-name>CallManager</servlet-name>
 		<display-name>CallManager</display-name>
 		<description>SBC Call Manager.</description>
 		<servlet-class>
 			org.restcomm.sbc.servlet.sip.SBCCallServlet
 		</servlet-class>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 
 	

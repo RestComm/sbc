@@ -24,9 +24,8 @@ import java.util.Calendar;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:45:05
+ * @date    16/6/2016 9:32:13
  * @class   Location.java
- * @project Servlet2.5SBC
  *
  */
 public class Location {
