@@ -57,7 +57,7 @@ An MPU is a module responsible of taking an incoming message, process it, and re
 
 
 .Message Processor Unit
-[ditaa,images/mpu,png]
+[ditaa,mpu,png]
 --
 
            +------------------+
@@ -70,6 +70,7 @@ An MPU is a module responsible of taking an incoming message, process it, and re
                     
                     
 --
+
 From Java perspective:
 
 .Processor.java
@@ -160,7 +161,7 @@ An MTA is a module responsible of taking an incoming message carried by certain 
 
 
 .Message Transport Adapter
-[ditaa,images/mta,png]
+[ditaa,mta,png]
 --
 
            +------------------+
@@ -378,7 +379,7 @@ It is a good practice to always terminate the backbone chain in a dispatcher pro
 === Complex chain design Scenario
 
 .Complex Chain
-[ditaa,images/complexchain,png]
+[ditaa,complexchain,png]
 --
              /-------------------------------------+
              |cGRE    Serial Chain Backbone        |
@@ -536,8 +537,3 @@ public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements Pro
 
 }
 ----
-
-
-
-
-

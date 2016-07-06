@@ -5,7 +5,7 @@ applying a set of security rules and filters and upstream, applying some sets of
 Some messages coming in upstream direction must not traverse the B2BUA MPU and must be rejected directly to the sender with certain failed status due to not being compliant to certain processing rule in a prior MPU of the upstraming chain.
 
 .Processor Chain
-[ditaa,images/processor-chain,png]
+[ditaa,processor-chain,png]
 --
                               
         +--------+       +--------+        +--------+
@@ -68,7 +68,7 @@ MPUs can request flow execution interrupt to the chain in order to produce
 further abort of the next point of execution by unlinking the next MPU.
 
 .Interrupt Processor Chain
-[ditaa,images/processor-chain-unlinked,png]
+[ditaa,processor-chain-unlinked,png]
 --
                               
         +--------+       +--------+        +--------+

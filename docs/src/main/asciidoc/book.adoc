@@ -18,20 +18,56 @@ This is a comment block, you can remove it.
 Organize your book chapter by chapter
 ////
 
+:leveloffset: 1
+
 include::preface.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
 
 include::glossary.adoc[]
 
+:leveloffset: 0
+
+:leveloffset: 1
+
 include::chapter-01.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
 
 include::chapter-02.adoc[]
 
+:leveloffset: 0
+
+:leveloffset: 1
+
 include::chapter-03.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
 
 include::chapter-04.adoc[]
 
+:leveloffset: 0
+
+:leveloffset: 1
+
 include::chapter-05.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
 
 include::chapter-06.adoc[]
 
+:leveloffset: 0
+
+:leveloffset: 1
+
 include::colophon.adoc[]
+
+:leveloffset: 0

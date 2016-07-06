@@ -1,10 +1,10 @@
 [preface]
-== Preface
+= Preface
 
 Designing an SBC is not an easy work. So many tasks must analise, disect, mangle and parse messages in order to decide policy messaging flow. Other tasks are not related to atomic instances of messages but to certain message collections that has to be treated as a whole entity in the shortest time period possible in order not to be an obstacle to information flow.
 Let's see a design model approach to implement an SBC on top of Mobicents SIP servlets framework.
 
-=== Introduction
+== Introduction
 
 A Session Border Controller is a security device responsible to filter unwanted session establishment from unstrusted networks and let this traffic flow to internal networks based on a bunch of security rules. This traffic must be en queued at the input interface, processed against a collection of rules and delivered to its final destination after being transformed to fit the output contract of the target endpoint.
 
@@ -12,7 +12,7 @@ For this purpose we need some way to deal with incoming traffic and perform thes
 
 We will discuss, in further chapters, an SBC design approach to perform these tasks regarding traffic management, analysis, transformation and delivery.
 
-=== Message flow in SBC topology
+== Message flow in SBC topology
 
 [source,java]
 ----
@@ -26,10 +26,8 @@ SBC    Session Border Controller
 ----
 
 .SBC Message flow
-[ditaa,images/sbc,png]
+[ditaa,sbc,png]
 --
-  
-
 				DOWNSTREAM------------->
                                      
                                             |-----TO Militarized Zone-->
@@ -45,9 +43,6 @@ SBC    Session Border Controller
                <--To Demilitarized Zone-----|
                
                			<---------------UPSTREAM
-               						
- 
-    
 --
 
 

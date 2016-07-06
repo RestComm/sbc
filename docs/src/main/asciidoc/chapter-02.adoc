@@ -3,7 +3,7 @@
 The B2BUA, (Back-to-Back User Agent) is a core component of the message processing chain, it is a kind of MPU worth of special consideration and description.
 
 .B2BUA
-[ditaa,images/b2bua,png]
+[ditaa,b2bua,png]
 --
                      |         |
            +---------+         +---------+
