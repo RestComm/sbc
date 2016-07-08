@@ -49,7 +49,10 @@ public class NetworkPointBean implements Serializable {
 	        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 	        int group=0;
 	        for (NetworkInterface netIf : Collections.list(nets)) {
-	        	
+	        	String mac=makeMAC(netIf.getHardwareAddress());
+	        	if("".equals(mac.trim())) {
+	        		continue;
+	        	}
 	        	List<InterfaceAddress> inetAddresses =  netIf.getInterfaceAddresses();
 	 	       
 		        for (InterfaceAddress inetAddress : inetAddresses) {
@@ -58,7 +61,7 @@ public class NetworkPointBean implements Serializable {
 		        	point.setGroup(group);
 		        	point.setName(netIf.getName());
 		        	point.setDescription(netIf.getDisplayName());
-		        	point.setMacAddress(makeMAC(netIf.getHardwareAddress()));
+		        	point.setMacAddress(mac);
 		        	point.setAddress(inetAddress.getAddress());
 		        	point.setBroadcast(inetAddress.getBroadcast());
 		        	point.setPrefixMask(inetAddress.getNetworkPrefixLength());
@@ -94,7 +97,10 @@ public class NetworkPointBean implements Serializable {
 	    private static String makeMAC(byte[] mac) {
 	    	StringWriter writer = new StringWriter();
 			PrintWriter out = new PrintWriter(writer);
-	    	
+	    	if(mac==null) {
+	    		return "";
+	    	}
+	    		
 			for(int i=0;i<mac.length;i++){
 				out.format("%02X", mac[i]);
 			}
