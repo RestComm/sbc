@@ -1,30 +1,19 @@
 package org.restcomm.sbc.testsuite;
 
-import java.util.Properties;
 
 import org.restcomm.chain.processor.impl.MutableMessage;
 
 public class StringBufferMessage implements MutableMessage {
 	
-	private Properties properties=new Properties();
+	private StringBuffer content=new StringBuffer();
 	private boolean linked=true;
 
 	public StringBufferMessage(String content) {
 		StringBuffer ct = new StringBuffer(content);
 		ct.append(":"+ct.hashCode());
-		setProperty("content", ct);
+		setContent(ct);
 	}
 	
-	@Override
-	public Object getProperty(Object property) {
-		return properties.get(property);
-	}
-
-	@Override
-	public void setProperty(Object property, Object value) {
-		properties.put(property, value);
-		
-	}
 
 	@Override
 	public boolean isLinked() {
@@ -34,6 +23,17 @@ public class StringBufferMessage implements MutableMessage {
 	@Override
 	public void unlink() {
 		linked=false;
+		
+	}
+
+	@Override
+	public Object getContent() {
+		return content;
+	}
+
+	@Override
+	public void setContent(Object value) {
+		this.content=(StringBuffer) value;
 		
 	}
 

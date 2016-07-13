@@ -95,14 +95,14 @@ public class ComplexProcessorChain extends DefaultSerialProcessorChain implement
 	@Override
 	public void onProcessorProcessing(Message message, Processor processor) {
 
-			LOG.info(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")["+message.getProperty("content")+"]-"+message);
+			LOG.info(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")["+message.getContent()+"]-"+message);
 		
 	}
 
 	@Override
 	public void onProcessorEnd(Message message, Processor processor) {
 		
-		LOG.info(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")["+message.getProperty("content")+"]-"+message);
+		LOG.info(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")["+message.getContent()+"]-"+message);
 		
 	}
 

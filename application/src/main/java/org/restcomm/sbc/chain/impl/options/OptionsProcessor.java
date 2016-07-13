@@ -43,7 +43,7 @@ public class OptionsProcessor extends DefaultProcessor implements ProcessorCallB
 	private static transient Logger LOG = Logger.getLogger(OptionsProcessor.class);
 	private String name="OPTIONS Processor";
 	
-	private ProcessorChain chain;
+
 	
 	public OptionsProcessor(ProcessorChain chain) {
 		super(chain);
@@ -89,7 +89,7 @@ public class OptionsProcessor extends DefaultProcessor implements ProcessorCallB
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		doProcess(m.getProperty("content"));
+		doProcess(m.getContent());
 	}
 	
 	@Override

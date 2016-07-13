@@ -62,11 +62,11 @@ public class SimpleProcessor extends DefaultProcessor implements ProcessorCallBa
 		}
 		MutableMessage m=(MutableMessage) message;
 		
-		String content=((StringBuffer) m.getProperty("content")).toString();
+		String content=((StringBuffer) m.getContent()).toString();
 		
 		//content="*"+content.replaceAll("little", "big");
 		content="*"+content;
-		m.setProperty("content", new StringBuffer(content));
+		m.setContent(new StringBuffer(content));
 		LOG.debug("<< doProcess() Callback from processor: "+getName());
 		
 		

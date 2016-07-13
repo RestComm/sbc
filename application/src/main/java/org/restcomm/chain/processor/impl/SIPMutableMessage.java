@@ -1,27 +1,26 @@
 package org.restcomm.chain.processor.impl;
 
-import java.util.Properties;
 
 import javax.servlet.sip.SipServletMessage;
 import org.restcomm.chain.processor.impl.MutableMessage;
 
 public class SIPMutableMessage implements  MutableMessage {
 	
-	private Properties properties=new Properties();
+	private SipServletMessage  content;
 	private boolean linked=true;
 	
 	public SIPMutableMessage(SipServletMessage content) {	
-		setProperty("content", content);
+		this.content=content;
 	}
 	
 	@Override
-	public SipServletMessage getProperty(Object property) {
-		return (SipServletMessage) properties.get(property);
+	public SipServletMessage getContent() {
+		return content;
 	}
 
 	@Override
-	public void setProperty(Object property, Object value) {
-		properties.put(property, value);
+	public void setContent(Object content) {
+		this.content=(SipServletMessage) content;
 		
 	}
 
@@ -36,4 +35,5 @@ public class SIPMutableMessage implements  MutableMessage {
 		return linked;
 	}
 
+	
 }

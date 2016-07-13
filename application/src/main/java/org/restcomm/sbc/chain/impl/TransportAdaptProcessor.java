@@ -130,7 +130,7 @@ public class TransportAdaptProcessor extends DefaultProcessor implements Process
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setProperty("content", doProcess(m.getProperty("content")));
+		m.setContent(doProcess(m.getContent()));
 	}
 	
 	@Override

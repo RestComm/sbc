@@ -29,7 +29,7 @@ package org.restcomm.chain.processor;
  */
 public interface Message {
 	
-	Object getProperty(Object property) ;
+	Object getContent() ;
 	
 	/**
 	 * unlinks itself from its processor container

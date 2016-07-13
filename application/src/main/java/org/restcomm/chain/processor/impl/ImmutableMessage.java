@@ -30,6 +30,6 @@ import org.restcomm.chain.processor.Message;
  *
  */
 public interface ImmutableMessage extends Message {
-	Object getProperty(Object property) ;
+	Object getContent() ;
 	
 }
