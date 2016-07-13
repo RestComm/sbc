@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,30 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
+package org.restcomm.sbc.bo;
 
+import java.util.List;
 
-package org.restcomm.chain;
+import org.restcomm.sbc.annotations.concurrency.NotThreadSafe;
 
-import java.io.IOException;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:46:03
- * @class   MalformedProcessorChainException.java
- * @project Servlet2.5SBC
+ * @date    1/7/2016 19:07:51
+ * @class   CDRList.java
  *
  */
-public class MalformedProcessorChainException extends IOException {
+@NotThreadSafe
+public final class CDRList {
+    private final List<CDR> cdrs;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6729234266438465041L;
+    public CDRList(final List<CDR> cdrs) {
+        super();
+        this.cdrs = cdrs;
+    }
 
-	public MalformedProcessorChainException(String message) {
-		super(message);
-		
-	}
-	
-
+    public List<CDR> getCDRs() {
+        return cdrs;
+    }
 }

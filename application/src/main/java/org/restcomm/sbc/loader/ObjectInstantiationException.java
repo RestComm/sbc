@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,30 +17,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-
-
-package org.restcomm.chain;
-
-import java.io.IOException;
+package org.restcomm.sbc.loader;
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:46:03
- * @class   MalformedProcessorChainException.java
- * @project Servlet2.5SBC
- *
+ * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-public class MalformedProcessorChainException extends IOException {
+public final class ObjectInstantiationException extends Exception {
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6729234266438465041L;
+    public ObjectInstantiationException() {
+        super();
+    }
 
-	public MalformedProcessorChainException(String message) {
-		super(message);
-		
-	}
-	
+    public ObjectInstantiationException(final String message) {
+        super(message);
+    }
 
+    public ObjectInstantiationException(final Throwable cause) {
+        super(cause);
+    }
+
+    public ObjectInstantiationException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -20,7 +20,6 @@
 package org.restcomm.sbc.testsuite;
 
 import org.junit.Test;
-import org.restcomm.chain.impl.DefaultParallelProcessorChain;
 import org.restcomm.chain.impl.MalformedProcessorChainException;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
@@ -39,33 +38,32 @@ import org.apache.log4j.Logger;
  * @class   ParallelChainTest.java
  *
  */
-public class ParallelChainTest extends DefaultParallelProcessorChain implements ProcessorListener, ProcessorCallBack {
+public class ParallelChainTest implements ProcessorListener {
 private static transient Logger LOG = Logger.getLogger(ParallelChainTest.class);
 	
 	protected Object preMessage;
 	protected Object postMessage;
 	
-	
-	
-	
-	
-	
+	public ParallelChainTest() {
+		
+	}
 	
 	@Test//(expected = MalformedProcessorChainException.class)
     public void processShouldThrowMalformedProcessorChainExceptionHole() {
 		Throwable e = null; 
     	// initialize the chain
  		// works with original message
-		Processor       c1=  new SimpleDPIProcessor(this);
-		Processor       c2=  new SimpleDPIProcessor(this);
+		SimpleParallelProcessorChain chain=new SimpleParallelProcessorChain();
+		Processor       c1=  new SimpleDPIProcessor("c1", chain);
+		Processor       c2=  new SimpleDPIProcessor("c2", chain);
 		   
  		// set the chain of responsibility
  		
  		
  			try {
-				link(c1);
-				link(c2);
-				link(null);
+				chain.link(c1);
+				chain.link(c2);
+				chain.link(null);
 				
 	 			
 			} catch (MalformedProcessorChainException e1) {
@@ -79,16 +77,17 @@ private static transient Logger LOG = Logger.getLogger(ParallelChainTest.class);
     	 
     	// initialize the chain
  		// works with original message
-		Processor       c1=  new SimpleDPIProcessor(this);
-		Processor       c3=  new SimpleDPIProcessor(this); 	
+		SimpleParallelProcessorChain chain=new SimpleParallelProcessorChain();
+		Processor       c1=  new SimpleDPIProcessor("c1", chain);
+		Processor       c3=  new SimpleDPIProcessor("c3", chain); 	
  		
  		// set the chain of responsibility
  		
  		
  			try {
-				link(c1);
-				link(c1);
-	 			link(c3);
+				chain.link(c1);
+				chain.link(c1);
+	 			chain.link(c3);
 	 			
 	 			
 			} catch (MalformedProcessorChainException e1) {
@@ -102,17 +101,23 @@ private static transient Logger LOG = Logger.getLogger(ParallelChainTest.class);
     	 
     	// initialize the chain
  		// works with original message
-		Processor       c1=  new SimpleDPIProcessor(this);
-		Processor       c2=  new SimpleDPIProcessor(this);
-		Processor       c3=  new SimpleDPIProcessor(this); 
+		SimpleParallelProcessorChain chain=new SimpleParallelProcessorChain();
+		Processor       c1=  new SimpleDPIProcessor("c1", chain);
+		Processor       c2=  new SimpleDPIProcessor("c2", chain);
+		Processor       c3=  new SimpleDPIProcessor("c3", chain); 
  		
  		// set the chain of responsibility
- 		   this.addProcessorListener(this);
+ 		   chain.addProcessorListener(this);
+ 		
+ 		   c1.addProcessorListener(this);
+ 		   c2.addProcessorListener(this);
+ 		   c3.addProcessorListener(this);
+ 		   
  		
  			try {
-				link(c1);
-				link(c2);
-	 			link(c3);	
+				chain.link(c1);
+				chain.link(c2);
+	 			chain.link(c3);	
 	 			
 			} catch (MalformedProcessorChainException e1) {
 				fail(e1.getMessage());
@@ -123,7 +128,7 @@ private static transient Logger LOG = Logger.getLogger(ParallelChainTest.class);
     	
     	
 		try {
-			process(message);
+			chain.process(message);
 		} catch (ProcessorParsingException e) {
 			fail(e.getMessage());
 		}
@@ -157,25 +162,6 @@ private static transient Logger LOG = Logger.getLogger(ParallelChainTest.class);
 		test.processShouldTraverseChain();
 	}
 
-	@Override
-	public ProcessorCallBack getCallback() {
-		return this;
-	}
-
-	@Override
-	public void doProcess(Message message) throws ProcessorParsingException {
-		
-	}
-
-	@Override
-	public void setName(String name) {
-		
-	}
 	
-	@Override
-	public String getVersion() {
-		return "1.0.0";
-	}
-
 	
 }

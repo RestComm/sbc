@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,30 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
+package org.restcomm.sbc.dao;
 
+import java.util.List;
 
-package org.restcomm.chain;
-
-import java.io.IOException;
+import org.restcomm.sbc.bo.Account;
+import org.restcomm.sbc.bo.Sid;
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:46:03
- * @class   MalformedProcessorChainException.java
- * @project Servlet2.5SBC
- *
+ * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-public class MalformedProcessorChainException extends IOException {
+public interface AccountsDao {
+    void addAccount(Account account);
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6729234266438465041L;
+    Account getAccount(Sid sid);
 
-	public MalformedProcessorChainException(String message) {
-		super(message);
-		
-	}
-	
+    Account getAccount(String name);
 
+    List<Account> getAccounts(Sid sid);
+
+    void removeAccount(Sid sid);
+
+    void updateAccount(Account account);
 }

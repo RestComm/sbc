@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,30 +17,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
+package org.restcomm.sbc.dao;
 
+import java.util.List;
 
-package org.restcomm.chain;
+import org.joda.time.DateTime;
+import org.restcomm.sbc.bo.CDR;
+import org.restcomm.sbc.bo.CDRFilter;
 
-import java.io.IOException;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:46:03
- * @class   MalformedProcessorChainException.java
- * @project Servlet2.5SBC
+ * @date    1/7/2016 17:13:03
+ * @class   CDRDao.java
  *
  */
-public class MalformedProcessorChainException extends IOException {
+public interface CDRDao {
+    void addCDR(CDR cdr);
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6729234266438465041L;
+    CDR getCDR(int uid);
 
-	public MalformedProcessorChainException(String message) {
-		super(message);
-		
-	}
+    List<CDR> getCDRs();
+
+    List<CDR> getCDRsByRecipient(String recipient);
+
+    List<CDR> getCDRsBySender(String sender);
+
+    List<CDR> getCDRsByStatus(int status);
+
+    List<CDR> getCDRsByStartTime(DateTime startTime);
+
+
+    void removeCDR(int uid);
+
+    void updateCDR(CDR cdr);
+
 	
 
+    List<CDR> getCDRs(CDRFilter filter);
+
+    Integer getTotalCDRs(CDRFilter filter);
 }

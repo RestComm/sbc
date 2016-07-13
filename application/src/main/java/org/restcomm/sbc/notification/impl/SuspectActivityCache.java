@@ -81,14 +81,14 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
 
 
 	@Override
-	public Object getProperty(Object property) {
-		return cache.get((String) property);
+	public Object getContent() {
+		return cache.get("content");
 	}
 
 
 	@Override
-	public void setProperty(Object property, Object value) {
-		this.update((String)property, (SuspectActivityElectable)value);
+	public void setContent(Object value) {
+		this.update("content", (SuspectActivityElectable)value);
 		
 	}
 

@@ -109,7 +109,7 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setProperty("content", doProcess(m.getProperty("content")));
+		m.setContent(doProcess(m.getContent()));
 	}
 	
 	@Override
@@ -119,13 +119,13 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 	
 	@Override
 	public void onProcessorProcessing(Message message, Processor processor) {
-		SipServletMessage m = (SipServletMessage) message.getProperty("content");
+		SipServletMessage m = (SipServletMessage) message.getContent();
 		LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[<-"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
 	}
 
 	@Override
 	public void onProcessorEnd(Message message, Processor processor) {
-		SipServletMessage m = (SipServletMessage) message.getProperty("content");
+		SipServletMessage m = (SipServletMessage) message.getContent();
 		LOG.debug(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")[<-"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
 		
 	}

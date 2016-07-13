@@ -1,0 +1,43 @@
+CREATE DATABASE IF NOT EXISTS sbc;
+USE sbc;
+
+CREATE TABLE accounts (
+sid VARCHAR(34) NOT NULL PRIMARY KEY,
+date_created DATETIME NOT NULL,
+date_updated DATETIME NOT NULL,
+email_address MEDIUMTEXT NOT NULL,
+friendly_name VARCHAR(64) NOT NULL,
+account_sid VARCHAR(34),
+type VARCHAR(8) NOT NULL,
+status VARCHAR(16) NOT NULL,
+auth_token VARCHAR(32) NOT NULL,
+role VARCHAR(64) NOT NULL,
+uri MEDIUMTEXT NOT NULL
+);
+
+CREATE TABLE "cdr" (
+	uid INT(11) NOT NULL PRIMARY KEY,
+	fromUser VARCHAR(255) NULL DEFAULT NULL,
+	toUser VARCHAR(255) NULL DEFAULT NULL,
+	fromIP VARCHAR(255) NULL DEFAULT NULL,
+	startTime DATETIME NULL DEFAULT NULL,
+	endTime DATETIME NULL DEFAULT NULL,
+	duration INT(11) NULL DEFAULT NULL,
+	status INT(6) NULL DEFAULT NULL,
+
+);
+
+
+INSERT INTO accounts VALUES (
+"ACae6e420f425248d6a26948c17a9e2acf",
+Date("2012-04-24"),
+Date("2012-04-24"),
+"administrator@company.com",
+"Default Administrator Account",
+null,
+"Full",
+"uninitialized",
+"77f8c12cc7b8f8423e5c38b035249166",
+"Administrator",
+"/2012-04-24/Accounts/ACae6e420f425248d6a26948c17a9e2acf");
+

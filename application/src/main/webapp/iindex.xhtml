@@ -1,0 +1,19 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+</h:head>
+<h:body>
+    <h1>index</h1>
+    <h:outputLink value="logout">logout</h:outputLink>
+    <pre>
+    subject = <h:outputText value="#{indexBean.subject}"/>
+    principal = <h:outputText value="#{indexBean.subject.principal}"/>
+    session = <h:outputText value="#{indexBean.subject.session}"/>
+    role user = <h:outputText value="#{indexBean.subject.hasRole('user')}"/>
+    role admin = <h:outputText value="#{indexBean.subject.hasRole('admin')}"/>
+    </pre>
+
+    <p:editor value="&lt;b&gt;primefaces"/>
+</h:body>
+</html>

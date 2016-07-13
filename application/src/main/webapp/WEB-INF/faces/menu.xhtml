@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core" 
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:composition>
+		
+
+		<p:menubar>
+			<p:submenu label="#{msg['menu.settings']}" icon="ui-icon-gear" >			
+					<p:submenu label="#{msg['word.language']}" icon="ui-icon-gear" url="#">
+						
+					</p:submenu>	
+			</p:submenu>
+			<p:submenu label="#{msg['menu.network']}" icon="ui-icon-link" >
+				<p:menuitem value="#{msg['net.interfaces']}"  url="/interfaces.xhtml"></p:menuitem>
+				
+			</p:submenu>
+			<p:submenu label="#{msg['menu.cache']}" icon="ui-icon-link" >
+				<p:menuitem value="#{msg['cache.locations']}" url="/locations.xhtml"></p:menuitem>
+				<p:menuitem value="#{msg['cache.calls']}"     url="/calls.xhtml"></p:menuitem>
+			</p:submenu>
+			<p:submenu label="#{msg['menu.reports']}" icon="ui-icon-link" >	
+				<p:menuitem value="#{msg['report.cdrs']}"     url="/cdrs.xhtml"></p:menuitem>
+			</p:submenu>
+				<f:facet name="options">
+	             	<h:form>
+						<p:panelGrid columns="2">								
+							#{msg['word.language']} : 
+							<p:selectOneMenu value="#{language.localeCode}" onchange="submit()"
+								valueChangeListener="#{language.countryLocaleCodeChanged}">
+					   			<f:selectItems value="#{language.countriesInMap}" /> 
+					   		</p:selectOneMenu>		
+						</p:panelGrid>
+						
+      				</h:form>
+      				
+        		</f:facet>
+		</p:menubar>
+	</ui:composition>
+</html>

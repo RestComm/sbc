@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+  <modelVersion>4.0.0</modelVersion>
+  
   <parent>
     <artifactId>restcomm-sbc</artifactId>
     <groupId>org.restcomm</groupId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
+ 
 
   <artifactId>sbc-testsuite</artifactId>
 
@@ -15,13 +18,13 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
+   
       <scope>provided</scope>
     </dependency>
 	<dependency>
 		<groupId>junit</groupId>
 		<artifactId>junit</artifactId>
-		<version>${junit.version}</version>
+	
 	</dependency>    
 
     <dependency>
@@ -34,7 +37,7 @@
     <dependency>
       <groupId>org.mobicents.servlet.sip.containers</groupId>
       <artifactId>sip-servlets-catalina-7</artifactId>
-      <version>${sipservletapi.version}</version>
+     
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -69,7 +72,6 @@
     <dependency>
       <groupId>org.mobicents.servlet.sip</groupId>
       <artifactId>sip-servlets-spec</artifactId>
-      <version>${sipservletapi.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -90,7 +92,6 @@
     <dependency>
       <groupId>javax.sip</groupId>
       <artifactId>jain-sip-api</artifactId>
-      <version>1.2</version>
       <scope>test</scope>
     </dependency>
 	
@@ -98,7 +99,6 @@
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-      <version>1.4</version>
       <scope>test</scope>
     </dependency>
 
@@ -118,7 +118,7 @@
     <dependency>
       <groupId>org.mobicents.servlet.sip</groupId>
       <artifactId>sip-servlets-application-router</artifactId>
-      <version>${sipservletapi.version}</version>
+
       <scope>test</scope>
     </dependency>
 
@@ -266,5 +266,4 @@
       </snapshots>
     </pluginRepository>
   </pluginRepositories>
-  <version>1.0.0-SNAPSHOT</version>
-</project>
+  </project>
