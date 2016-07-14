@@ -28,5 +28,5 @@ package org.restcomm.chain.processor.impl;
  */
 public interface MutableMessage extends ImmutableMessage {
 	
-	void setProperty(Object property, Object value);
+	void setContent(Object value);
 }

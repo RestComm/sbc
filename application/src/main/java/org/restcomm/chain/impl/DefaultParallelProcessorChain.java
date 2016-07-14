@@ -19,10 +19,11 @@
  *******************************************************************************/
 package org.restcomm.chain.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.HashMap;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ParallelProcessorChain;
@@ -49,9 +50,8 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 	
 	private Processor nextLink;
 	
-	private List<Thread> threads = Collections.synchronizedList(new ArrayList<Thread>());
 	
-	private Hashtable<Integer, Processor> processors=new Hashtable<Integer, Processor>();
+	private HashMap<Integer, Processor> processors=new HashMap<Integer, Processor>();
 	
 	public DefaultParallelProcessorChain() {
 		super();
@@ -73,42 +73,21 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 			
 			fireProcessingEvent(immutableMessage, (Processor) getCallback());
 			
+			ExecutorService taskExecutor = Executors.newFixedThreadPool(processors.size());
+			
 			for(final Processor processor:processors.values()) {
-				
-					Thread thread=new Thread(
-							  new Runnable() {
-							      public void run() {			
-									try {			
-										fireProcessingEvent(immutableMessage, processor);
-										//processor.process(message);
-										processor.getCallback().doProcess(immutableMessage);
-										if(chain!=null) {
-											LOG.debug("DPC "+type+" from callback "+getCallback()+" chain "+chain);			
-										}
-										fireEndEvent(immutableMessage, processor);
-										
-									} catch (ProcessorParsingException e) {
-										LOG.error(e.getMessage());
-										e.printStackTrace();
-									}	
-							      }
-							  }
-					);
-					
-					threads.add(thread);
-					thread.start();
-					
-				}
-			synchronized(threads) {
-				for(Thread t:threads) {
-					try {
-						t.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+				taskExecutor.execute(new ProcessorTask(immutableMessage, processor));
 			}
+			
+			taskExecutor.shutdown();
+			
+			try {
+			  taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				LOG.error(e.getMessage());
+			 
+			}
+			
 			if(message!=null) {
 				LOG.debug("<< DPC "+type+" output message ["+message+"]");
 			}
@@ -160,6 +139,34 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 		this.nextLink=processor;
 		
 	}
-	
+
+	class ProcessorTask implements Runnable {
+		
+		private ImmutableMessage message;
+		private Processor processor;
+
+		ProcessorTask(ImmutableMessage message, Processor processor) {
+			this.message=message;
+			this.processor=processor;
+		}
+
+		@Override
+		public void run() {
+			try {			
+				fireProcessingEvent(message, processor);
+				processor.getCallback().doProcess(message);
+				if(chain!=null) {
+					LOG.debug("DPC "+type+" from callback "+getCallback()+" chain "+chain);			
+				}
+				fireEndEvent(message, processor);
+				
+			} catch (ProcessorParsingException e) {
+				LOG.error(e.getMessage());
+				e.printStackTrace();
+			}	
+			
+		}
+		
+	}
 
 }

@@ -18,7 +18,19 @@
                 <!-- Cache settings. -->
                 <cache-path>${sbc:home}/cache</cache-path>
                 <cache-uri>/sbc/cache</cache-uri>
-
+				<!-- Each permission is represented as three columns Domain:Action:Target 
+			Possible actions are Create, Read, Modify, Delete. -->
+		<security-roles>
+			<role name="Developer">
+				<permission>SBC:*:Accounts</permission>
+				<permission>SBC:*:CDR</permission>
+				<!-- 
+				<permission>RestComm:Read:AvailablePhoneNumbers</permission>
+				-->
+				<permission>SBC:*:Calls</permission>
+				
+			</role>
+		</security-roles>
                
                 <!-- The URL to the errors dictionary. -->
                 <error-dictionary-uri>/sbc/errors</error-dictionary-uri>
@@ -78,6 +90,8 @@
                         </militarized-zone-target>
                 </routing-policy>
                 
+             
+                
                 <militarized-zone>
                 	<iface-name>eth0</iface-name>
                 	<ip-address>192.168.88.2</ip-address>
@@ -120,7 +134,7 @@
                 <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
         </dao-manager>
 -->
-        <dao-manager class="org.mobicents.servlet.sbc.dao.mybatis.MybatisDaoManager">
+        <dao-manager class="org.restcomm.sbc.dao.mybatis.MybatisDaoManager">
                 <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml
                 </configuration-file>
                 <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>

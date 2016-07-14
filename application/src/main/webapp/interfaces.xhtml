@@ -13,7 +13,7 @@
 		<ui:define name="content">
 			<p:fieldset legend="${msg['net.interfaces']}" style="margin-bottom:20px">
 			
-				<p:dataTable var="eth" value="#{ifs.networkPoints}">
+				<p:dataTable var="eth" value="#{ifs.networkPoints}" tableStyle="width:auto">
 					<p:column headerText="${msg['net.mac']}">
 						<h:outputText value="#{eth.macAddress}" />
 					</p:column>

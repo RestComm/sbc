@@ -69,7 +69,7 @@ public class DispatchProcessor extends DefaultProcessor
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		SipServletMessage m=(SipServletMessage) message.getContent();
 		try {
 			m.send();
 		} catch (IOException e) {

@@ -94,7 +94,8 @@ public class SanityCheckProcessor extends DefaultProcessor implements ProcessorC
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		doProcess(m.getProperty("content"));
+		doProcess(m.getContent());
+		
 	}
 	
 	@Override

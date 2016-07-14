@@ -87,8 +87,8 @@ private boolean ok=true;
 
 	@Override
 	public void onProcessorEnd(Message message, Processor processor) {
-		String content=(String) message.getProperty("content").toString();
-		LOG.info(">>>>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")["+message.getProperty("content")+"]-"+message);	
+		String content=(String) message.getContent().toString();
+		LOG.info(">>>>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")["+message.getContent()+"]-"+message);	
 		// 4 processors traversed is ok
 		ok&=content.startsWith("****");
 		

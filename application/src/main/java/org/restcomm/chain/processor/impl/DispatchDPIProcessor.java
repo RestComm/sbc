@@ -79,7 +79,7 @@ public class DispatchDPIProcessor extends DefaultEndpointProcessor
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		SipServletMessage m=(SipServletMessage) message.getContent();
 		try {
 			m.send();
 		} catch (IOException e) {

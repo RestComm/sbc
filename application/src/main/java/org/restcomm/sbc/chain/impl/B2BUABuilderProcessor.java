@@ -219,7 +219,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setProperty("content", doProcess(m.getProperty("content")));
+		m.setContent(doProcess(m.getContent()));
 	}
 	
 	@Override

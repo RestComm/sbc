@@ -93,7 +93,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	
 	private void processRequest(SIPMutableMessage message) {
 		
-		SipServletRequest dmzRequest=(SipServletRequest) message.getProperty("content");
+		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
 		
 		int expires=dmzRequest.getExpires();
 		Address contactAddress = null;
@@ -126,7 +126,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			if(!locationManager.isDmzAlive(user)) {
 				// if it does not come from pre-authenticated uri
 				if(!locationManager.match(user, host, port)) {
-					message.setProperty("content", dmzRequest);
+					message.setContent(dmzRequest);
 					return;
 				}
 			}
@@ -155,12 +155,12 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			
 			message.unlink();
 			
-			message.setProperty("content", dmzRequest);
+			message.setContent(dmzRequest);
 			
 		}
 		
 		
-		message.setProperty("content", dmzRequest);
+		message.setContent(dmzRequest);
 		
 		
 		
@@ -168,7 +168,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	
 	private void processResponse(SIPMutableMessage message) {
 		
-		SipServletResponse mzResponse=(SipServletResponse) message.getProperty("content");
+		SipServletResponse mzResponse=(SipServletResponse) message.getContent();
 		
 		Location location;
 		
@@ -216,7 +216,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 				
 			}
 		}
-		message.setProperty("content", mzResponse);
+		message.setContent(mzResponse);
 		
 		
 	}
@@ -248,7 +248,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m  =(SIPMutableMessage) message;
 		
-		SipServletMessage sm = m.getProperty("content");
+		SipServletMessage sm = m.getContent();
 		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> doProcess()");

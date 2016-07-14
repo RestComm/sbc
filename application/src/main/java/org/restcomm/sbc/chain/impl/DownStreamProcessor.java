@@ -146,7 +146,7 @@ public class DownStreamProcessor extends DefaultProcessor implements ProcessorCa
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setProperty("content", doProcess(m.getProperty("content")));
+		m.setContent(doProcess(m.getContent()));
 	}
 	
 	@Override

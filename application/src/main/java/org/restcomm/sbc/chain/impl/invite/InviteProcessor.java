@@ -43,7 +43,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
-	private ProcessorChain chain;
+
 	
 	public InviteProcessor(ProcessorChain chain) {
 		super(chain);
@@ -89,7 +89,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
-		doProcess(m.getProperty("content"));
+		doProcess(m.getContent());
 	}
 	
 	@Override

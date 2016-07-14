@@ -85,7 +85,7 @@ public class SimpleDPIProcessor extends DefaultDPIProcessor implements Processor
 		ImmutableMessage m=(ImmutableMessage) message;
 			
 	
-		String content=((StringBuffer) m.getProperty("content")).toString();
+		String content=((StringBuffer) m.getContent()).toString();
 		
 		content="*"+content.replaceAll("big", "little");
 		//m.setProperty("content", new StringBuffer(content));

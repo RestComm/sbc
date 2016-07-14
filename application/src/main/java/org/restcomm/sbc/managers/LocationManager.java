@@ -23,18 +23,12 @@ package org.restcomm.sbc.managers;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 
-
-
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.CloseableIteratorCollection;
+
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 

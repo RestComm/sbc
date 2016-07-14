@@ -29,9 +29,15 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.interpol.ConfigurationInterpolator;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+
+
 import org.apache.log4j.Logger;
+import org.restcomm.sbc.dao.DaoManager;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
+import org.restcomm.sbc.loader.ObjectFactory;
+import org.restcomm.sbc.loader.ObjectInstantiationException;
+
+import com.typesafe.config.ConfigFactory;
 
 
 public final class Bootstrapper extends SipServlet {
@@ -39,6 +45,7 @@ public final class Bootstrapper extends SipServlet {
     private static final Logger logger = Logger.getLogger(Bootstrapper.class);
 
    
+    
     public Bootstrapper() {
         super();
     }
@@ -80,14 +87,32 @@ public final class Bootstrapper extends SipServlet {
         // Initialize global dependencies.
         final ClassLoader loader = getClass().getClassLoader();
         // Create the actor system.
-        final Config settings = ConfigFactory.load();
-        
-        logger.info("Ext IP:"+xml.getString("runtime-settings.external-ip"));
+        //final Config settings = ConfigFactory.load();
+        ConfigFactory.load();
+        // Create the storage system.
+        DaoManager storage = null;
+        try {
+            storage = storage(xml, loader);
+        } catch (final ObjectInstantiationException exception) {
+            throw new ServletException(exception);
+        }
+        context.setAttribute(DaoManager.class.getName(), storage);
+        ShiroResources.getInstance().set(DaoManager.class, storage);
+        ShiroResources.getInstance().set(Configuration.class, xml.subset("runtime-settings"));
+        logger.info("Extern IP:"+xml.getString("runtime-settings.external-ip"));
         Version.printVersion();
+        
         
     }
 
-
+    private DaoManager storage(final Configuration configuration, final ClassLoader loader) throws ObjectInstantiationException {
+        final String classpath = configuration.getString("dao-manager[@class]");
+        final DaoManager daoManager = (DaoManager) new ObjectFactory(loader).getObjectInstance(classpath);
+        daoManager.configure(configuration.subset("dao-manager"));
+        daoManager.start();
+        logger.info("DaoManager started");
+        return daoManager;
+    }
     
 
     private String uri(final ServletConfig config) {

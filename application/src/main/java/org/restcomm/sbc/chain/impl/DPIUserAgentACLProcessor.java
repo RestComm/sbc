@@ -62,7 +62,7 @@ public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements Pro
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> doProcess()");
 	    }
-		SipServletMessage m=(SipServletMessage) message.getProperty("content");
+		SipServletMessage m=(SipServletMessage) message.getContent();
 		
 		String userAgent=m.getHeader("User-Agent");
 		if (userAgent.contains("friendly")) {

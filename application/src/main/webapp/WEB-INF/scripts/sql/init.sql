@@ -1,0 +1,27 @@
+CREATE TABLE "restcomm_accounts" (
+"sid" VARCHAR(34) NOT NULL PRIMARY KEY,
+"date_created" DATETIME NOT NULL,
+"date_updated" DATETIME NOT NULL,
+"email_address" LONGVARCHAR NOT NULL,
+"friendly_name" VARCHAR(64) NOT NULL,
+"account_sid" VARCHAR(34),
+"type" VARCHAR(8) NOT NULL,
+"status" VARCHAR(16) NOT NULL,
+"auth_token" VARCHAR(32) NOT NULL,
+"role" VARCHAR(64) NOT NULL,
+"uri" LONGVARCHAR NOT NULL
+);
+
+
+CREATE TABLE "cdr" (
+	"uid" INT(11) NOT NULL ,
+	"fromUser" VARCHAR(255) NULL DEFAULT NULL,
+	"toUser" VARCHAR(255) NULL DEFAULT NULL,
+	"fromIP" VARCHAR(255) NULL DEFAULT NULL,
+	"startTime" DATETIME NULL DEFAULT NULL,
+	"endTime" DATETIME NULL DEFAULT NULL,
+	"duration" INT(11) NULL DEFAULT NULL,
+	"status" INT(6) NULL DEFAULT NULL,
+	PRIMARY KEY ("uid")
+);
+

@@ -19,6 +19,11 @@
 		<managed-bean-class>org.restcomm.sbc.bean.GaugeBean</managed-bean-class>
 		<managed-bean-scope>application</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>cDRBean</managed-bean-name>
+		<managed-bean-class>org.restcomm.sbc.bean.CDRBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<render-kit>
 	</render-kit>
 

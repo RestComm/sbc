@@ -13,7 +13,7 @@
 		<ui:define name="content">
 			<p:fieldset legend="${msg['cache.locations']}" style="margin-bottom:20px">
 			
-				<p:dataTable var="loc" value="#{location.locations}">
+				<p:dataTable var="loc" value="#{location.locations}" tableStyle="width:auto">
 					<p:column headerText="${msg['sip.useragent']}">
 						<h:outputText value="#{loc.userAgent}" />
 					</p:column>
