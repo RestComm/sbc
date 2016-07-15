@@ -80,6 +80,6 @@
 	<classpathentry kind="var" path="M2_REPO/com/github/tomakehurst/wiremock/1.47/wiremock-1.47-standalone.jar"/>
 	<classpathentry kind="var" path="M2_REPO/xmlunit/xmlunit/1.0/xmlunit-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/application"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/sbc-application"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

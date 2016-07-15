@@ -185,8 +185,7 @@ public class JMXManager implements
 		} catch (MalformedObjectNameException | InstanceNotFoundException
 				| IntrospectionException | ReflectionException | MBeanException
 				| IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 	}
 

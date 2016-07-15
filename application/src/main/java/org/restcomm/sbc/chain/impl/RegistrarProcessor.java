@@ -138,8 +138,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			try {
 				contactAddress=dmzResponse.getAddressHeader("Contact");
 			} catch (ServletParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("ERROR",e);
 			}
 			
 			dmzResponse.setHeader("Max-Expires", ""+minimum);
@@ -180,8 +179,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 				address = mzResponse.getRequest().getAddressHeader("Contact");
 				uri=(SipURI) address.getURI();
 			} catch (ServletParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("ERROR",e);
 			}
 			String user = ((SipURI) mzResponse.getFrom().getURI()).getUser();
 			int mzExpires = mzResponse.getRequest().getExpires();

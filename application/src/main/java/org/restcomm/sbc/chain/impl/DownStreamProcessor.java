@@ -87,11 +87,9 @@ public class DownStreamProcessor extends DefaultProcessor implements ProcessorCa
 		try {
 			forkedRequest = helper.createRequest(mzRequest, true,	headers);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		} catch (TooManyHopsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		forkedRequest.setHeader("X-SBC", "true");
 		forkedRequest.setHeader("X-Orig-Contact",forkedRequest.getHeader("Contact"));

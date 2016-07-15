@@ -7,7 +7,6 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,16 +14,17 @@ import java.util.List;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-
-
+import org.apache.log4j.Logger;
 import org.restcomm.sbc.bo.NetworkPoint;
+
 
 import static java.lang.System.out;
 
 @ManagedBean(name = "ifs")
 @SessionScoped
 public class NetworkPointBean implements Serializable {
-
+	
+	private static transient Logger LOG = Logger.getLogger(NetworkPointBean.class);
 	private static final long serialVersionUID = 1L;
 	private static int id=0;
 
@@ -35,8 +35,7 @@ public class NetworkPointBean implements Serializable {
 		try {
 			init();
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Can't Obtain Interface data", e);
 		}
 		
 	}

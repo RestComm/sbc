@@ -153,14 +153,11 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				//mzResponse.setHeader(MessageUtil.B2BUA_FINGERPRINT_HEADER, "Made in ResponseBuilder to DMZ");	
 				
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("ERROR",e);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("ERROR",e);
 			} catch (ServletParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("ERROR",e);
 			}
 			
 			if (dmzResponse.getStatus() == SipServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED) {

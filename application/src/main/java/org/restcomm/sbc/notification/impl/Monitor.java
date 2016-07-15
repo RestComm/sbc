@@ -107,8 +107,7 @@ public class Monitor implements Runnable {
 			try {
 				Thread.sleep(15000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("Thread interrupt",e);
 			}
 			
 		}

@@ -70,8 +70,7 @@ public class ComplexProcessorChain extends DefaultSerialProcessorChain implement
 			link(pc, c3);
 			
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 		this.addProcessorListener(this);

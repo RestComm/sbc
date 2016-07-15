@@ -72,8 +72,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			link(c3, c4);
 			link(c4, c5);
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 		this.addProcessorListener(this);

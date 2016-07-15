@@ -65,8 +65,7 @@ public class SimpleParallelProcessorChain extends DefaultParallelProcessorChain
 			
 			
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		//this.addProcessorListener(this);	
 		
