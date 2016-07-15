@@ -55,9 +55,11 @@
 
 	
 	<properties>
-	<asm.version>3.3.1</asm.version>
-	<jersey.version>1.19</jersey.version>
-	<json.version>20140107</json.version>
+		<scala-lang.version>2.10.1</scala-lang.version>
+		<akka.version>2.1.2</akka.version>
+		<asm.version>3.3.1</asm.version>
+		<jersey.version>1.19</jersey.version>
+		<json.version>20140107</json.version>
 		<log4j.version>1.2.17</log4j.version>
 		<slf4j.version>1.5.5</slf4j.version>
 		<junit.version>4.12</junit.version>
@@ -80,6 +82,10 @@
 		<mybatis.version>3.2.2</mybatis.version>
 		<jodatime.version>2.0</jodatime.version>
 		<mysql.version>5.1.6</mysql.version>
+		<restcomm.api.version>1.0.0.CR1</restcomm.api.version>
+		<gson.version>2.3.1</gson.version>
+		<xstream.version>1.4.2</xstream.version>
+		<libphonenumber.version>4.3</libphonenumber.version>
 		<!-- SMPP Testing -->
 	</properties>
 	
@@ -122,8 +128,14 @@
 				<artifactId>commons-lang</artifactId>
 				<version>${commons-lang.version}</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
 			<dependency>
+			    <groupId>commons-codec</groupId>
+			    <artifactId>commons-codec</artifactId>
+			    <version>1.7</version>
+			</dependency>
 			
+			<dependency>	
 				<groupId>com.typesafe</groupId>
 				<artifactId>config</artifactId>
 				<version>${config.version}</version>	
@@ -202,6 +214,18 @@
 			<artifactId>jersey-core</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
+		
+		<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>${gson.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.thoughtworks.xstream</groupId>
+				<artifactId>xstream</artifactId>
+				<version>${xstream.version}</version>
+			</dependency>
 			
 			<dependency>
 				<groupId>javax.servlet</groupId>
@@ -215,12 +239,48 @@
 				<version>${sipservletapi.version}</version>
 				<scope>provided</scope>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.mobicents.servlet.sip/restcomm.api -->
+			<dependency>
+			    <groupId>org.mobicents.servlet.sip</groupId>
+			    <artifactId>restcomm.api</artifactId>
+			    <version>${restcomm.api.version}</version>
+			</dependency>
 
+			
 			<dependency> <groupId>org.apache.tomcat</groupId> 
 				<artifactId>servlet-api</artifactId>
 				<version>${servlet-api.version}</version> 
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.mobicents.servlet.sip/restcomm.commons -->
+			<dependency>
+			    <groupId>org.mobicents.servlet.sip</groupId>
+			    <artifactId>restcomm.commons</artifactId>
+			    <version>1.0.0.FINAL</version>
+			</dependency>
+			<dependency>
+				<groupId>com.googlecode.libphonenumber</groupId>
+				<artifactId>libphonenumber</artifactId>
+				<version>${libphonenumber.version}</version>
+			</dependency>
+			
+				<!-- Message Passing -->
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+				<version>${scala-lang.version}</version>
+			</dependency>
 
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-actor_2.10</artifactId>
+				<version>${akka.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-slf4j_2.10</artifactId>
+				<version>${akka.version}</version>
+			</dependency>
 
 			<!-- Testing -->
 

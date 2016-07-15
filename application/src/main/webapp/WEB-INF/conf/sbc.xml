@@ -22,13 +22,25 @@
 			Possible actions are Create, Read, Modify, Delete. -->
 		<security-roles>
 			<role name="Developer">
-				<permission>SBC:*:Accounts</permission>
-				<permission>SBC:*:CDR</permission>
-				<!-- 
+				<permission>RestComm:*:Accounts</permission>
+				<permission>RestComm:*:Applications</permission>
+				<permission>RestComm:*:Announcements</permission>
 				<permission>RestComm:Read:AvailablePhoneNumbers</permission>
-				-->
-				<permission>SBC:*:Calls</permission>
-				
+				<permission>RestComm:*:Calls</permission>
+				<permission>RestComm:*:Clients</permission>
+				<permission>RestComm:*:Conferences</permission>
+				<permission>RestComm:Create,Delete,Read:Faxes</permission>
+				<permission>RestComm:*:IncomingPhoneNumbers</permission>
+				<permission>RestComm:Read:Notifications</permission>
+				<permission>RestComm:*:OutgoingCallerIds</permission>
+				<permission>RestComm:Delete,Read:Recordings</permission>
+				<permission>RestComm:Read,Modify:SandBoxes</permission>
+				<permission>RestComm:*:ShortCodes</permission>
+				<permission>RestComm:Read:SmsMessages</permission>
+				<permission>RestComm:Read:Transcriptions</permission>
+				<permission>RestComm:*:OutboundProxies</permission>
+				<permission>RestComm:*:EmailMessages</permission>
+				<permission>RestComm:*:Usage</permission>
 			</role>
 		</security-roles>
                
@@ -52,7 +64,10 @@
                 <!-- If set to true Restcomm will authenticate users and incoming messages
                         from those users -->
                 <authenticate>true</authenticate>
-
+				<!-- If set to true, when calling clients Restcomm will bypass LB or Proxy if set.
+		     		Default value false so call are routed through LB-->
+				<bypass-lb-for-clients>false</bypass-lb-for-clients>
+				
                 <!-- Interval time in seconds that Restcomm will send keepalive messages (OPTIONS) to registered clients -->
                 <ping-interval>60</ping-interval>
 
@@ -140,7 +155,19 @@
                 <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
                 <sql-files>${sbc:home}/WEB-INF/scripts/mariadb/sql</sql-files>
         </dao-manager>
-                
+         <!-- Adjust http client behaviour for outgoing requests -->
+		<http-client>
+			<response-timeout>5000</response-timeout>
+			<!-- Control peer certificate verification for https connections. Two modes are supported:
+				'allowall' : Disables peer certificate verification. Use it when testing.
+				'strict' : Fails requests if peer certificate is not trusted. Use it in production. -->
+			<ssl-mode>strict</ssl-mode>
+			<!-- Control whether relative URL should be resolved using hostname instead of IP Address.
+			If for any reason hostname resolution fails, IP Address will be used -->
+			<use-hostname-to-resolve-relative-url>true</use-hostname-to-resolve-relative-url>
+			<!-- Optionally provide the hostname to be used, otherwise Java will try to get the hostname of the machine JVM is running -->
+			<hostname></hostname>
+		</http-client>       
         
         <!-- Defines how RestComm communicates with the Media Server Control layer.
                 Accepted values: XMS (Dialogic XMS using JSR-309 driver) or MMS (Mobicents

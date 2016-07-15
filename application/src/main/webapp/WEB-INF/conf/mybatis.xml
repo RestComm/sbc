@@ -7,27 +7,29 @@
   <environments default="production">
     <environment id="production">
       <transactionManager type="JDBC"/>
-      <!--  
+     <!-- 
       <dataSource type="POOLED">
         <property name="driver" value="org.hsqldb.jdbcDriver"/>
-        <property name="url" value="jdbc:hsqldb:file://${data}/restcomm;ifexists=true;hsqldb.write_delay=false;shutdown=true"/>
-        <property name="username" value="sa"/>
+        <property name="url" value="jdbc:hsqldb:file://${data}/sbc;ifexists=true;hsqldb.write_delay=false;shutdown=true"/>
+        <property name="username" value="SA"/>
         <property name="password" value=""/>
       </dataSource>
-     -->
+       --> 
       <dataSource type="POOLED">
         <property name="driver" value="com.mysql.jdbc.Driver"/>
         <property name="url" value="jdbc:mysql://192.168.0.2/sbc"/>
         <property name="username" value="root"/>
         <property name="password" value="superman99"/>
       </dataSource>
-      
+     
     </environment>
   </environments>
   
   
   <mappers>
-    <mapper url="file:///${sql}/cdrs.xml"/>
+    <mapper url="file:///${sql}/call-detail-records.xml"/>
+    <mapper url="file:///${sql}/http-cookies.xml"/>
+    <mapper url="file:///${sql}/recordings.xml"/>
     <mapper url="file:///${sql}/accounts.xml"/>
   </mappers>
 </configuration>

@@ -2,7 +2,7 @@
 echo "=============================================================================="
 echo "==                   RestComm Update Uitility [Started]                     =="
 echo "==                                  - . -                                   =="
-echo "==              Thank you for running Mobicents Community code              =="
+echo "==              Thank you for running RestComm Community code              =="
 echo "==   For Commercial Grade Support, please request a TelScale Subscription   =="
 echo "==                         http://www.telestax.com/                         =="
 echo "=============================================================================="

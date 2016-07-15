@@ -19,7 +19,7 @@
 
 package org.restcomm.sbc.bo;
 
-import java.util.Calendar;
+
 
 
 /**
@@ -30,6 +30,7 @@ import java.util.Calendar;
  */
 public class Location {
 	
+	private Sid sid;
 	private String user;
 	private String host;
 	private int port;
@@ -63,21 +64,19 @@ public class Location {
 	}
 	
 	public boolean isMzExpired() {
-		//System.err.println("Actual Calendar "+Calendar.getInstance().getTimeInMillis());
-		return (Calendar.getInstance().getTimeInMillis())>=getMzExpireTimestamp()?true:false;
+		return (System.currentTimeMillis())>=getMzExpireTimestamp()?true:false;
 	}
 	
 	public long getMzMiliSecondsToExpiration() {
-		return (getMzExpireTimestamp()-(Calendar.getInstance().getTimeInMillis()));
+		return (getMzExpireTimestamp()-(System.currentTimeMillis()));
 	}
 	
 	public boolean isDmzExpired() {
-		//System.err.println("Actual Calendar "+Calendar.getInstance().getTimeInMillis());
-		return (Calendar.getInstance().getTimeInMillis())>=getDmzExpireTimestamp()?true:false;
+		return (System.currentTimeMillis())>=getDmzExpireTimestamp()?true:false;
 	}
 	
 	public long getDmzMiliSecondsToExpiration() {
-		return (getDmzExpireTimestamp()-(Calendar.getInstance().getTimeInMillis()));
+		return (getDmzExpireTimestamp()-(System.currentTimeMillis()));
 	}
 	
 	public String toString() {
@@ -110,11 +109,17 @@ public class Location {
 	}
 	
 	public void setDmzExpirationTimeInSeconds(int expires) {	
-		setDmzExpireTimestamp((Calendar.getInstance().getTimeInMillis())+(((long)expires)*1000L));	
+		setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
 	}
 	
 	public void setMzExpirationTimeInSeconds(int expires) {
-		setMzExpireTimestamp((Calendar.getInstance().getTimeInMillis())+(((long)expires)*1000L));	
+		setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
+	}
+	public Sid getSid() {
+		return sid;
+	}
+	public void setSid(Sid sid) {
+		this.sid = sid;
 	}
 	
 

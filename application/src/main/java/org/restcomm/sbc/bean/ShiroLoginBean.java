@@ -2,10 +2,10 @@ package org.restcomm.sbc.bean;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.credential.CredentialsMatcher;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
 import org.restcomm.sbc.bo.shiro.Realm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,27 +40,25 @@ public class ShiroLoginBean implements Serializable {
      */
     public void doLogin() {
     	
+    	Realm realm = new Realm();
+    	CredentialsMatcher customMatcher = new org.restcomm.sbc.bo.shiro.CredentialsMatcher();
+    	realm.setCredentialsMatcher(customMatcher);
     	
-        Factory<SecurityManager> factory = new IniSecurityManagerFactory();
-
-       
-        SecurityManager securityManager = factory.getInstance();
-        
-        
-        SecurityUtils.setSecurityManager(securityManager);
+    	SecurityManager securityManager = new DefaultSecurityManager(realm);
+    	//Make the SecurityManager instance available to the entire application:
+    	SecurityUtils.setSecurityManager(securityManager);
+    	
         Subject subject = SecurityUtils.getSubject();
-       
+        if(log.isDebugEnabled()) {
+        	log.debug("Subject "+subject.toString()+":"+subject.getPrincipal());
+        }
        
         UsernamePasswordToken token = new UsernamePasswordToken(getUsername(), getPassword(), getRememberMe());
-        Realm realm=new Realm();
-       
-        AuthenticationInfo ai=realm.getAuthenticationInfo(token);
-       
-
+        
         try {
             subject.login(token);
 
-            if (subject.hasRole("admin")) {
+            if (subject.hasRole("Administrator")) {
                 FacesContext.getCurrentInstance().getExternalContext().redirect("admin/index.xhtml");
             }
             else {

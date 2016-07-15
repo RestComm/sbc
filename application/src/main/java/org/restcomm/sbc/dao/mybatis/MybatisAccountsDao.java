@@ -29,12 +29,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.joda.time.DateTime;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.Sid;
-import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
@@ -156,6 +157,17 @@ public final class MybatisAccountsDao implements AccountsDao {
         final URI uri = readUri(map.get("uri"));
         return new Account(sid, dateCreated, dateUpdated, emailAddress, friendlyName, accountSid, type, status, authToken,
                 role, uri);
+    }
+    @Override
+    public Account getAccountToAuthenticate(final String name) {
+        Account account = null;
+
+        account = getAccount(namespace + "getAccountByEmail", name);
+        if (account == null) {
+            account = getAccount(namespace + "getAccount", name);
+        }
+
+        return account;
     }
 
     private Map<String, Object> toMap(final Account account) {

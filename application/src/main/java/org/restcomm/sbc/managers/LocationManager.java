@@ -21,16 +21,16 @@
 package org.restcomm.sbc.managers;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
-
-
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
 
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
+import org.restcomm.sbc.bo.LocationFilter;
+import org.restcomm.sbc.bo.Sid;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -41,7 +41,6 @@ import org.restcomm.sbc.bo.Location;
  */
 public class LocationManager {
 	
-	//private Hashtable<String, Location> registers=new Hashtable<String, Location>();
 	private Cache<Object, Object> registers;
 	private static LocationManager locationManager;
 	
@@ -61,6 +60,7 @@ public class LocationManager {
 	
 	public Location register(String user, String host, int port, String userAgent, String transport, int ttl) {
 		Location location=new Location();
+		location.setSid(new Sid("LO"));
 		location.setHost(host);
 		location.setPort(port);
 		location.setUserAgent(userAgent);
@@ -114,14 +114,25 @@ public class LocationManager {
 	
 	public void setDmzExpirationTimeInSeconds(String user, int expires) {
 		Location location=getLocation(user);
-		location.setDmzExpireTimestamp((Calendar.getInstance().getTimeInMillis())+(((long)expires)*1000L));
+		location.setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
 		
 	}
 	
 	public void setMzExpirationTimeInSeconds(String user, int expires) {
 		Location location=getLocation(user);
-		location.setMzExpireTimestamp((Calendar.getInstance().getTimeInMillis())+(((long)expires)*1000L));
+		location.setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
 		
+	}
+
+	public int getTotalLocations(LocationFilter filterForTotal) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public List<Location> getLocations(LocationFilter filter) {
+		
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

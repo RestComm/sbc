@@ -19,17 +19,19 @@
  */
 package org.restcomm.sbc.dao;
 
-import org.restcomm.sbc.Configurable;
-import org.restcomm.sbc.LifeCycle;
+import org.mobicents.servlet.sip.restcomm.Configurable;
+import org.mobicents.servlet.sip.restcomm.LifeCycle;
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
 public interface DaoManager extends Configurable, LifeCycle {
     
-	CDRDao getCDRDao();
+	CallDetailRecordsDao getCallDetailRecordsDao();
 
 	AccountsDao getAccountsDao();
+	
+	RecordingsDao getRecordingsDao();
 
     
 }
