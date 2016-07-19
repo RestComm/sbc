@@ -21,7 +21,9 @@ package org.restcomm.sbc.bo;
 
 import java.util.List;
 
-import org.restcomm.sbc.annotations.concurrency.NotThreadSafe;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
+
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)

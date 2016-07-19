@@ -23,12 +23,12 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.shiro.crypto.hash.Md5Hash;
-import org.restcomm.sbc.annotations.concurrency.Immutable;
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-@Immutable
+@org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable
 public final class Sid {
     public static final Pattern pattern = Pattern.compile("[a-zA-Z0-9]{34}");
     private final String id;

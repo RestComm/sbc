@@ -22,8 +22,9 @@ package org.restcomm.sbc.bo;
 import java.net.URI;
 
 import org.joda.time.DateTime;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
 
-import org.restcomm.sbc.annotations.concurrency.Immutable;
+
 
 /**
  * Represent a user Account

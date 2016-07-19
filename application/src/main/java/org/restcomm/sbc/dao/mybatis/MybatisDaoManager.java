@@ -27,10 +27,12 @@ import java.util.Properties;
 import org.apache.commons.configuration.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.dao.AccountsDao;
-import org.restcomm.sbc.dao.CDRDao;
+import org.restcomm.sbc.dao.CallDetailRecordsDao;
 import org.restcomm.sbc.dao.DaoManager;
-import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
+import org.restcomm.sbc.dao.RecordingsDao;
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
@@ -39,7 +41,8 @@ import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
 public final class MybatisDaoManager implements DaoManager {
     private Configuration configuration;
     private AccountsDao accountsDao;
-    private CDRDao cdrDao;
+    private CallDetailRecordsDao callDetailRecordsDao;
+    private RecordingsDao recordingsDao;
    
 
     public MybatisDaoManager() {
@@ -56,9 +59,14 @@ public final class MybatisDaoManager implements DaoManager {
         return accountsDao;
     }
     @Override
-	public CDRDao getCDRDao() {
-		return cdrDao;
+	public CallDetailRecordsDao getCallDetailRecordsDao() {
+		return callDetailRecordsDao;
 	}
+    
+    @Override
+   	public RecordingsDao getRecordingsDao() {
+   		return recordingsDao;
+   	}
     
     @Override
     public void shutdown() {
@@ -91,7 +99,8 @@ public final class MybatisDaoManager implements DaoManager {
     public void start(final SqlSessionFactory sessions) {
         // Instantiate the DAO objects.
         accountsDao = new MybatisAccountsDao(sessions);
-        cdrDao      = new MybatisCDRDao(sessions);
+        callDetailRecordsDao = new MybatisCallDetailRecordsDao(sessions);
+        recordingsDao = new MybatisRecordingsDao(sessions);
       
     }
 

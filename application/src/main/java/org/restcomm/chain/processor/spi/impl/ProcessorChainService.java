@@ -57,7 +57,7 @@ public class ProcessorChainService {
 
     public ProcessorChain getProcessorChain(String name) {
     	ProcessorChain p=null;
-        try {
+        
         	
             Iterator<ProcessorChain> processors = loader.iterator();
             while (processors.hasNext()) {
@@ -67,11 +67,7 @@ public class ProcessorChainService {
                 }
                 
             }
-        } catch (ServiceConfigurationError serviceError) {
-            
-            serviceError.printStackTrace();
-
-        }
+       
         return p;
     }
 }

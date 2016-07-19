@@ -63,8 +63,7 @@ public class SimpleSerialProcessorChain extends DefaultSerialProcessorChain impl
 			link(c3, c4);
 			
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 		//this.addProcessorListener(this);

@@ -33,7 +33,9 @@ import org.apache.commons.configuration.interpol.ConfigurationInterpolator;
 
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.DaoManager;
+import org.restcomm.sbc.identity.IdentityContext;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
+import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
 
@@ -96,10 +98,18 @@ public final class Bootstrapper extends SipServlet {
         } catch (final ObjectInstantiationException exception) {
             throw new ServletException(exception);
         }
+         
         context.setAttribute(DaoManager.class.getName(), storage);
         ShiroResources.getInstance().set(DaoManager.class, storage);
         ShiroResources.getInstance().set(Configuration.class, xml.subset("runtime-settings"));
+        // Create high-level restcomm configuration
+        RestcommConfiguration.createOnce(xml);
+        // Initialize identityContext
+        IdentityContext identityContext = new IdentityContext(xml);
+        context.setAttribute(IdentityContext.class.getName(), identityContext);
+        
         logger.info("Extern IP:"+xml.getString("runtime-settings.external-ip"));
+     
         Version.printVersion();
         
         

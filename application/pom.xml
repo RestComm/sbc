@@ -47,6 +47,21 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+			    <groupId>org.mobicents.servlet.sip</groupId>
+			    <artifactId>restcomm.api</artifactId>
+			 
+		</dependency>
+		<dependency>
+			    <groupId>org.mobicents.servlet.sip</groupId>
+			    <artifactId>restcomm.commons</artifactId>		 
+		</dependency>
+		<dependency>
+				<groupId>com.googlecode.libphonenumber</groupId>
+				<artifactId>libphonenumber</artifactId>
+
+		</dependency>
 
 		<dependency>
 			<groupId>javax.sip</groupId>
@@ -144,6 +159,32 @@
 			<artifactId>jersey-core</artifactId>
 			
 		</dependency>
+		
+		<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+			</dependency>
+
+			<dependency>
+				<groupId>com.thoughtworks.xstream</groupId>
+				<artifactId>xstream</artifactId>
+			</dependency>
+			
+				<!-- Message Passing -->
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+			</dependency>
+
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-actor_2.10</artifactId>
+			</dependency>
+
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-slf4j_2.10</artifactId>
+			</dependency>
 	</dependencies>
 
 	<build>

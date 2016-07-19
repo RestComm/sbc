@@ -67,8 +67,7 @@ public class TransportAdaptProcessor extends DefaultProcessor implements Process
 		try {
 			adapter = helper.getAdapter(ConfigurationCache.getMzTransport());
 		} catch (UnavailableTransportAdapterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		return (SipServletResponse) adapter.adapt(message);
 	}
@@ -78,8 +77,7 @@ public class TransportAdaptProcessor extends DefaultProcessor implements Process
 		try {
 			adapter = helper.getAdapter(ConfigurationCache.getMzTransport());
 		} catch (UnavailableTransportAdapterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		return (SipServletRequest) adapter.adapt(mzRequest);
 			

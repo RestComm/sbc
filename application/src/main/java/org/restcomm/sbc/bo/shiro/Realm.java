@@ -39,9 +39,7 @@ import org.apache.shiro.authz.SimpleRole;
 import org.apache.shiro.authz.permission.DomainPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
-
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.bo.Account;

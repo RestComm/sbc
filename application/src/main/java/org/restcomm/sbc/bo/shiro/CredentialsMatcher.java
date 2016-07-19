@@ -24,7 +24,8 @@ import org.apache.log4j.Logger;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
-import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)

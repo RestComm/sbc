@@ -111,8 +111,7 @@ public class UpstreamRegistrarRequestProcessChain extends DefaultSerialProcessor
 			link(c3, c4);
 			link(c4, new DispatchProcessor("Dispatch", this));
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 		
@@ -165,8 +164,7 @@ public class UpstreamRegistrarResponseProcessChain extends DefaultSerialProcesso
 			link(c2, c3);
 			link(c3, new DispatchProcessor("Dispatch", this));
 		} catch (MalformedProcessorChainException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error("ERROR",e);
 		}
 		
 	}

@@ -162,7 +162,7 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 				
 			} catch (ProcessorParsingException e) {
 				LOG.error(e.getMessage());
-				e.printStackTrace();
+				
 			}	
 			
 		}

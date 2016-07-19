@@ -55,8 +55,7 @@ private boolean ok=true;
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 		assertTrue("Not Passed ok="+ok+" threads="+threadsInTerminationState, ok && threadsInTerminationState == CONCURRENT_MESSAGES);
@@ -68,8 +67,7 @@ private boolean ok=true;
 		try {
 			cpc.process(new StringBufferMessage(Thread.currentThread().getName()));
 		} catch (ProcessorParsingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("ERROR",e);
 		}
 		
 	}

@@ -25,7 +25,7 @@ import java.util.Currency;
 import java.util.Date;
 
 import org.joda.time.DateTime;
-import org.restcomm.sbc.annotations.concurrency.ThreadSafe;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.Sid;
 
