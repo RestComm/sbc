@@ -32,28 +32,36 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
 @Immutable
 public class LocationFilter {
 
-
 	private String user;
 	private String host;
 	private String userAgent;
+	private int port;
+	private String transport;
 	private Integer limit;
 	private Integer offset;
-	private String instanceid;
 	
 
-	
-
-    public LocationFilter(String user, String host,  String userAgent, Integer limit, Integer offset) throws ParseException {
-        this(user, host,  userAgent, limit, offset,null);
+    public LocationFilter(String user, String host, int port, String transport, String userAgent, Integer limit, Integer offset) throws ParseException {
+        this(user, host, port, transport, userAgent, limit, offset, null);
     }
 
-    public LocationFilter(String user, String host,  String userAgent, Integer limit, Integer offset, String instanceId) throws ParseException {
-       
-        if (instanceId != null && !instanceId.isEmpty()) {
-            this.instanceid = instanceId;
-        } else {
-            this.instanceid = null;
-        }
+    public LocationFilter(String user, String host, int port, String transport, String userAgent, Integer limit, Integer offset, String instanceId) throws ParseException {
+        //
+    	// The LIKE keyword uses '%' to match any (including 0) number of characters, and '_' to match exactly one character
+        // Add here the '%' keyword so +15126002188 will be the same as 15126002188 and 6002188
+        if (user != null)
+            user = "%".concat(user);
+        if (host != null)
+            host = "%".concat(host);
+        
+        this.port = port;
+        this.transport = transport;
+        this.host = host;
+        this.user = user;
+        
+        this.limit = limit;
+        this.offset = offset;
+        
     }
 
     
@@ -66,7 +74,6 @@ public class LocationFilter {
         return offset;
     }
 
-    public String getInstanceid() { return instanceid; }
 
 	public String getUser() {
 		return user;
@@ -99,5 +106,21 @@ public class LocationFilter {
 
 	public void setOffset(Integer offset) {
 		this.offset = offset;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getTransport() {
+		return transport;
+	}
+
+	public void setTransport(String transport) {
+		this.transport = transport;
 	}
 }

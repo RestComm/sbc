@@ -30,7 +30,6 @@ package org.restcomm.sbc.bo;
  */
 public class Location {
 	
-	private Sid sid;
 	private String user;
 	private String host;
 	private int port;
@@ -114,13 +113,6 @@ public class Location {
 	
 	public void setMzExpirationTimeInSeconds(int expires) {
 		setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
-	}
-	public Sid getSid() {
-		return sid;
-	}
-	public void setSid(Sid sid) {
-		this.sid = sid;
-	}
-	
+	}	
 
 }

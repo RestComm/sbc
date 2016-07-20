@@ -30,7 +30,7 @@ import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
-import org.restcomm.sbc.bo.Sid;
+
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -60,7 +60,6 @@ public class LocationManager {
 	
 	public Location register(String user, String host, int port, String userAgent, String transport, int ttl) {
 		Location location=new Location();
-		location.setSid(new Sid("LO"));
 		location.setHost(host);
 		location.setPort(port);
 		location.setUserAgent(userAgent);
@@ -77,7 +76,8 @@ public class LocationManager {
 		return (Location) registers.get(user);
 	}
 	
-	public Collection<Location> getLocations() {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Collection<Location> getLocations() {	
 		ArrayList al=new ArrayList(registers.values());
 		//Collections.sort(al);
 		return al;
@@ -125,14 +125,67 @@ public class LocationManager {
 	}
 
 	public int getTotalLocations(LocationFilter filterForTotal) {
-		// TODO Auto-generated method stub
-		return 0;
+		int counter = 0;
+		
+		for(Object l:registers.values()) {
+			Location location=(Location)l;
+			String fHost=filterForTotal.getHost();
+			String fUser=filterForTotal.getUser();
+			String fTransport=filterForTotal.getTransport();
+			
+			if(fHost!=null) {
+				if(!location.getHost().startsWith(fHost.replace("%", "")))
+					continue;	
+			}
+			if(fUser!=null) {
+				if(!location.getUser().startsWith(fUser.replace("%", ""))) 
+					continue;	
+			}
+			if(fTransport!=null) {
+				if(!location.getTransport().startsWith(fTransport))
+					continue;	
+			}
+			counter++;	
+		}
+		return counter;
 	}
 
-	public List<Location> getLocations(LocationFilter filter) {
+	public List<Location> getLocations(LocationFilter filter) {	
+		int offsetCounter=0;
+		int limitCounter=0;
+		int limit=filter.getLimit();
+		int offset=filter.getOffset();
 		
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Location> locations=new ArrayList<Location>();
+		
+		for(Object l:registers.values()) {
+			Location location=(Location)l;
+			String fHost=filter.getHost();
+			String fUser=filter.getUser();
+			String fTransport=filter.getTransport();
+			
+			if(fHost!=null) {
+				if(!location.getHost().startsWith(fHost.replace("%", "")))
+					continue;	
+			}
+			if(fUser!=null) {
+				if(!location.getUser().startsWith(fUser.replace("%", ""))) 
+					continue;	
+			}
+			if(fTransport!=null) {
+				if(!location.getTransport().startsWith(fTransport))
+					continue;	
+			}
+			offsetCounter++;
+			
+			if(offsetCounter>offset && limitCounter<limit) {
+				locations.add(location);
+				limitCounter++;
+			}
+				
+		}
+		return locations;
+				
 	}
 	
 	

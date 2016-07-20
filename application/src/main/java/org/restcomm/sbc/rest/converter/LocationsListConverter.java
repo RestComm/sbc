@@ -56,7 +56,7 @@ public final class LocationsListConverter extends AbstractConverter implements J
     public void marshal(final Object object, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final LocationList list = (LocationList) object;
 
-        writer.startNode("Calls");
+        writer.startNode("Locations");
         writer.addAttribute("page", String.valueOf(page));
         writer.addAttribute("numpages", String.valueOf(getTotalPages()));
         writer.addAttribute("pagesize", String.valueOf(pageSize));
@@ -69,20 +69,20 @@ public final class LocationsListConverter extends AbstractConverter implements J
         writer.addAttribute("nextpageuri", getNextPageUri(list));
         writer.addAttribute("lastpageuri", getLastPageUri());
 
-        for (final Location cdr : list.getLocations()) {
-            context.convertAnother(cdr);
+        for (final Location location : list.getLocations()) {
+            context.convertAnother(location);
         }
         writer.endNode();
     }
 
     @Override
-    public JsonObject serialize(LocationList cdrList, Type type, JsonSerializationContext context) {
+    public JsonObject serialize(LocationList locationList, Type type, JsonSerializationContext context) {
 
         JsonObject result = new JsonObject();
 
         JsonArray array = new JsonArray();
-        for (Location cdr : cdrList.getLocations()) {
-            array.add(context.serialize(cdr));
+        for (Location location : locationList.getLocations()) {
+            array.add(context.serialize(location));
         }
 
         if (total != null && pageSize != null && page != null) {
@@ -91,11 +91,11 @@ public final class LocationsListConverter extends AbstractConverter implements J
             result.addProperty("page_size", pageSize);
             result.addProperty("total", total);
             result.addProperty("start", getFirstIndex());
-            result.addProperty("end", getLastIndex(cdrList));
+            result.addProperty("end", getLastIndex(locationList));
             result.addProperty("uri", pathUri);
             result.addProperty("first_page_uri", getFirstPageUri());
             result.addProperty("previous_page_uri", getPreviousPageUri());
-            result.addProperty("next_page_uri", getNextPageUri(cdrList));
+            result.addProperty("next_page_uri", getNextPageUri(locationList));
             result.addProperty("last_page_uri", getLastPageUri());
         }
 
@@ -126,7 +126,7 @@ public final class LocationsListConverter extends AbstractConverter implements J
     }
 
     private String getNextPageUri(LocationList list) {
-        String lastSid = (page == getTotalPages()) ? "null" : list.getLocations().get(pageSize - 1).getSid().toString();
+        String lastSid = (page == getTotalPages()) ? "null" : list.getLocations().get(pageSize - 1).getUser();
         return (page == getTotalPages()) ? "null" : pathUri + "?Page=" + (page + 1) + "&PageSize=" + pageSize + "&AfterSid="
                 + lastSid;
     }
