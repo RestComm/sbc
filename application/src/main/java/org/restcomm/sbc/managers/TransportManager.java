@@ -20,7 +20,7 @@
 
 package org.restcomm.sbc.managers;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.restcomm.sbc.adapter.TransportAdapter;
 import org.restcomm.sbc.adapter.UnavailableTransportAdapterException;
@@ -39,7 +39,7 @@ import org.restcomm.sbc.adapter.impl.UDPTransportAdapter;
  */
 public class TransportManager {
 	
-	private Hashtable<String, TransportAdapter> transports=new Hashtable<String, TransportAdapter>();
+	private HashMap<String, TransportAdapter> transports=new HashMap<String, TransportAdapter>();
 	
 	private static TransportManager helper;
 	

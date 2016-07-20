@@ -20,7 +20,7 @@
 
 package org.restcomm.sbc.managers;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.restcomm.sbc.threat.Threat;
 
@@ -33,7 +33,7 @@ import org.restcomm.sbc.threat.Threat;
  */
 public class ThreatManager {
 	
-	private Hashtable<String, Threat> threats=new Hashtable<String, Threat>();
+	private HashMap<String, Threat> threats=new HashMap<String, Threat>();
 	
 	private static ThreatManager threatManager;
 	

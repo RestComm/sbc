@@ -19,7 +19,7 @@
 
 package org.restcomm.chain.impl;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ParallelProcessorChain;
@@ -45,7 +45,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 	private Processor startPoint;
 
 	
-	private Hashtable<Integer, Processor> processors=new Hashtable<Integer, Processor>();
+	private HashMap<Integer, Processor> processors=new HashMap<Integer, Processor>();
 	
 	public DefaultSerialProcessorChain() {
 		super();
@@ -64,7 +64,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 			throw new MalformedProcessorChainException("Processors could not be null");
 			
 		}
-		else if(processors.contains(nextInChain)) {
+		else if(processors.containsValue((nextInChain))) {
 			throw new MalformedProcessorChainException("Processor "+nextInChain.getName()+" already in chain");
 		}
 		else if(processor.getId()==nextInChain.getId()) {

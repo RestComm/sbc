@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
+
 package org.restcomm.sbc.rest;
 
 import static javax.ws.rs.core.MediaType.*;
@@ -30,10 +31,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
-
-/**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
- */
 @Path("/Accounts/{accountSid}/Locations.json")
 @ThreadSafe
 public final class LocationsJsonEndpoint extends LocationsEndpoint {

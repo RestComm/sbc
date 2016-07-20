@@ -29,21 +29,15 @@ import org.apache.commons.configuration.Configuration;
 
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.DaoManager;
-import org.restcomm.sbc.dao.RecordingsDao;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationList;
-import org.restcomm.sbc.bo.Recording;
-import org.restcomm.sbc.bo.RecordingList;
 import org.restcomm.sbc.bo.RestCommResponse;
-import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.rest.converter.LocationConverter;
 import org.restcomm.sbc.rest.converter.LocationsListConverter;
-import org.restcomm.sbc.rest.converter.RecordingConverter;
-import org.restcomm.sbc.rest.converter.RecordingListConverter;
 import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
@@ -88,7 +82,6 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
     protected XStream xstream;
     protected LocationsListConverter listConverter;
     protected AccountsDao accountsDao;
-    protected RecordingsDao recordingsDao;
     protected String instanceId;
     protected LocationManager locationManager=LocationManager.getLocationManager();
     
@@ -105,22 +98,17 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         callManager = (ActorRef) context.getAttribute("org.mobicents.servlet.restcomm.telephony.CallManager");
         daos = (DaoManager) context.getAttribute(DaoManager.class.getName());
         accountsDao = daos.getAccountsDao();
-        recordingsDao = daos.getRecordingsDao();
         super.init(configuration);
         LocationConverter converter = new LocationConverter(configuration);
         listConverter = new LocationsListConverter(configuration);
-        final RecordingConverter recordingConverter = new RecordingConverter(configuration);
         builder = new GsonBuilder();
         builder.registerTypeAdapter(Location.class, converter);
         builder.registerTypeAdapter(LocationList.class, listConverter);
-        builder.registerTypeAdapter(Recording.class, recordingConverter);
         builder.setPrettyPrinting();
         gson = builder.create();
         xstream = new XStream();
         xstream.alias("RestcommResponse", RestCommResponse.class);
         xstream.registerConverter(converter);
-        xstream.registerConverter(recordingConverter);
-        xstream.registerConverter(new RecordingListConverter(configuration));
         xstream.registerConverter(new RestCommResponseConverter(configuration));
         xstream.registerConverter(listConverter);
 
@@ -131,7 +119,7 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
 
     protected Response getLocation(final String accountSid, final String sid, final MediaType responseType) {
         Account account = daos.getAccountsDao().getAccount(accountSid);
-        secure(account, "RestComm:Read:Calls");
+        secure(account, "RestComm:Read:Locations");
         
         final Location location = locationManager.getLocation(sid);
         if (location == null) {
@@ -151,7 +139,7 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
 
     protected Response getLocations(final String accountSid, UriInfo info, MediaType responseType) {
         Account account = daos.getAccountsDao().getAccount(accountSid);
-        secure(account, "RestComm:Read:Calls");
+        secure(account, "RestComm:Read:Locations");
 
         boolean localInstanceOnly = true;
         try {
@@ -166,6 +154,8 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         String user = info.getQueryParameters().getFirst("User");
         String userAgent = info.getQueryParameters().getFirst("UserAgent");
         String host = info.getQueryParameters().getFirst("Host");
+        String sport = info.getQueryParameters().getFirst("Port");
+        String transport = info.getQueryParameters().getFirst("Transport");
        
        
 
@@ -176,7 +166,12 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         if (page == null) {
             page = "0";
         }
-
+        
+        if(sport == null) {
+        	sport = "5060";
+        }
+        
+        int port = Integer.parseInt(sport);
         int limit = Integer.parseInt(pageSize);
         int offset = (page == "0") ? 0 : (((Integer.parseInt(page) - 1) * Integer.parseInt(pageSize)) + Integer
                 .parseInt(pageSize));
@@ -186,9 +181,9 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         try {
 
             if (localInstanceOnly) {
-                filterForTotal = new LocationFilter(user, host,  userAgent, limit, offset, null);
+                filterForTotal = new LocationFilter(user, host, port, transport, userAgent, limit, offset, null);
             } else {
-                filterForTotal = new LocationFilter(user, host,  userAgent, limit, offset, instanceId);
+                filterForTotal = new LocationFilter(user, host, port, transport, userAgent, limit, offset, instanceId);
             }
         } catch (ParseException e) {
             return status(BAD_REQUEST).build();
@@ -203,9 +198,9 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         LocationFilter filter = null;
         try {
         	if (localInstanceOnly) {
-                filterForTotal = new LocationFilter(user, host,  userAgent, limit, offset, null);
+                filter = new LocationFilter(user, host, port, transport, userAgent, limit, offset, null);
             } else {
-                filterForTotal = new LocationFilter(user, host,  userAgent, limit, offset, instanceId);
+                filter = new LocationFilter(user, host, port, transport, userAgent, limit, offset, instanceId);
             }
         } catch (ParseException e) {
             return status(BAD_REQUEST).build();
@@ -228,20 +223,5 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         }
     }
 
-    
-    protected Response getRecordingsByCall(final String accountSid, final String callSid, final MediaType responseType) {
-        secure(accountsDao.getAccount(accountSid), "RestComm:Read:Recordings");
-
-        final List<Recording> recordings = recordingsDao.getRecordingsByCall(new Sid(callSid));
-        if (APPLICATION_JSON_TYPE == responseType) {
-            return ok(gson.toJson(recordings), APPLICATION_JSON).build();
-        } else if (APPLICATION_XML_TYPE == responseType) {
-            final RestCommResponse response = new RestCommResponse(new RecordingList(recordings));
-            return ok(xstream.toXML(response), APPLICATION_XML).build();
-        } else {
-            return null;
-        }
-
-    }
 
 }
