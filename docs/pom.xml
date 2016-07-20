@@ -25,12 +25,15 @@
 	</properties>
     
 	<build>
+	
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/asciidoc</directory>
 				<filtering>true</filtering>
       			</resource>
-	      	</resources>
+	    </resources>
+	    <pluginManagement>  	
+	    
 		<plugins>
 		    <plugin>
 			<groupId>org.asciidoctor</groupId>
@@ -169,6 +172,7 @@
 			    </executions>
 		    </plugin>
 		</plugins>
+		</pluginManagement>
 	</build>
 
 	<!--build>
