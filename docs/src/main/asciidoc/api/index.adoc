@@ -1,0 +1,19 @@
+= Restcomm SBC Rest API
+
+The Restcomm SBC REST API allows you to query meta-data about your account, phone numbers, calls, text messages, and recordings. You can also do some communications control like initiate outbound calls and send text messages.
+
+== Base URL
+
+All URLs referenced in the documentation have the following base:
+
+https://cloud.restcomm.com/2012-04-24
+
+The Restcomm SBC REST API is served over HTTPS. To ensure data privacy, unencrypted HTTP is not supported.
+
+Click on a link to read the API documentation for accessing or modifying each resource:
+
+* <<account-api.adoc#account,Restcomm SBC API – Account>>
+* <<calls-api.adoc#calls,Restcomm SBC API – Calls>>
+* <<monitoring-service.adoc#monitoring, Restcomm SBC API - Supervisor/Monitoring Service>>
+* <<locations-api.adoc#locationapi, Restcomm SBC API - Location>>
+* <<participants-api.adoc#participantsapi, Restcomm SBC API - Conference Participants Management>>
