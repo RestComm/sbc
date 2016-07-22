@@ -20,7 +20,6 @@
 package org.restcomm.sbc.rest;
 
 
-import akka.actor.ActorRef;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,7 +34,9 @@ import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationList;
 import org.restcomm.sbc.bo.RestCommResponse;
+import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
+import org.restcomm.sbc.rest.SecuredEndpoint.SecuredType;
 import org.restcomm.sbc.rest.converter.LocationConverter;
 import org.restcomm.sbc.rest.converter.LocationsListConverter;
 import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
@@ -75,7 +76,6 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
     @Context
     protected ServletContext context;
     protected Configuration configuration;
-    protected ActorRef callManager;
     protected DaoManager daos;
     protected Gson gson;
     protected GsonBuilder builder;
@@ -95,7 +95,6 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
     public void init() {
         configuration = (Configuration) context.getAttribute(Configuration.class.getName());
         configuration = configuration.subset("runtime-settings");
-        callManager = (ActorRef) context.getAttribute("org.mobicents.servlet.restcomm.telephony.CallManager");
         daos = (DaoManager) context.getAttribute(DaoManager.class.getName());
         accountsDao = daos.getAccountsDao();
         super.init(configuration);
@@ -117,11 +116,11 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         normalizePhoneNumbers = configuration.getBoolean("normalize-numbers-for-outbound-calls");
     }
 
-    protected Response getLocation(final String accountSid, final String sid, final MediaType responseType) {
-        Account account = daos.getAccountsDao().getAccount(accountSid);
+    protected Response getLocation(final String user, final MediaType responseType) {
+    	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Read:Locations");
         
-        final Location location = locationManager.getLocation(sid);
+        final Location location = locationManager.getLocation(user);
         if (location == null) {
             return status(NOT_FOUND).build();
         } else {
@@ -137,8 +136,8 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         }
     }
 
-    protected Response getLocations(final String accountSid, UriInfo info, MediaType responseType) {
-        Account account = daos.getAccountsDao().getAccount(accountSid);
+    protected Response getLocations(UriInfo info, MediaType responseType) {
+    	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Read:Locations");
 
         boolean localInstanceOnly = true;
@@ -222,6 +221,21 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
             return null;
         }
     }
+    
+    protected Response deleteLocation(final String user) {
+    	Account account=userIdentityContext.getEffectiveAccount();
+        secure(account, "RestComm:Delete:Locations");
+        
+        final Location location = locationManager.getLocation(user);      
+
+        if (location == null)
+            return status(NOT_FOUND).build();
+
+        locationManager.unregister(user);
+
+        return ok().build();
+    }
+
 
 
 }

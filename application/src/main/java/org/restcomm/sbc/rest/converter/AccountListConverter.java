@@ -20,9 +20,9 @@
 package org.restcomm.sbc.rest.converter;
 
 import org.apache.commons.configuration.Configuration;
-import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.restcomm.sbc.bo.Recording;
-import org.restcomm.sbc.bo.RecordingList;
+import org.apache.http.annotation.ThreadSafe;
+import org.restcomm.sbc.bo.Account;
+import org.restcomm.sbc.bo.AccountList;
 
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -31,23 +31,23 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
 @ThreadSafe
-public final class RecordingListConverter extends AbstractConverter {
-    public RecordingListConverter(final Configuration configuration) {
+public final class AccountListConverter extends AbstractConverter {
+    public AccountListConverter(final Configuration configuration) {
         super(configuration);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public boolean canConvert(final Class klass) {
-        return RecordingList.class.equals(klass);
+        return AccountList.class.equals(klass);
     }
 
     @Override
     public void marshal(final Object object, final HierarchicalStreamWriter writer, final MarshallingContext context) {
-        final RecordingList list = (RecordingList) object;
-        writer.startNode("Recordings");
-        for (final Recording recording : list.getRecordings()) {
-            context.convertAnother(recording);
+        final AccountList list = (AccountList) object;
+        writer.startNode("Accounts");
+        for (final Account account : list.getAccounts()) {
+            context.convertAnother(account);
         }
         writer.endNode();
     }

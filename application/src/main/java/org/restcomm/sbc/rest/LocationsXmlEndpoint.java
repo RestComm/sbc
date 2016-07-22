@@ -25,6 +25,7 @@ import javax.ws.rs.PathParam;
 
 import static javax.ws.rs.core.MediaType.*;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -36,28 +37,29 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-@Path("/Accounts/{accountSid}/Locations")
+@Path("/Locations")
 @ThreadSafe
 public final class LocationsXmlEndpoint extends LocationsEndpoint {
     public LocationsXmlEndpoint() {
         super();
     }
 
-    @Path("/{sid}.json")
+
+    @Path("/{user}")
     @GET
-    public Response getLocationAsJson(@PathParam("accountSid") final String accountSid, @PathParam("sid") final String sid) {
-        return getLocation(accountSid, sid, APPLICATION_JSON_TYPE);
+    public Response getLocationAsXml(@PathParam("user") final String user) {
+        return getLocation(user, APPLICATION_XML_TYPE);
+    }
+    
+    @Path("/{user}")
+    @DELETE
+    public Response deleteLocationAsXml(@PathParam("user") final String user) {
+        return deleteLocation(user);
     }
 
-    @Path("/{sid}")
     @GET
-    public Response getLocationAsXml(@PathParam("accountSid") final String accountSid, @PathParam("sid") final String sid) {
-        return getLocation(accountSid, sid, APPLICATION_XML_TYPE);
-    }
-
-    @GET
-    public Response getLocations(@PathParam("accountSid") final String accountSid, @Context UriInfo info) {
-        return getLocations(accountSid, info, APPLICATION_XML_TYPE);
+    public Response getLocations(@Context UriInfo info) {
+        return getLocations(info, APPLICATION_XML_TYPE);
     }
 
     
