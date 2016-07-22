@@ -19,18 +19,24 @@
  */
 package org.restcomm.sbc.dao;
 
-import org.mobicents.servlet.sip.restcomm.Configurable;
-import org.mobicents.servlet.sip.restcomm.LifeCycle;
+import java.util.List;
+import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.WhiteList;
+
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-public interface DaoManager extends Configurable, LifeCycle {
+public interface WhiteListDao {
     
-	CallDetailRecordsDao getCallDetailRecordsDao();
+	void addWhiteList(WhiteList entry);
 
-	AccountsDao getAccountsDao();
-	
-	WhiteListDao getWhiteListDao();
-    
+    WhiteList getWhiteList(Sid sid);
+
+    WhiteList getWhiteList(String name);
+
+    List<WhiteList> getWhiteLists(Sid sid);
+
+    void removeWhiteList(Sid sid);
+
 }

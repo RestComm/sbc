@@ -28,13 +28,11 @@ import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.WhiteList;
 
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    1/7/2016 17:22:26
- * @class   DaoUtils.java
- *
+ * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
 @ThreadSafe
 public final class DaoUtils {
@@ -58,6 +56,13 @@ public final class DaoUtils {
         }
     }
     
+    public static WhiteList.Reason readWhiteListReason(final Object object) {
+        if (object != null) {
+            return WhiteList.Reason.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
 
     public static BigDecimal readBigDecimal(final Object object) {
         if (object != null) {
@@ -107,7 +112,13 @@ public final class DaoUtils {
         }
     }
 
-   
+    public static Sid readSid(final Object object) {
+        if (object != null) {
+            return new Sid((String) object);
+        } else {
+            return null;
+        }
+    }
 
     public static String readString(final Object object) {
         if (object != null) {
@@ -132,21 +143,8 @@ public final class DaoUtils {
             return null;
         }
     }
-    public static Sid readSid(final Object object) {
-        if (object != null) {
-            return new Sid((String) object);
-        } else {
-            return null;
-        }
-    }
-   
-    public static String writeBigDecimal(final BigDecimal bigDecimal) {
-        if (bigDecimal != null) {
-            return bigDecimal.toString();
-        } else {
-            return null;
-        }
-    }
+
+
     public static String writeAccountStatus(final Account.Status status) {
         return status.toString();
     }
@@ -154,10 +152,22 @@ public final class DaoUtils {
     public static String writeAccountType(final Account.Type type) {
         return type.toString();
     }
+    
+    public static String writeWhiteListReason(final WhiteList.Reason reason) {
+        return reason.toString();
+    }
 
-    public static DateTime writeDateTime(final DateTime dateTime) {
+    public static String writeBigDecimal(final BigDecimal bigDecimal) {
+        if (bigDecimal != null) {
+            return bigDecimal.toString();
+        } else {
+            return null;
+        }
+    }
+
+    public static Date writeDateTime(final DateTime dateTime) {
         if (dateTime != null) {
-            return dateTime;
+            return dateTime.toDate();
         } else {
             return null;
         }
@@ -186,5 +196,6 @@ public final class DaoUtils {
             return null;
         }
     }
+
 
 }

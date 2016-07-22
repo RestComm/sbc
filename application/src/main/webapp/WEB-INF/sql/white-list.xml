@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author ocarriles@eolos.la (Oscar Carriles)
+-->
+<mapper namespace="org.restcomm.sbc.dao.WhiteListDao">
+  <insert id="addEntry" parameterType="map">
+    INSERT INTO "restcomm_whitelist" ("sid", "date_created", "date_expires", "account_sid", "ip_address", "reason")
+    VALUES(#{sid}, #{date_created}, #{date_expires}, #{account_sid}, #{ip_address}, #{reason});
+  </insert>
+  
+  <select id="getEntry" parameterType="string" resultType="hashmap">
+    SELECT * FROM "restcomm_whitelist" WHERE "sid"=#{sid};
+  </select>
+  
+  <select id="getEntryByIpAddress" parameterType="string" resultType="hashmap">
+    SELECT * FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
+  </select>
+  
+    <select id="getEntryByReason" parameterType="string" resultType="hashmap">
+    SELECT * FROM "restcomm_whitelist" WHERE "reason"=#{reason};
+  </select>
+  
+  <select id="getEntries" parameterType="string" resultType="hashmap">
+    SELECT * FROM "restcomm_whitelist";
+  </select>
+  
+  <delete id="removeEntry" parameterType="string">
+    DELETE FROM "restcomm_whitelist" WHERE "sid"=#{sid};
+  </delete>
+  
+ 
+</mapper>

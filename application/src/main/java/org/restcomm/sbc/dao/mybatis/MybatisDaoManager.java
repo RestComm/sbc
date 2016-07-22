@@ -31,7 +31,8 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.CallDetailRecordsDao;
 import org.restcomm.sbc.dao.DaoManager;
-import org.restcomm.sbc.dao.RecordingsDao;
+import org.restcomm.sbc.dao.WhiteListDao;
+
 
 
 /**
@@ -42,7 +43,8 @@ public final class MybatisDaoManager implements DaoManager {
     private Configuration configuration;
     private AccountsDao accountsDao;
     private CallDetailRecordsDao callDetailRecordsDao;
-    private RecordingsDao recordingsDao;
+    private WhiteListDao whiteListDao;
+    
    
 
     public MybatisDaoManager() {
@@ -64,9 +66,9 @@ public final class MybatisDaoManager implements DaoManager {
 	}
     
     @Override
-   	public RecordingsDao getRecordingsDao() {
-   		return recordingsDao;
-   	}
+	public WhiteListDao getWhiteListDao() {
+		return whiteListDao;
+	}
     
     @Override
     public void shutdown() {
@@ -100,7 +102,7 @@ public final class MybatisDaoManager implements DaoManager {
         // Instantiate the DAO objects.
         accountsDao = new MybatisAccountsDao(sessions);
         callDetailRecordsDao = new MybatisCallDetailRecordsDao(sessions);
-        recordingsDao = new MybatisRecordingsDao(sessions);
+        whiteListDao = new MybatisWhiteListDao(sessions);
       
     }
 
