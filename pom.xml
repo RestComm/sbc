@@ -340,7 +340,6 @@
 	<modules>
 		<module>application</module>
 		<module>testsuite</module>
-		<module>docs</module>
 	</modules>
 
 	<build>
