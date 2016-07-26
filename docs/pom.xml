@@ -32,7 +32,6 @@
 				<filtering>true</filtering>
       			</resource>
 	    </resources>
-	    <pluginManagement>  	
 	    
 		<plugins>
 		    <plugin>
@@ -172,7 +171,6 @@
 			    </executions>
 		    </plugin>
 		</plugins>
-		</pluginManagement>
 	</build>
 
 	<!--build>
