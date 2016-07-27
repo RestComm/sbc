@@ -19,7 +19,6 @@
  */
 package org.restcomm.sbc.rest.converter;
 
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
@@ -33,64 +32,71 @@ import java.lang.reflect.Type;
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.mobicents.servlet.sip.restcomm.util.StringUtils;
-import org.restcomm.sbc.bo.WhiteList;
+import org.restcomm.sbc.bo.BanList;
 
 
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
 @ThreadSafe
-public final class WhiteListConverter extends AbstractConverter implements JsonSerializer<WhiteList> {
+public final class BanListConverter extends AbstractConverter implements JsonSerializer<BanList> {
     private final String apiVersion;
     private final String rootUri;
+    private BanList.Type color;
 
-    public WhiteListConverter(final Configuration configuration) {
+    public BanListConverter(BanList.Type color, final Configuration configuration) {
         super(configuration);
-        this.apiVersion = configuration.getString("api-version");
+        this.color = color;
+        apiVersion = configuration.getString("api-version");
         rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public boolean canConvert(final Class klass) {
-        return WhiteList.class.equals(klass);
+        return BanList.class.equals(klass);
     }
 
     @Override
     public void marshal(final Object object, final HierarchicalStreamWriter writer, final MarshallingContext context) {
-        final WhiteList entry = (WhiteList) object;
-        writer.startNode("WhiteList");
-        writeSid(entry.getSid(), writer);
-        writeIpAddress(entry, writer);
-        writeReason(entry.getReason().toString(), writer);
-        writeDateCreated(entry.getDateCreated(), writer);
-        writeDateExpires(entry.getDateExpires(), writer);
+        final BanList banList = (BanList) object;
+        writer.startNode(color.toString()+"List");
+        writeDateCreated(banList.getDateCreated(), writer);
+        writeDateExpires(banList.getDateExpires(), writer);
+        writeAccountSid(banList.getAccountSid(), writer);
+        writeIpAddress(banList.getIpAddress(), writer);
+        writeAction(banList.getAction().toString(), writer);
+        writeReason(banList.getReason().toString(), writer);
+      
         writer.endNode();
     }
 
+
     @Override
-    public JsonElement serialize(final WhiteList entry, final Type type, final JsonSerializationContext context) {
+    public JsonElement serialize(final BanList banList, Type type, final JsonSerializationContext context) {
         final JsonObject object = new JsonObject();
-        writeSid(entry.getSid(), object);
-        writeIpAddress(entry, object);
-        writeReason(entry.getReason().toString(), object);
-        writeDateCreated(entry.getDateCreated(), object);
-        writeDateExpires(entry.getDateExpires(), object);
+        writeDateCreated(banList.getDateCreated(), object);
+        writeDateExpires(banList.getDateExpires(), object);
+        writeAccountSid(banList.getAccountSid(), object);
+        writeIpAddress(banList.getIpAddress(), object);
+        writeReason(banList.getReason().toString(), object);
+        writeAction(banList.getAction().toString(), object);
+        //writeColor(color, object);
         return object;
     }
 
-   
-
-    private void writeIpAddress(final WhiteList entry, final HierarchicalStreamWriter writer) {
-        writer.startNode("EmailAddress");
-        writer.setValue(entry.getIpAddress());
+    private void writeIpAddress(final String ipAddress, final HierarchicalStreamWriter writer) {
+        writer.startNode("IpAddress");
+        if (ipAddress != null) {
+            writer.setValue(ipAddress);
+        }
         writer.endNode();
-        writer.close();
     }
 
-    private void writeIpAddress(final WhiteList entry, final JsonObject object) {
-        object.addProperty("email_address", entry.getIpAddress());
+    private void writeIpAddress(final String ipAddress, final JsonObject object) {
+        object.addProperty("ip_address", ipAddress);
     }
 
-   
+
+    
 }

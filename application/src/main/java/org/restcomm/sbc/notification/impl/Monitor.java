@@ -113,5 +113,32 @@ public class Monitor implements Runnable {
 		}
 		
 	}
+	
+	public enum Action {
+        APPLY("Apply"),
+		REMOVE("Remove"),
+		NONE("None");
+
+        private final String text;
+
+        private Action(final String text) {
+            this.text = text;
+        }
+
+        public static Action getValueOf(final String text) {
+            Action[] values = values();
+            for (final Action value : values) {
+                if (value.text.equals(text)) {
+                    return value;
+                }
+            }
+            throw new IllegalArgumentException(text + " is not a valid action.");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    };
 
 }

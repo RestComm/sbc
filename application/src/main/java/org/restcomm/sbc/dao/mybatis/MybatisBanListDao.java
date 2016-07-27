@@ -32,7 +32,6 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
 import org.restcomm.sbc.dao.BanListDao;
-import org.restcomm.sbc.dao.WhiteListDao;
 import org.restcomm.sbc.notification.impl.Monitor;
 import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.BanListFilter;
@@ -47,12 +46,12 @@ import org.restcomm.sbc.bo.Sid;
  *
  */
 @ThreadSafe
-public final class MybatisWhiteListDao implements WhiteListDao {  
-private final static String namespace = "org.restcomm.sbc.dao.WhiteListDao.";
+public final class MybatisBanListDao implements BanListDao {  
+private final static String namespace = "org.restcomm.sbc.dao.BanListDao.";
     private final SqlSessionFactory sessions;
-    private static transient Logger LOG = Logger.getLogger(MybatisWhiteListDao.class);
+    private static transient Logger LOG = Logger.getLogger(MybatisBanListDao.class);
 	
-    public MybatisWhiteListDao(final SqlSessionFactory sessions) {
+    public MybatisBanListDao(final SqlSessionFactory sessions) {
         super();
         this.sessions = sessions;
     }

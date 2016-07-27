@@ -16,4 +16,4 @@ Click on a link to read the API documentation for accessing or modifying each re
 * <<calls-api.adoc#calls,Restcomm SBC API – Calls>>
 * <<monitoring-service.adoc#monitoring, Restcomm SBC API - Supervisor/Monitoring Service>>
 * <<locations-api.adoc#locationapi, Restcomm SBC API - Location>>
-* <<participants-api.adoc#participantsapi, Restcomm SBC API - Conference Participants Management>>
+* <<banlists-api.adoc#banlistsapi, Restcomm SBC API - Ban Lists>>

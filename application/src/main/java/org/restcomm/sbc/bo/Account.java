@@ -1,6 +1,6 @@
-/*
+/*******************************************************************************
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2014, Telestax Inc and individual contributors
+ * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- */
+ * @author Oscar Andres Carriles <ocarriles@eolos.la>.
+ *******************************************************************************/
 package org.restcomm.sbc.bo;
 
 import java.net.URI;
@@ -25,11 +26,11 @@ import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
 
 
-
 /**
- * Represent a user Account
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    22 jul. 2016 16:41:33
+ * @class   Account.java
  *
- * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
 @Immutable
 public final class Account {

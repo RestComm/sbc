@@ -31,15 +31,15 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
  *
  */
 @NotThreadSafe
-public final class LocationList {
-    private final List<Location> locations;
+public final class BanListList {
+    private final List<BanList> banLists;
 
-    public LocationList(final List<Location> locations) {
+    public BanListList(final List<BanList> banLists) {
         super();
-        this.locations = locations;
+        this.banLists = banLists;
     }
 
-    public List<Location> getLocations() {
-        return locations;
+    public List<BanList> getBanListList() {
+        return banLists;
     }
 }

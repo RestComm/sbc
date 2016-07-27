@@ -27,8 +27,10 @@ import java.util.Date;
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Account;
+import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.Sid;
-import org.restcomm.sbc.bo.WhiteList;
+import org.restcomm.sbc.notification.impl.Monitor;
+
 
 
 /**
@@ -56,14 +58,30 @@ public final class DaoUtils {
         }
     }
     
-    public static WhiteList.Reason readWhiteListReason(final Object object) {
+    public static BanList.Reason readBanListReason(final Object object) {
         if (object != null) {
-            return WhiteList.Reason.getValueOf((String) object);
+            return BanList.Reason.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
+    
+    public static BanList.Type readBanListType(final Object object) {
+        if (object != null) {
+            return BanList.Type.getValueOf((String) object);
         } else {
             return null;
         }
     }
 
+    public static Monitor.Action readMonitorAction(final Object object) {
+        if (object != null) {
+            return Monitor.Action.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
+    
     public static BigDecimal readBigDecimal(final Object object) {
         if (object != null) {
             return new BigDecimal((String) object);
@@ -153,8 +171,16 @@ public final class DaoUtils {
         return type.toString();
     }
     
-    public static String writeWhiteListReason(final WhiteList.Reason reason) {
+    public static String writeBanListReason(final BanList.Reason reason) {
         return reason.toString();
+    }
+    
+    public static String writeBanListType(final BanList.Type color) {
+        return color.toString();
+    }
+    
+    public static String writeMonitorAction(final Monitor.Action action) {
+        return action.toString();
     }
 
     public static String writeBigDecimal(final BigDecimal bigDecimal) {

@@ -399,6 +399,20 @@ public abstract class AbstractConverter implements Converter {
     protected void writeTimeToLive(final int timeToLive, final JsonObject object) {
         object.addProperty("time_to_live", timeToLive);
     }
+    
+    protected void writeAction(final String action, final HierarchicalStreamWriter writer) {
+        writer.startNode("Action");
+        if (action != null) {
+            writer.setValue(action);
+        } else {
+            writer.setValue(null);
+        }
+        writer.endNode();
+    }
+
+    protected void writeAction(final String action, final JsonObject object) {
+        object.addProperty("monitor_action", action);
+    }
 
     protected void writeType(final String type, final HierarchicalStreamWriter writer) {
         writer.startNode("Type");

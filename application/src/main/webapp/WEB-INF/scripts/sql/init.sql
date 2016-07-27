@@ -30,7 +30,8 @@ CREATE TABLE "restcomm_blacklist" (
   "date_created" datetime NOT NULL,
   "account_sid" varchar(34) NOT NULL,
   "date_expires" datetime NOT NULL,
-  "reason" varchar(15) NOT NULL
+  "reason" varchar(15) NOT NULL,
+  "monitor_action" varchar(15) NOT NULL
 );
 
 
@@ -40,7 +41,8 @@ CREATE TABLE "restcomm_whitelist" (
   "date_created" datetime NOT NULL,
   "account_sid" varchar(34) NOT NULL,
   "date_expires" datetime NOT NULL,
-  "reason" varchar(15) NOT NULL
+  "reason" varchar(15) NOT NULL,
+  "monitor_action" varchar(15) NOT NULL
 );
 
 CREATE TABLE "restcomm_call_detail_records" (

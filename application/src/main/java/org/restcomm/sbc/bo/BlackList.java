@@ -4,16 +4,15 @@ import org.joda.time.DateTime;
 import org.restcomm.sbc.notification.impl.Monitor.Action;
 
 
-
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    22 jul. 2016 17:00:44
- * @class   WhiteList.java
+ * @date    22 jul. 2016 17:02:29
+ * @class   BlackList.java
  *
  */
-public final class WhiteList extends BanList {
+public final class BlackList extends BanList {
 
-	public WhiteList(DateTime dateCreated, DateTime dateExpires, String ipAddress, Sid accountSid,
+	public BlackList(DateTime dateCreated, DateTime dateExpires, String ipAddress, Sid accountSid,
 			Reason reason, Action action) {
 		super(dateCreated, dateExpires, ipAddress, accountSid, reason, action);
 	}

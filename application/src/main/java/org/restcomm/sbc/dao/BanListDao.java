@@ -17,29 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.bo;
+package org.restcomm.sbc.dao;
 
 import java.util.List;
 
-import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
+import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.bo.BanListFilter;
+
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    22 jul. 2016 16:42:41
- * @class   LocationList.java
+ * @date    22 jul. 2016 17:04:39
+ * @class   BanListDao.java
  *
  */
-@NotThreadSafe
-public final class LocationList {
-    private final List<Location> locations;
+public interface BanListDao {
+    
+	void addBanList(BanList entry);
 
-    public LocationList(final List<Location> locations) {
-        super();
-        this.locations = locations;
-    }
+    List<BanList> getBanLists(String ipAddress);
 
-    public List<Location> getLocations() {
-        return locations;
-    }
+    void removeBanList(BanList banList);
+    
+    void updateBanList(BanList banList);
+    
+    List<BanList> getBanLists(BanListFilter filter);
+
+    Integer getTotalBanLists(BanListFilter filter);
+
+	BanList getBanList(String name);
+
+
 }

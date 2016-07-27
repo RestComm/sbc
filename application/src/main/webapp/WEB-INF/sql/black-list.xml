@@ -3,39 +3,39 @@
 <!--
   @author ocarriles@eolos.la (Oscar Carriles)
 -->
-<mapper namespace="org.restcomm.sbc.dao.WhiteListDao">
+<mapper namespace="org.restcomm.sbc.dao.BlackListDao">
   <insert id="addEntry" parameterType="map">
-    INSERT INTO "restcomm_whitelist" ("date_created", "date_expires", "account_sid", "ip_address", "reason", "monitor_action")
+    INSERT INTO "restcomm_blacklist" ("date_created", "date_expires", "account_sid", "ip_address", "reason", "monitor_action")
     VALUES(#{date_created}, #{date_expires}, #{account_sid}, #{ip_address}, #{reason}, #{monitor_action});
   </insert>
   
   <select id="getEntry" parameterType="string" resultType="hashmap">
-    SELECT * FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
+    SELECT * FROM "restcomm_blacklist" WHERE "ip_address"=#{ip_address};
   </select>
   
   <select id="getEntryByIpAddress" parameterType="string" resultType="hashmap">
-    SELECT * FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
+    SELECT * FROM "restcomm_blacklist" WHERE "ip_address"=#{ip_address};
   </select>
   
     <select id="getEntryByReason" parameterType="string" resultType="hashmap">
-    SELECT * FROM "restcomm_whitelist" WHERE "reason"=#{reason};
+    SELECT * FROM "restcomm_blacklist" WHERE "reason"=#{reason};
   </select>
   
   <select id="getEntries" parameterType="string" resultType="hashmap">
-    SELECT * FROM "restcomm_whitelist";
+    SELECT * FROM "restcomm_blacklist";
   </select>
   
   <delete id="removeEntry" parameterType="map">
-    DELETE FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
+    DELETE FROM "restcomm_blacklist" WHERE "ip_address"=#{ip_address};
   </delete>
   
   <update id="updateEntry" parameterType="map">
-		UPDATE "restcomm_whitelist" SET "monitor_action"=#{monitor_action}
+		UPDATE "restcomm_blacklist" SET "monitor_action"=#{monitor_action}
 		WHERE ip_address=#{ip_address};
  </update>
   
  <select id="getTotalBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="int">
-		SELECT COUNT(*) FROM "restcomm_whitelist" where "true"
+		SELECT COUNT(*) FROM "restcomm_blacklist" where "true"
 
 		<if test="instanceid != null">
 			AND instanceid like #{instanceid}
@@ -63,7 +63,7 @@
   
 
 	<select id="getBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="hashmap">
-		SELECT * FROM "restcomm_whitelist" AS "restcomm_whitelist" where "true"
+		SELECT * FROM "restcomm_blacklist" AS "restcomm_blacklist" where "true"
 
 		<if test="instanceid != null">
 			AND instanceid like #{instanceid}

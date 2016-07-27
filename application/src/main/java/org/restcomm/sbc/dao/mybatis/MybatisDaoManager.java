@@ -32,7 +32,7 @@ import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.CallDetailRecordsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.WhiteListDao;
-
+import org.restcomm.sbc.dao.BlackListDao;
 
 
 /**
@@ -44,8 +44,8 @@ public final class MybatisDaoManager implements DaoManager {
     private AccountsDao accountsDao;
     private CallDetailRecordsDao callDetailRecordsDao;
     private WhiteListDao whiteListDao;
+    private BlackListDao blackListDao;
     
-   
 
     public MybatisDaoManager() {
         super();
@@ -66,8 +66,13 @@ public final class MybatisDaoManager implements DaoManager {
 	}
     
     @Override
-	public WhiteListDao getWhiteListDao() {
+	public WhiteListDao getWhiteListDao() {	
 		return whiteListDao;
+	}
+    
+    @Override
+	public BlackListDao getBlackListDao() {	
+		return blackListDao;
 	}
     
     @Override
@@ -103,6 +108,8 @@ public final class MybatisDaoManager implements DaoManager {
         accountsDao = new MybatisAccountsDao(sessions);
         callDetailRecordsDao = new MybatisCallDetailRecordsDao(sessions);
         whiteListDao = new MybatisWhiteListDao(sessions);
+        blackListDao = new MybatisBlackListDao(sessions);
+        
       
     }
 

@@ -67,22 +67,22 @@ on_hold BOOLEAN
 );
 
 CREATE TABLE restcomm_blacklist (
-  sid varchar(34) NOT NULL PRIMARY KEY,
-  ip_address varchar(15) NOT NULL,
+  ip_address varchar(15) NOT NULL PRIMARY KEY,
   date_created datetime NOT NULL,
   account_sid varchar(34) NOT NULL,
   date_expires datetime NOT NULL,
-  reason varchar(15) NOT NULL
+  reason varchar(15) NOT NULL,
+  monitor_action varchar(15) NOT NULL
 );
 
 
 CREATE TABLE restcomm_whitelist (
-  sid varchar(34) NOT NULL PRIMARY KEY,
-  ip_address varchar(15) NOT NULL,
+  ip_address varchar(15) NOT NULL PRIMARY KEY,
   date_created datetime NOT NULL,
   account_sid varchar(34) NOT NULL,
   date_expires datetime NOT NULL,
-  reason varchar(15) NOT NULL
+  reason varchar(15) NOT NULL,
+  monitor_action varchar(15) NOT NULL
 );
 
 
