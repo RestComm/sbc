@@ -31,7 +31,6 @@ import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
-import org.restcomm.sbc.dao.BanListDao;
 import org.restcomm.sbc.dao.WhiteListDao;
 import org.restcomm.sbc.notification.impl.Monitor;
 import org.restcomm.sbc.bo.BanList;
@@ -103,10 +102,10 @@ private final static String namespace = "org.restcomm.sbc.dao.WhiteListDao.";
     }
 
     @Override
-    public List<BanList> getBanLists(final String ipAddress) {
+    public List<BanList> getBanLists() {
         final SqlSession session = sessions.openSession();
         try {
-            final List<Map<String, Object>> results = session.selectList(namespace + "getEntries", ipAddress);
+            final List<Map<String, Object>> results = session.selectList(namespace + "getEntries");
             final List<BanList> entrys = new ArrayList<BanList>();
             if (results != null && !results.isEmpty()) {
                 for (final Map<String, Object> result : results) {

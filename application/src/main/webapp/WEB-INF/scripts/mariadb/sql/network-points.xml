@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author ocarriles@eolos.la (Oscar Carriles)
+-->
+<mapper namespace="org.restcomm.sbc.dao.NetworkPointsDao">
+  <insert id="addEntry" parameterType="map">
+    INSERT INTO restcomm_network_points (id, account_sid, tag)
+    VALUES(#{id}, #{account_sid}, #{tag});
+  </insert>
+  
+  <select id="getEntry" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_network_points WHERE id=#{id};
+  </select>
+  
+  <select id="getEntryByTag" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_network_points WHERE tag=#{tag};
+  </select>
+  
+  <select id="getEntries" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_network_points;
+  </select>
+  
+  <delete id="removeEntry" parameterType="map">
+    DELETE FROM restcomm_network_points WHERE id=#{id};
+  </delete>
+  
+  <update id="updateEntry" parameterType="map">
+		UPDATE restcomm_network_points SET tag=#{tag}
+		WHERE id=#{id};
+ </update>
+    
+  
+</mapper>

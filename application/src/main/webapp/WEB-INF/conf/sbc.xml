@@ -28,7 +28,7 @@
 				<permission>RestComm:Read,Delete:Locations</permission>
 				<permission>RestComm:*:Calls</permission>
 				<permission>RestComm:*:BanLists</permission>
-				<permission>RestComm:*:Conferences</permission>
+				<permission>RestComm:*:NetworkPoints</permission>
 				<permission>RestComm:Create,Delete,Read:Faxes</permission>
 				<permission>RestComm:Create,Delete,Read:Connectors</permission>
 				<permission>RestComm:*:IncomingPhoneNumbers</permission>

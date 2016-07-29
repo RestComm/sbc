@@ -19,25 +19,29 @@
  */
 package org.restcomm.sbc.dao;
 
-import org.mobicents.servlet.sip.restcomm.Configurable;
-import org.mobicents.servlet.sip.restcomm.LifeCycle;
+import java.util.List;
+
+import org.restcomm.sbc.bo.NetworkPoint;
+
+
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 16:48:50
+ * @class   NetworkPointsDao.java
+ *
  */
-public interface DaoManager extends Configurable, LifeCycle {
-    
-	CallDetailRecordsDao getCallDetailRecordsDao();
+public interface NetworkPointsDao {
+	
+    void addNetworkPoint(NetworkPoint point);
 
-	AccountsDao getAccountsDao();
+    NetworkPoint getNetworkPoint(String uid);
 
-	WhiteListDao getWhiteListDao();
+    List<NetworkPoint> getNetworkPoints();
+
+    void updateNetworkPoint(NetworkPoint point);
+
+	void removeNetworkPoint(String uid);
 	
-	BlackListDao getBlackListDao();
-	
-	NetworkPointsDao getNetworkPointDao();
-	
-	ConnectorsDao getConnectorsDao();
-    
 }

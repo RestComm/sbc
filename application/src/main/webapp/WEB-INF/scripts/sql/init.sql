@@ -45,6 +45,23 @@ CREATE TABLE "restcomm_whitelist" (
   "monitor_action" varchar(15) NOT NULL
 );
 
+CREATE TABLE "restcomm_network_points" (
+	"id" VARCHAR(15) NOT NULL PRIMARY KEY,
+	"account_sid" VARCHAR(34) NOT NULL,
+	"tag" VARCHAR(15) NOT NULL
+
+);
+
+CREATE TABLE "restcomm_connectors" (
+    "account_sid" VARCHAR(34) NOT NULL,
+	"port" SMALLINT(6) NOT NULL,
+	"transport" VARCHAR(5) NOT NULL,
+	"n_point" VARCHAR(15) NOT NULL,
+	"n_point_route" VARCHAR(15) NULL DEFAULT NULL,
+	"n_point_route_alt" VARCHAR(15) NULL DEFAULT NULL,
+	PRIMARY KEY ("port", "transport", "n_point")
+)
+
 CREATE TABLE "restcomm_call_detail_records" (
 "sid" VARCHAR(34) NOT NULL PRIMARY KEY,
 "parent_call_sid" VARCHAR(34),

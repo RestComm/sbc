@@ -17,27 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.dao;
+package org.restcomm.sbc.bo;
 
-import org.mobicents.servlet.sip.restcomm.Configurable;
-import org.mobicents.servlet.sip.restcomm.LifeCycle;
+import java.util.List;
+
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 19:29:58
+ * @class   NetworkPointList.java
+ *
  */
-public interface DaoManager extends Configurable, LifeCycle {
-    
-	CallDetailRecordsDao getCallDetailRecordsDao();
+@NotThreadSafe
+public final class NetworkPointList {
+    private final List<NetworkPoint> points;
 
-	AccountsDao getAccountsDao();
+    public NetworkPointList(final List<NetworkPoint> points) {
+        super();
+        this.points = points;
+    }
 
-	WhiteListDao getWhiteListDao();
-	
-	BlackListDao getBlackListDao();
-	
-	NetworkPointsDao getNetworkPointDao();
-	
-	ConnectorsDao getConnectorsDao();
-    
+    public List<NetworkPoint> getNetworkPointList() {
+        return points;
+    }
 }

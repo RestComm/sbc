@@ -28,6 +28,8 @@ import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.notification.impl.Monitor;
 
@@ -77,6 +79,22 @@ public final class DaoUtils {
     public static Monitor.Action readMonitorAction(final Object object) {
         if (object != null) {
             return Monitor.Action.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
+    
+    public static NetworkPoint.Tag readTag(final Object object) {
+        if (object != null) {
+            return NetworkPoint.Tag.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
+    
+    public static Connector.Transport readTransport(final Object object) {
+        if (object != null) {
+            return Connector.Transport.getValueOf((String) object);
         } else {
             return null;
         }
@@ -137,6 +155,14 @@ public final class DaoUtils {
             return null;
         }
     }
+    
+    public static NetworkPoint readPoint(final Object object) {
+        if (object != null) {
+            return new NetworkPoint((String) object);
+        } else {
+            return null;
+        }
+    }
 
     public static String readString(final Object object) {
         if (object != null) {
@@ -181,6 +207,18 @@ public final class DaoUtils {
     
     public static String writeMonitorAction(final Monitor.Action action) {
         return action.toString();
+    }
+    
+    public static String writeTag(final NetworkPoint.Tag tag) {
+        return tag.toString();
+    }
+    
+    public static String writeTransport(final Connector.Transport transport) {
+        return transport.toString();
+    }
+    
+    public static String writePoint(final NetworkPoint point) {
+        return point.toString();
     }
 
     public static String writeBigDecimal(final BigDecimal bigDecimal) {
