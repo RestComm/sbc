@@ -102,10 +102,10 @@ private final static String namespace = "org.restcomm.sbc.dao.BanListDao.";
     }
 
     @Override
-    public List<BanList> getBanLists(final String ipAddress) {
+    public List<BanList> getBanLists() {
         final SqlSession session = sessions.openSession();
         try {
-            final List<Map<String, Object>> results = session.selectList(namespace + "getEntries", ipAddress);
+            final List<Map<String, Object>> results = session.selectList(namespace + "getEntries");
             final List<BanList> entrys = new ArrayList<BanList>();
             if (results != null && !results.isEmpty()) {
                 for (final Map<String, Object> result : results) {

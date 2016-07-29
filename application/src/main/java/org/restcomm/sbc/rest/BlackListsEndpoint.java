@@ -137,7 +137,6 @@ public abstract class BlackListsEndpoint extends SecuredEndpoint {
         if (banList == null)
             return status(NOT_FOUND).build();
         
-
         dao.removeBanList(banList);
 
         return ok().build();

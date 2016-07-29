@@ -36,7 +36,7 @@ public interface BanListDao {
     
 	void addBanList(BanList entry);
 
-    List<BanList> getBanLists(String ipAddress);
+    List<BanList> getBanLists();
 
     void removeBanList(BanList banList);
     

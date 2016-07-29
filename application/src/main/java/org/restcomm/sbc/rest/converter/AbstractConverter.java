@@ -413,6 +413,20 @@ public abstract class AbstractConverter implements Converter {
     protected void writeAction(final String action, final JsonObject object) {
         object.addProperty("monitor_action", action);
     }
+    
+    protected void writeTag(final String tag, final HierarchicalStreamWriter writer) {
+        writer.startNode("Tag");
+        if (tag != null) {
+            writer.setValue(tag);
+        } else {
+            writer.setValue(null);
+        }
+        writer.endNode();
+    }
+
+    protected void writeTag(final String tag, final JsonObject object) {
+        object.addProperty("tag", tag);
+    }
 
     protected void writeType(final String type, final HierarchicalStreamWriter writer) {
         writer.startNode("Type");
