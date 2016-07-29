@@ -6,7 +6,7 @@
   <parent>
     <artifactId>restcomm-sbc</artifactId>
     <groupId>org.restcomm</groupId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.20</version>
   </parent>
  
 
