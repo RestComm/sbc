@@ -56,7 +56,6 @@ public final class Realm extends AuthorizingRealm {
 
     public Realm() {
         super();
-        LOG.debug("REALM Created ");
     }
 
     @Override
@@ -67,7 +66,6 @@ public final class Realm extends AuthorizingRealm {
         final AccountsDao accounts = daos.getAccountsDao();
         final Account account = accounts.getAccount(sid);
         final String roleName = account.getRole();
-        LOG.debug("rolename "+roleName);
         final Set<String> set = new HashSet<String>();
         set.add(roleName);
         final SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo(set);

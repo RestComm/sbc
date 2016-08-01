@@ -62,8 +62,8 @@ public abstract class DefaultDPIProcessor extends DefaultProcessor   {
 
 	@Override
 	public void process(MutableMessage message) throws ProcessorParsingException {
-		
-		LOG.debug(">> process() message ["+message+"]");
+		if(LOG.isDebugEnabled())
+			LOG.debug(">> process() message ["+message+"]");
 		
 		ImmutableMessage immutableMessage=(ImmutableMessage)message;
 		
@@ -77,12 +77,14 @@ public abstract class DefaultDPIProcessor extends DefaultProcessor   {
 		
 		Processor nextLink = null;
 		if(chain!=null) {
-			LOG.debug("DPI "+type+" from callback "+((Processor)getCallback()).getName()+" chain "+chain.getName());
+			if(LOG.isDebugEnabled())
+				LOG.debug("DPI "+type+" from callback "+((Processor)getCallback()).getName()+" chain "+chain.getName());
 			nextLink=chain.getNextLink(this);
 		}		
 		
 		if(nextLink!=null) {
-			LOG.debug("DPI "+type+" from callback "+((Processor)getCallback()).getName()+" nextlink "+nextLink.getName());
+			if(LOG.isDebugEnabled())
+				LOG.debug("DPI "+type+" from callback "+((Processor)getCallback()).getName()+" nextlink "+nextLink.getName());
 			nextLink.process(message);
 		}
 		

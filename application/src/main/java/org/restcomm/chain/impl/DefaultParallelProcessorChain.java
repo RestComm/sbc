@@ -89,17 +89,20 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 			}
 			
 			if(message!=null) {
-				LOG.debug("<< DPC "+type+" output message ["+message+"]");
+				if(LOG.isDebugEnabled())
+					LOG.debug("<< DPC "+type+" output message ["+message+"]");
 			}
 			
 			fireEndEvent(message, (Processor) getCallback());
 			Processor nextLink = null;
 			
-			LOG.debug("DPC "+type+" from callback "+getName()+" chain "+getCallback());
+			if(LOG.isDebugEnabled())
+				LOG.debug("DPC "+type+" from callback "+getName()+" chain "+getCallback());
 			nextLink=getNextLink((DefaultProcessor) getCallback());
 				
 			if(nextLink!=null) {
-				LOG.debug("DPC "+type+" from callback "+getName()+" nextlink "+nextLink);
+				if(LOG.isDebugEnabled())
+					LOG.debug("DPC "+type+" from callback "+getName()+" nextlink "+nextLink);
 				nextLink.process(message);
 			}
 			
@@ -156,7 +159,8 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 				fireProcessingEvent(message, processor);
 				processor.getCallback().doProcess(message);
 				if(chain!=null) {
-					LOG.debug("DPC "+type+" from callback "+getCallback()+" chain "+chain);			
+					if(LOG.isDebugEnabled())
+						LOG.debug("DPC "+type+" from callback "+getCallback()+" chain "+chain);			
 				}
 				fireEndEvent(message, processor);
 				

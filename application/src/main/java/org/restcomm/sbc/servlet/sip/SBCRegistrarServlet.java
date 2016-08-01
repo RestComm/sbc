@@ -90,14 +90,14 @@ public class SBCRegistrarServlet extends SipServlet {
 		routeMZTransport=ConfigurationCache.getRouteMZTransport();
 		routeMZPort     =ConfigurationCache.getRouteMZPort();
 		
-		//if(LOG.isDebugEnabled()){
-			LOG.info("MZ :"+mzIface+", "+mzIPAddress+":"+mzPort+", "+mzTransport);
-			LOG.info("DMZ:"+dmzIface+", "+dmzIPAddress+":"+dmzPort+", "+dmzTransport);
-			LOG.info("Route MZ Target:"+routeMZIPAddress+":"+routeMZPort+", "+routeMZTransport);
-			LOG.info("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
-			LOG.info("MaxUATTL:"+ConfigurationCache.getRegThrottleMaxUATTL());
-			LOG.info("MinRETTL:"+ConfigurationCache.getRegThrottleMinRegistartTTL());
-	    //}
+		if(LOG.isDebugEnabled()){
+			LOG.debug("MZ :"+mzIface+", "+mzIPAddress+":"+mzPort+", "+mzTransport);
+			LOG.debug("DMZ:"+dmzIface+", "+dmzIPAddress+":"+dmzPort+", "+dmzTransport);
+			LOG.debug("Route MZ Target:"+routeMZIPAddress+":"+routeMZPort+", "+routeMZTransport);
+			LOG.debug("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
+			LOG.debug("MaxUATTL:"+ConfigurationCache.getRegThrottleMaxUATTL());
+			LOG.debug("MinRETTL:"+ConfigurationCache.getRegThrottleMinRegistartTTL());
+	    }
 		
 		upChain=new UpstreamRegistrarProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
