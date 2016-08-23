@@ -25,7 +25,10 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    22 jul. 2016 16:42:41
+ * @class   LocationList.java
+ *
  */
 @NotThreadSafe
 public final class LocationList {

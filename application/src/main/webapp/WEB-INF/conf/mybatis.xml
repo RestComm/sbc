@@ -27,9 +27,12 @@
   
   
   <mappers>
+  	<mapper url="file:///${sql}/connectors.xml"/>
+  	<mapper url="file:///${sql}/network-points.xml"/>
+    <mapper url="file:///${sql}/white-list.xml"/>
+    <mapper url="file:///${sql}/black-list.xml"/>
     <mapper url="file:///${sql}/call-detail-records.xml"/>
     <mapper url="file:///${sql}/http-cookies.xml"/>
-    <mapper url="file:///${sql}/recordings.xml"/>
     <mapper url="file:///${sql}/accounts.xml"/>
   </mappers>
 </configuration>

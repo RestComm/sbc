@@ -101,8 +101,8 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 	
 	@Override
 	public void process(MutableMessage message) throws ProcessorParsingException {
-		
-		LOG.debug(">> DSC "+getType()+" input message ["+message+"]");
+		if(LOG.isDebugEnabled())
+			LOG.debug(">> DSC "+getType()+" input message ["+message+"]");
 		
 		
 		fireProcessingEvent(message, (Processor) getCallback());
@@ -112,12 +112,14 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		
 		
 		if(chain!=null) {
-			LOG.debug("DSC "+getType()+" from callback "+getCallback()+" chain "+chain);
+			if(LOG.isDebugEnabled())
+				LOG.debug("DSC "+getType()+" from callback "+getCallback()+" chain "+chain);
 		}	
 		Processor nextLink=getNextLink((DefaultProcessor) getCallback());
 			
 		if(nextLink!=null) {
-			LOG.debug("DSC "+getType()+" from callback "+getCallback()+" nextlink "+nextLink);
+			if(LOG.isDebugEnabled())
+				LOG.debug("DSC "+getType()+" from callback "+getCallback()+" nextlink "+nextLink);
 			nextLink.process(message);
 		}
 		

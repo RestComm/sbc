@@ -36,7 +36,6 @@ public final class CredentialsMatcher extends SimpleCredentialsMatcher {
 	private static final Logger LOG = Logger.getLogger(CredentialsMatcher.class);
     public CredentialsMatcher() {
         super();
-        LOG.debug("CM Created ");
     }
 
     @Override

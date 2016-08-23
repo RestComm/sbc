@@ -22,6 +22,7 @@ package org.restcomm.sbc.dao;
 import org.mobicents.servlet.sip.restcomm.Configurable;
 import org.mobicents.servlet.sip.restcomm.LifeCycle;
 
+
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
@@ -30,8 +31,13 @@ public interface DaoManager extends Configurable, LifeCycle {
 	CallDetailRecordsDao getCallDetailRecordsDao();
 
 	AccountsDao getAccountsDao();
-	
-	RecordingsDao getRecordingsDao();
 
+	WhiteListDao getWhiteListDao();
+	
+	BlackListDao getBlackListDao();
+	
+	NetworkPointsDao getNetworkPointDao();
+	
+	ConnectorsDao getConnectorsDao();
     
 }

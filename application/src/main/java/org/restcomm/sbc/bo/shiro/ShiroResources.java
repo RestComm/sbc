@@ -61,7 +61,6 @@ public final class ShiroResources {
     }
 
     public <T> void set(final Class<T> klass, final T instance) {
-    	LOG.info("SET "+klass+ " INST "+instance);
         synchronized (klass) {
             services.put(klass, instance);
         }

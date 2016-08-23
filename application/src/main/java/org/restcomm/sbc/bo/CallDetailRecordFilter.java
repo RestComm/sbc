@@ -33,7 +33,7 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
 @Immutable
 public class CallDetailRecordFilter {
 
-    private final String accountSid;
+    
     private final String recipient;
     private final String sender;
     private final String status;
@@ -45,14 +45,13 @@ public class CallDetailRecordFilter {
     private final Integer offset;
     private final String instanceid;
 
-    public CallDetailRecordFilter(String accountSid, String recipient, String sender, String status, String startTime, String endTime,
+    public CallDetailRecordFilter(String recipient, String sender, String status, String startTime, String endTime,
             String parentCallSid, String conferenceSid, Integer limit, Integer offset) throws ParseException {
-        this(accountSid,recipient,sender,status,startTime,endTime,parentCallSid, conferenceSid, limit,offset,null);
+        this(recipient,sender,status,startTime,endTime,parentCallSid, conferenceSid, limit,offset,null);
     }
 
-    public CallDetailRecordFilter(String accountSid, String recipient, String sender, String status, String startTime, String endTime,
-            String parentCallSid, String conferenceSid, Integer limit, Integer offset, String instanceId) throws ParseException {
-        this.accountSid = accountSid;
+    public CallDetailRecordFilter(String recipient, String sender, String status, String startTime, String endTime,
+            String parentCallSid, String conferenceSid, Integer limit, Integer offset, String instanceId) throws ParseException { 
 
         // The LIKE keyword uses '%' to match any (including 0) number of characters, and '_' to match exactly one character
         // Add here the '%' keyword so +15126002188 will be the same as 15126002188 and 6002188
@@ -89,9 +88,6 @@ public class CallDetailRecordFilter {
         }
     }
 
-    public String getSid() {
-        return accountSid;
-    }
 
     public String getRecipient() {
         return recipient;

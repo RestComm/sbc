@@ -1,17 +1,8 @@
 package org.restcomm.sbc.managers;
 
 import java.io.IOException;
-
-
-
-
-
-
-
-
-
-
-
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
@@ -32,6 +23,8 @@ import javax.sip.ListeningPoint;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
+import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.NetworkPoint;
 
 
 public class JMXManager implements
@@ -42,14 +35,18 @@ public class JMXManager implements
 	private MBeanServerConnection mbsc;
 	private ObjectName objectName;
 	private static JMXManager jmxManager;
+	private ArrayList<Connector> connectors;
 	
 	private JMXManager() throws IOException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException {
 		System.setProperty("com.sun.management.jmxremote", "");
 		System.setProperty("com.sun.management.jmxremote.port", "9999");
 		System.setProperty("com.sun.management.jmxremote.ssl", "false");
 		System.setProperty("com.sun.management.jmxremote.authenticate", "false");
-		LOG.info("\nCreate an RMI connector client and " +
+		
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("\nCreate an RMI connector client and " +
 				"connect it to the RMI connector server");
+		}
 		StringBuffer urlString = new StringBuffer();
 		urlString.append("service:jmx:rmi://localhost:");
 		urlString.append(9999);
@@ -61,7 +58,10 @@ public class JMXManager implements
 
 
 		objectName = new ObjectName("Sip-Servlets:type=Service");
-		LOG.info("object "+objectName);
+		
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("object "+objectName);
+		}
 		// Get the Platform MBean Server
 		mbsc = jmxc.getMBeanServerConnection();
 		mbsc.addNotificationListener(objectName, this, null, null);
@@ -69,7 +69,7 @@ public class JMXManager implements
 
 	}
 	
-	public static JMXManager getInstanace() throws MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
+	public static JMXManager getInstance() throws MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
 		if(jmxManager==null){
 			jmxManager=new JMXManager();
 		}
@@ -77,7 +77,9 @@ public class JMXManager implements
 	}
 	
 	public boolean removeSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-		LOG.info("-------Removing SipConnector "+ipAddress+":"+port+"/"+transport);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-------Removing SipConnector "+ipAddress+":"+port+"/"+transport);
+		}
         Boolean stat=(Boolean) mbsc.invoke(objectName, "removeSipConnector",
         		new Object[] {ipAddress , port, transport},
         		new String[]{String.class.getCanonicalName(), int.class.getCanonicalName(), String.class.getCanonicalName()});
@@ -86,7 +88,9 @@ public class JMXManager implements
 	}
 	
 	public boolean addSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-		LOG.info("-------Adding SipConnector "+ipAddress+":"+port+"/"+transport);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-------Adding SipConnector "+ipAddress+":"+port+"/"+transport);
+		}
 		// adding connector
         SipConnector udpSipConnector = new SipConnector();
         udpSipConnector.setIpAddress(ipAddress);
@@ -97,6 +101,33 @@ public class JMXManager implements
         		new Object[] {udpSipConnector}, 
         		new String[]{SipConnector.class.getCanonicalName()});
 		return stat;
+	}
+	
+	public List<Connector> getConnectors() {
+		SipConnector[] sipConnectors;
+		
+		try {
+			sipConnectors= (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);
+			for (int i = 0; i < sipConnectors.length; i++) {
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("SipConnector "+sipConnectors[i]);		
+				}
+				NetworkPoint point=NetworkManager.getNetworkPointByIpAddress(sipConnectors[i].getIpAddress());
+				Connector connector=new Connector(sipConnectors[i].getPort(), Connector.Transport.getValueOf(sipConnectors[i].getTransport()), point.getId());
+				connectors.add(connector);		
+			}
+		} catch (InstanceNotFoundException e) {
+			LOG.error(e);
+		} catch (MBeanException e) {
+			LOG.error(e);
+		} catch (ReflectionException e) {
+			LOG.error(e);
+		} catch (IOException e) {
+			LOG.error(e);
+		}  
+		return connectors;
+		
+		
 	}
 	
 	public void traceSipConnectors() throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
@@ -171,7 +202,7 @@ public class JMXManager implements
 	public static void main(String argv[]) {
 		
 		try {
-			JMXManager m=JMXManager.getInstanace();
+			JMXManager m=JMXManager.getInstance();
 			m.traceSipConnectors();
 			m.removeSipConnector("192.168.88.3", 5060, "udp");
 			System.in.read();

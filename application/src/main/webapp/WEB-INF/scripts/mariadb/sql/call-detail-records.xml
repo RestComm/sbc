@@ -5,9 +5,9 @@
 -->
 <mapper namespace="org.restcomm.sbc.dao.CallDetailRecordsDao">
   <insert id="addCallDetailRecord" parameterType="map">
-    INSERT INTO restcomm_call_detail_records (sid, instanceid, parent_call_sid, date_created, date_updated, account_sid, recipient, sender, phone_number_sid, status,
+    INSERT INTO restcomm_call_detail_records (sid, instanceid, parent_call_sid, date_created, date_updated, recipient, sender, phone_number_sid, status,
     start_time, end_time, duration, price, direction, answered_by, api_version, forwarded_from, caller_name, uri, call_path, ring_duration, conference_sid, muted, start_conference_on_enter, end_conference_on_exit, on_hold) VALUES (#{sid}, #{instanceid}, #{parent_call_sid}, 
-		#{date_created}, #{date_updated}, #{account_sid}, #{to}, #{from}, #{phone_number_sid}, #{status}, #{start_time}, #{end_time}, #{duration}, #{price},
+		#{date_created}, #{date_updated}, #{to}, #{from}, #{phone_number_sid}, #{status}, #{start_time}, #{end_time}, #{duration}, #{price},
 		#{direction},	#{answered_by}, #{api_version}, #{forwarded_from}, #{caller_name}, #{uri}, #{call_path}, #{ring_duration}, #{conference_sid}, #{muted}, #{start_conference_on_enter}, #{end_conference_on_exit}, #{on_hold});
   </insert>
   
@@ -19,7 +19,7 @@
   	<!-- Issue 153: https://bitbucket.org/telestax/telscale-restcomm/issue/153 -->
 	<!-- Issue 153: https://bitbucket.org/telestax/telscale-restcomm/issue/110 -->
 	<select id="getTotalCallDetailRecordByUsingFilters" parameterType="org.restcomm.sbc.bo.CallDetailRecordFilter" resultType="int">
-		SELECT COUNT(*) FROM restcomm_call_detail_records WHERE account_sid=#{accountSid}
+		SELECT COUNT(*) FROM restcomm_call_detail_records where true
 
 		<if test="instanceid != null">
 			AND instanceid like #{instanceid}
@@ -51,7 +51,7 @@
 	<!-- Issue 153: https://bitbucket.org/telestax/telscale-restcomm/issue/153 -->
 	<!-- Issue 153: https://bitbucket.org/telestax/telscale-restcomm/issue/110 -->
 	<select id="getCallDetailRecordByUsingFilters" parameterType="org.restcomm.sbc.bo.CallDetailRecordFilter" resultType="hashmap">
-		SELECT * FROM restcomm_call_detail_records AS restcomm_call_detail_records WHERE account_sid=#{accountSid}
+		SELECT * FROM restcomm_call_detail_records AS restcomm_call_detail_records where true
 
 		<if test="instanceid != null">
 			AND instanceid like #{instanceid}
@@ -85,7 +85,7 @@
   
   
   <select id="getCallDetailRecords" parameterType="string" resultType="hashmap">
-    SELECT * FROM restcomm_call_detail_records WHERE account_sid=#{account_sid};
+    SELECT * FROM restcomm_call_detail_records;
   </select>
   
   <select id="getCallDetailRecordsByRecipient" parameterType="string" resultType="hashmap">
@@ -125,7 +125,7 @@
   </delete>
   
   <delete id="removeCallDetailRecords" parameterType="string">
-    DELETE FROM restcomm_call_detail_records WHERE account_sid=#{account_sid};
+    DELETE FROM restcomm_call_detail_records;
   </delete>
   
   <update id="updateCallDetailRecord" parameterType="map">

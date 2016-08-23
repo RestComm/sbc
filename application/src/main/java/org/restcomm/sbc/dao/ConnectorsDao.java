@@ -17,26 +17,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.bo;
+package org.restcomm.sbc.dao;
 
 import java.util.List;
 
-import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
+import org.restcomm.sbc.bo.Connector;
+
+
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 16:48:50
+ * @class   ConnectorsDao.java
+ *
  */
-@NotThreadSafe
-public final class RecordingList {
-    private final List<Recording> recordings;
+public interface ConnectorsDao {
+	
+    void addConnector(Connector connector);
 
-    public RecordingList(final List<Recording> recordings) {
-        super();
-        this.recordings = recordings;
-    }
+    Connector getConnector(String pointId, String transport, int port);
 
-    public List<Recording> getRecordings() {
-        return recordings;
-    }
+    List<Connector> getConnectors();
+    
+    List<Connector> getConnectorsByNetworkPoint(String pointId);
+
+
+	void removeConnector(String pointId, String transport, int port);
 }

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.infinispan.Cache;
 
 import org.infinispan.manager.DefaultCacheManager;
@@ -36,16 +37,18 @@ import org.restcomm.sbc.bo.LocationFilter;
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    3/5/2016 22:47:34
  * @class   LocationHelper.java
- * @project Servlet2.5SBC
  *
  */
 public class LocationManager {
 	
 	private Cache<Object, Object> registers;
 	private static LocationManager locationManager;
+	private static final Logger LOG = Logger.getLogger(LocationManager.class);
+
 	
 	private LocationManager() {
 		registers = new DefaultCacheManager().getCache("location");
+		registers.start();
 		
 	}
 	
@@ -53,7 +56,7 @@ public class LocationManager {
 		if(locationManager==null) {
 			locationManager=new LocationManager();
 		}
-		locationManager.register("00", "192.168.0.2", 5060, "friendly-scanner", "udp", 30);
+		
 		return locationManager;
 	}
 	
@@ -65,7 +68,8 @@ public class LocationManager {
 		location.setUserAgent(userAgent);
 		location.setTransport(transport);
 		location.setUser(user);
-		
+		location.setDmzExpirationTimeInSeconds(ttl);
+		location.setMzExpirationTimeInSeconds(ttl);
 		registers.put(user, location, ttl, TimeUnit.SECONDS);
 		
 		return location;
@@ -109,6 +113,9 @@ public class LocationManager {
 	}
 
 	public Location unregister(String user) {	
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Unregistering User: "+user);
+		}
 		return (Location) registers.remove(user);	
 	}
 	
@@ -189,7 +196,25 @@ public class LocationManager {
 	}
 	
 	
-	
+	public static void main(String argv[]) {
+		LocationManager lm=LocationManager.getLocationManager();
+		lm.register("00", "192.168.0.2", 5060, "friendly-scanner", "UDP", 30);
+		lm.register("01", "192.168.0.2", 5060, "friendly-scanner", "UDP", 40);
+		lm.register("02", "192.168.0.2", 5060, "friendly-scanner", "UDP", 50);
+		lm.register("03", "192.168.0.2", 5060, "friendly-scanner", "UDP", 60);
+		while(true) {
+			for(Location location:lm.getLocations()) {
+				System.err.println(location);
+			}
+			System.err.println("---------"+lm.getLocations().size());
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	
 	

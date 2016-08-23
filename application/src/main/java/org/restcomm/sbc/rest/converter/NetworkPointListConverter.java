@@ -19,36 +19,73 @@
  */
 package org.restcomm.sbc.rest.converter;
 
+import java.lang.reflect.Type;
+
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.restcomm.sbc.bo.Recording;
-import org.restcomm.sbc.bo.RecordingList;
+import org.restcomm.sbc.bo.NetworkPoint;
+import org.restcomm.sbc.bo.NetworkPointList;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
+
+
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 22:14:16
+ * @class   NetworkPointListConverter.java
+ *
  */
 @ThreadSafe
-public final class RecordingListConverter extends AbstractConverter {
-    public RecordingListConverter(final Configuration configuration) {
+public final class NetworkPointListConverter extends AbstractConverter implements JsonSerializer<NetworkPointList> {
+
+
+    public NetworkPointListConverter(final Configuration configuration) {
         super(configuration);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public boolean canConvert(final Class klass) {
-        return RecordingList.class.equals(klass);
+        return NetworkPointList.class.equals(klass);
     }
 
     @Override
     public void marshal(final Object object, final HierarchicalStreamWriter writer, final MarshallingContext context) {
-        final RecordingList list = (RecordingList) object;
-        writer.startNode("Recordings");
-        for (final Recording recording : list.getRecordings()) {
-            context.convertAnother(recording);
+        final NetworkPointList list = (NetworkPointList) object;
+
+        writer.startNode("NetworkPoints");
+        
+
+        for (final NetworkPoint point : list.getNetworkPointList()) {
+            context.convertAnother(point);
         }
         writer.endNode();
     }
+
+   
+    @Override
+    public JsonObject serialize(NetworkPointList pointList, Type type, JsonSerializationContext context) {
+
+        JsonObject result = new JsonObject();
+
+        JsonArray array = new JsonArray();
+        for (NetworkPoint point : pointList.getNetworkPointList()) {
+            array.add(context.serialize(point));
+        }
+
+        
+
+        result.add("entries", array);
+
+        return result;
+    }
+
+   
+
 }

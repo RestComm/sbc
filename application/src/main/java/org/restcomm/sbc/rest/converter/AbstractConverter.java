@@ -122,6 +122,17 @@ public abstract class AbstractConverter implements Converter {
         object.addProperty("date_updated",
                 new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(dateUpdated.toDate()));
     }
+    
+    protected void writeDateExpires(final DateTime dateExpires, final HierarchicalStreamWriter writer) {
+        writer.startNode("DateExpires");
+        writer.setValue(new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(dateExpires.toDate()));
+        writer.endNode();
+    }
+
+    protected void writeDateExpires(final DateTime dateExpires, final JsonObject object) {
+        object.addProperty("date_expires",
+                new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(dateExpires.toDate()));
+    }
 
     protected void writeDuration(final double duration, final HierarchicalStreamWriter writer) {
         writer.startNode("Duration");
@@ -388,6 +399,34 @@ public abstract class AbstractConverter implements Converter {
     protected void writeTimeToLive(final int timeToLive, final JsonObject object) {
         object.addProperty("time_to_live", timeToLive);
     }
+    
+    protected void writeAction(final String action, final HierarchicalStreamWriter writer) {
+        writer.startNode("Action");
+        if (action != null) {
+            writer.setValue(action);
+        } else {
+            writer.setValue(null);
+        }
+        writer.endNode();
+    }
+
+    protected void writeAction(final String action, final JsonObject object) {
+        object.addProperty("monitor_action", action);
+    }
+    
+    protected void writeTag(final String tag, final HierarchicalStreamWriter writer) {
+        writer.startNode("Tag");
+        if (tag != null) {
+            writer.setValue(tag);
+        } else {
+            writer.setValue(null);
+        }
+        writer.endNode();
+    }
+
+    protected void writeTag(final String tag, final JsonObject object) {
+        object.addProperty("tag", tag);
+    }
 
     protected void writeType(final String type, final HierarchicalStreamWriter writer) {
         writer.startNode("Type");
@@ -401,6 +440,20 @@ public abstract class AbstractConverter implements Converter {
 
     protected void writeType(final String type, final JsonObject object) {
         object.addProperty("type", type);
+    }
+    
+    protected void writeReason(final String reason, final HierarchicalStreamWriter writer) {
+        writer.startNode("Reason");
+        if (reason != null) {
+            writer.setValue(reason);
+        } else {
+            writer.setValue(null);
+        }
+        writer.endNode();
+    }
+
+    protected void writeReason(final String reason, final JsonObject object) {
+        object.addProperty("reason", reason);
     }
 
     protected void writeUri(final URI uri, final HierarchicalStreamWriter writer) {

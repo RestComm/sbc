@@ -73,8 +73,8 @@ public abstract class DefaultProcessor implements Processor {
 	}
 
 	public void addProcessorListener(ProcessorListener listener) {
-		
-		 LOG.debug("Adding listener "+listener+" to "+this);
+		 if(LOG.isDebugEnabled())
+			 LOG.debug("Adding listener "+listener+" to "+this);
 	     listenerList.add(ProcessorListener.class, listener);
 	}
 	
@@ -130,10 +130,12 @@ public abstract class DefaultProcessor implements Processor {
 		if(message==null) {
 			throw new ProcessorParsingException("null Messages not allowed");
 		}
-		LOG.debug(">> process() message ["+message+"]");
+		if(LOG.isDebugEnabled())
+			LOG.debug(">> process() message ["+message+"]");
 		
-		if(!message.isLinked()&& !(this instanceof EndpointProcessor )) {	
-			LOG.debug("ABORT message ["+message+"] on chain "+chain.getName()+" on processor "+this);
+		if(!message.isLinked()&& !(this instanceof EndpointProcessor )) {
+			if(LOG.isDebugEnabled())
+				LOG.debug("ABORT message ["+message+"] on chain "+chain.getName()+" on processor "+this);
 			fireAbortEvent((Processor) getCallback());
 		}
 		else {
@@ -144,13 +146,15 @@ public abstract class DefaultProcessor implements Processor {
 		
 		Processor nextLink = null;
 		if(chain!=null) {
-			LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" chain "+chain.getName());
+			if(LOG.isDebugEnabled())
+				LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" chain "+chain.getName());
 			nextLink=chain.getNextLink(this);
 		}
 				
 		
 		if(nextLink!=null) {
-			LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" nextlink "+nextLink.getName());
+			if(LOG.isDebugEnabled())
+				LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" nextlink "+nextLink.getName());
 			nextLink.process(message);
 		}
 		

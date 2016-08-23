@@ -25,10 +25,13 @@ import java.text.ParseException;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
 
 
-/**
- * @author <a href="mailto:gvagenas@gmail.com">gvagenas</a>
- */
 
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    22 jul. 2016 16:42:28
+ * @class   LocationFilter.java
+ *
+ */
 @Immutable
 public class LocationFilter {
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author ocarriles@eolos.la (Oscar Carriles)
+-->
+<mapper namespace="org.restcomm.sbc.dao.ConnectorsDao">
+  <insert id="addEntry" parameterType="map">
+    INSERT INTO restcomm_connectors (port, transport, account_sid, n_point, n_point_route, n_point_route_alt)
+    VALUES(#{port}, #{transport}, #{account_sid}, #{n_point}, #{n_point_route}, #{n_point_route_alt});
+  </insert>
+  
+  <select id="getEntry" parameterType="map" resultType="hashmap">
+    SELECT * FROM restcomm_connectors WHERE n_point=#{n_point} AND port=#{port} AND transport=#{transport};
+  </select>
+  
+  <select id="getEntries" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_connectors;
+  </select>
+  
+  <select id="getEntriesByNetworkPoint" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_connectors WHERE n_point=#{n_point};
+  </select>
+  
+  <delete id="removeEntry" parameterType="map">
+    DELETE FROM restcomm_connectors WHERE n_point=#{n_point} AND port=#{port} AND transport=#{transport};
+  </delete>
+    
+  
+</mapper>

@@ -22,6 +22,7 @@ package org.restcomm.sbc.rest;
 
 import static javax.ws.rs.core.MediaType.*;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -31,7 +32,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
-@Path("/Accounts/{accountSid}/Locations.json")
+@Path("/Locations.json")
 @ThreadSafe
 public final class LocationsJsonEndpoint extends LocationsEndpoint {
     public LocationsJsonEndpoint() {
@@ -39,8 +40,20 @@ public final class LocationsJsonEndpoint extends LocationsEndpoint {
     }
 
     @GET
-    public Response getLocations(@PathParam("accountSid") final String accountSid, @Context UriInfo info) {
-        return getLocations(accountSid, info, APPLICATION_JSON_TYPE);
+    public Response getLocationsAsJson(@Context UriInfo info) {
+        return getLocations(info, APPLICATION_JSON_TYPE);
+    }
+    
+    @Path("/{user}")
+    @GET
+    public Response getLocationAsJson(@PathParam("user") final String user) {
+        return getLocation(user, APPLICATION_JSON_TYPE);
+    }
+    
+    @Path("/{user}")
+    @DELETE
+    public Response deleteLocationAsJson(@PathParam("user") final String user) {
+        return deleteLocation(user);
     }
 
     

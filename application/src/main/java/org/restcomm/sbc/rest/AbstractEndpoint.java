@@ -78,17 +78,6 @@ public abstract class AbstractEndpoint {
         return uri;
     }
 
-    protected boolean getHasVoiceCallerIdLookup(final MultivaluedMap<String, String> data) {
-        boolean hasVoiceCallerIdLookup = false;
-        if (data.containsKey("VoiceCallerIdLookup")) {
-            final String value = data.getFirst("VoiceCallerIdLookup");
-            if ("true".equalsIgnoreCase(value)) {
-                return true;
-            }
-        }
-        return hasVoiceCallerIdLookup;
-    }
-
     // A general purpose method to test incoming parameters for meaningful data
     protected boolean isEmpty(Object value) {
         if (value == null)

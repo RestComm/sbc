@@ -36,10 +36,6 @@ import org.mobicents.servlet.sip.restcomm.util.StringUtils;
 import org.restcomm.sbc.bo.CallDetailRecord;
 import org.restcomm.sbc.bo.Sid;
 
-
-
-
-
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
@@ -69,7 +65,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeDateCreated(cdr.getDateCreated(), writer);
         writeDateUpdated(cdr.getDateUpdated(), writer);
         writeParentCallSid(cdr.getParentCallSid(), writer);
-        writeAccountSid(cdr.getAccountSid(), writer);
         writeTo(cdr.getTo(), writer);
         writeFrom(cdr.getFrom(), writer);
         writePhoneNumberSid(cdr.getPhoneNumberSid(), writer);
@@ -85,15 +80,13 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeForwardedFrom(cdr.getForwardedFrom(), writer);
         writeCallerName(cdr.getCallerName(), writer);
         writeUri(cdr.getUri(), writer);
-        writeSubResources(cdr, writer);
         writeRingDuration(cdr.getRingDuration(), writer);
         writer.endNode();
     }
 
     private String prefix(final CallDetailRecord cdr) {
         final StringBuilder buffer = new StringBuilder();
-        buffer.append(rootUri).append(apiVersion).append("/Accounts/");
-        buffer.append(cdr.getAccountSid().toString()).append("/Calls/");
+        buffer.append(rootUri).append(apiVersion).append("/Calls/");
         buffer.append(cdr.getSid());
         return buffer.toString();
     }
@@ -106,7 +99,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeDateCreated(cdr.getDateCreated(), object);
         writeDateUpdated(cdr.getDateUpdated(), object);
         writeParentCallSid(cdr.getParentCallSid(), object);
-        writeAccountSid(cdr.getAccountSid(), object);
         writeTo(cdr.getTo(), object);
         writeFrom(cdr.getFrom(), object);
         writePhoneNumberSid(cdr.getPhoneNumberSid(), object);
@@ -122,7 +114,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeCallerName(cdr.getCallerName(), object);
         writeUri(cdr.getUri(), object);
         writeRingDuration(cdr.getRingDuration(), object);
-        writeSubResources(cdr, object);
         return object;
     }
 
@@ -252,40 +243,7 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         }
     }
 
-    private void writeNotifications(final CallDetailRecord cdr, final HierarchicalStreamWriter writer) {
-        writer.startNode("Notifications");
-        writer.setValue(prefix(cdr) + "/Notifications");
-        writer.endNode();
-    }
-
-    private void writeNotifications(final CallDetailRecord cdr, final JsonObject object) {
-        object.addProperty("notifications", prefix(cdr) + "/Notifications");
-    }
-
-    private void writeRecordings(final CallDetailRecord cdr, final HierarchicalStreamWriter writer) {
-        writer.startNode("Recordings");
-        writer.setValue(prefix(cdr) + "/Recordings");
-        writer.endNode();
-    }
-
-    private void writeRecordings(final CallDetailRecord cdr, final JsonObject object) {
-        object.addProperty("recordings", prefix(cdr) + "/Recordings");
-    }
-
-    private void writeSubResources(final CallDetailRecord cdr, final HierarchicalStreamWriter writer) {
-        writer.startNode("SubresourceUris");
-        writeNotifications(cdr, writer);
-        writeRecordings(cdr, writer);
-        writer.endNode();
-    }
-
-    private void writeSubResources(final CallDetailRecord cdr, final JsonObject object) {
-        final JsonObject other = new JsonObject();
-        writeNotifications(cdr, other);
-        writeRecordings(cdr, other);
-        object.add("subresource_uris", other);
-    }
-
+   
     private void writeInstanceId(final String instanceId, final HierarchicalStreamWriter writer) {
         if (instanceId != null && !instanceId.isEmpty()) {
             writer.startNode("InstanceId");

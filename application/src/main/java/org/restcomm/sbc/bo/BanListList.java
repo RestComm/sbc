@@ -17,30 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.dao;
+package org.restcomm.sbc.bo;
 
 import java.util.List;
 
-import org.restcomm.sbc.bo.Recording;
-import org.restcomm.sbc.bo.Sid;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    22 jul. 2016 16:42:41
+ * @class   LocationList.java
+ *
  */
-public interface RecordingsDao {
-    void addRecording(Recording recording);
+@NotThreadSafe
+public final class BanListList {
+    private final List<BanList> banLists;
 
-    Recording getRecording(Sid sid);
+    public BanListList(final List<BanList> banLists) {
+        super();
+        this.banLists = banLists;
+    }
 
-    // otsakir: is this really needed?
-    Recording getRecordingByCall(Sid callSid);
-
-    List<Recording> getRecordingsByCall(Sid callSid);
-
-    List<Recording> getRecordings(Sid accountSid);
-
-    void removeRecording(Sid sid);
-
-    void removeRecordings(Sid accountSid);
+    public List<BanList> getBanListList() {
+        return banLists;
+    }
 }

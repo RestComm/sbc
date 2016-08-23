@@ -55,8 +55,7 @@ public class NetworkPointBean implements Serializable {
 	        	List<InterfaceAddress> inetAddresses =  netIf.getInterfaceAddresses();
 	 	       
 		        for (InterfaceAddress inetAddress : inetAddresses) {
-		        	NetworkPoint point=new NetworkPoint();
-		        	point.setId(id);
+		        	NetworkPoint point=new NetworkPoint(netIf.getName()+"-"+id);
 		        	point.setGroup(group);
 		        	point.setName(netIf.getName());
 		        	point.setDescription(netIf.getDisplayName());

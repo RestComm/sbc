@@ -23,7 +23,6 @@ import static javax.ws.rs.core.MediaType.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -34,7 +33,7 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 /**
  * @author quintana.thomas@gmail.com (Thomas Quintana)
  */
-@Path("/Accounts/{accountSid}/Calls.json")
+@Path("/Calls.json")
 @ThreadSafe
 public final class CallsJsonEndpoint extends CallsEndpoint {
     public CallsJsonEndpoint() {
@@ -44,8 +43,8 @@ public final class CallsJsonEndpoint extends CallsEndpoint {
     // Issue 153: https://bitbucket.org/telestax/telscale-restcomm/issue/153
     // Issue 110: https://bitbucket.org/telestax/telscale-restcomm/issue/110
     @GET
-    public Response getCalls(@PathParam("accountSid") final String accountSid, @Context UriInfo info) {
-        return getCalls(accountSid, info, APPLICATION_JSON_TYPE);
+    public Response getCalls(@Context UriInfo info) {
+        return getCalls(info, APPLICATION_JSON_TYPE);
     }
 
     

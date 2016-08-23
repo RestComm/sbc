@@ -31,6 +31,6 @@ import java.util.EventListener;
  */
 public interface NotificationListener extends EventListener {
 	
-	void onActionRequired (SuspectActivityElectable sae);
+	void onActionRequired (Object source, String message);
 
 }

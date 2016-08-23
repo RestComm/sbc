@@ -110,19 +110,22 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	@Override
 	public void onProcessorProcessing(Message message, Processor processor) {
 		SipServletMessage m = (SipServletMessage) message.getContent();
-		LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
 	}
 
 	@Override
 	public void onProcessorEnd(Message message, Processor processor) {
 		SipServletMessage m = (SipServletMessage) message.getContent();
-		LOG.debug(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
 		
 	}
 
 	@Override
 	public void onProcessorAbort(Processor processor) {	
-		LOG.debug(">>onProcessorAbort() "+processor.getType()+"("+processor.getName()+")");
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorAbort() "+processor.getType()+"("+processor.getName()+")");
 	}
 	
 

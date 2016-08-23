@@ -17,28 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.rest;
+package org.restcomm.sbc.bo;
 
-import javax.ws.rs.GET;
-import static javax.ws.rs.core.MediaType.*;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
+import java.util.List;
 
-import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
+
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 19:29:58
+ * @class   ConnectorList.java
+ *
  */
-@Path("/Accounts/{accountSid}/Recordings.json")
-@ThreadSafe
-public final class RecordingsJsonEndpoint extends RecordingsEndpoint {
-    public RecordingsJsonEndpoint() {
+@NotThreadSafe
+public final class ConnectorList {
+    private final List<Connector> connectors;
+
+    public ConnectorList(final List<Connector> connectors) {
         super();
+        this.connectors = connectors;
     }
 
-    @GET
-    public Response getRecordings(@PathParam("accountSid") final String accountSid) {
-        return getRecordings(accountSid, APPLICATION_JSON_TYPE);
+    public List<Connector> getConnectorList() {
+        return connectors;
     }
 }
