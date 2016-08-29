@@ -67,8 +67,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writeHost(location.getHost(), writer);
         writeUser(location.getUser(), writer);
         writeTransport(location.getTransport(), writer);
-        writeDmzExpireTimestamp(location.getDmzExpireTimestamp(), writer);
-        writeMzExpireTimestamp(location.getMzExpireTimestamp(), writer);
+        writeExpires(location.getExpires(), writer);
         writeUserAgent(location.getUserAgent(), writer);
         writePort(location.getPort(), writer);
         writer.endNode();
@@ -82,8 +81,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writeHost(location.getHost(), object);
         writeTransport(location.getTransport(), object);
         writePort(location.getPort(), object);
-        writeDmzExpireTimestamp(location.getDmzExpireTimestamp(), object);
-        writeMzExpireTimestamp(location.getMzExpireTimestamp(), object);
+        writeExpires(location.getExpires(), object);
         writeUserAgent(location.getUserAgent(), object);
         return object;
     }
@@ -152,32 +150,20 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
     }
 
 
-    private void writeDmzExpireTimestamp(final Long time, final HierarchicalStreamWriter writer) {
-        writer.startNode("DmzExpireTimestamp");
+    private void writeExpires(final DateTime time, final HierarchicalStreamWriter writer) {
+        writer.startNode("Expires");
         if (time != null) {
             writer.setValue(time.toString());
         }
         writer.endNode();
     }
 
-    private void writeDmzExpireTimestamp(final Long time, final JsonObject object) {
+    private void writeExpires(final DateTime time, final JsonObject object) {
         if (time != null) {
-            object.addProperty("dmzExpireTimestamp", time.toString());
+            object.addProperty("expires", time.toString());
         }
     }
     
-    private void writeMzExpireTimestamp(final Long time, final HierarchicalStreamWriter writer) {
-        writer.startNode("MzExpireTimestamp");
-        if (time != null) {
-            writer.setValue(time.toString());
-        }
-        writer.endNode();
-    }
-
-    private void writeMzExpireTimestamp(final Long time, final JsonObject object) {
-        if (time != null) {
-            object.addProperty("mzExpireTimestamp", time.toString());
-        }
-    }
+   
 
 }

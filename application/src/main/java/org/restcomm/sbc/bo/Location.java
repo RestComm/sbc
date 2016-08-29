@@ -20,7 +20,7 @@
 package org.restcomm.sbc.bo;
 
 
-
+import org.joda.time.DateTime;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -33,18 +33,26 @@ public class Location {
 	private String user;
 	private String host;
 	private int port;
-	private String userAgent;
 	private String transport;
-
-	private long mzExpireTimestamp;
-	private long dmzExpireTimestamp;
+	private String userAgent;
 	
+	private DateTime expires;
+	
+	public Location(String user, String host, int port, String transport) {
+		this(user);
+		this.host=host;
+		this.port=(port<0?5060:port);
+		this.transport=transport.toUpperCase();
+		
+	}
+	
+	public Location(String user) {
+		this.user=user;
+		
+	}
 	
 	public String getUser() {
 		return user;
-	}
-	public void setUser(String user) {
-		this.user = user;
 	}
 	
 	public String getUserAgent() {
@@ -56,63 +64,52 @@ public class Location {
 	
 	
 	public String getTransport() {
-		return transport;
-	}
-	public void setTransport(String transport) {
-		this.transport = transport;
+		return transport;	
 	}
 	
-	public boolean isMzExpired() {
-		return (System.currentTimeMillis())>=getMzExpireTimestamp()?true:false;
+	public boolean isExpired() {
+		return (getExpires().isAfterNow())?true:false;
 	}
 	
-	public long getMzMiliSecondsToExpiration() {
-		return (getMzExpireTimestamp()-(System.currentTimeMillis()));
-	}
 	
-	public boolean isDmzExpired() {
-		return (System.currentTimeMillis())>=getDmzExpireTimestamp()?true:false;
-	}
-	
-	public long getDmzMiliSecondsToExpiration() {
-		return (getDmzExpireTimestamp()-(System.currentTimeMillis()));
+	public long getMiliSecondsToExpiration() {
+		return getExpires().minus(System.currentTimeMillis()).getMillis();
 	}
 	
 	public String toString() {
-		return "<Location> user:"+user+" expires on MZ/DMZ "+getMzMiliSecondsToExpiration()+"/"+getDmzMiliSecondsToExpiration()+" ms host:"+host+":"+port+" transport:"+transport+" User-Agent:"+userAgent;
+		return "<Location> user:"+user+" expires on MZ "+getMiliSecondsToExpiration()+" ms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent;
 	}
 	
 	public String getHost() {
 		return host;
 	}
-	public void setHost(String host) {
-		this.host = host;
-	}
+	
 	public int getPort() {
 		return port;
 	}
+	
+	public DateTime getExpires() {
+		return expires;
+	}
+	public void setExpires(DateTime expireTimestamp) {
+		this.expires = expireTimestamp;
+	}
+	
+	public void setExpirationTimeInSeconds(int expires) {	
+		setExpires(DateTime.now().plus(expires*1000));	
+	}
+	
+	
+	public void setHost(String host) {
+		this.host = host;
+	}
+
 	public void setPort(int port) {
 		this.port = port;
 	}
-	public long getMzExpireTimestamp() {
-		return mzExpireTimestamp;
-	}
-	public void setMzExpireTimestamp(long mzExpireTimestamp) {
-		this.mzExpireTimestamp = mzExpireTimestamp;
-	}
-	public long getDmzExpireTimestamp() {
-		return dmzExpireTimestamp;
-	}
-	public void setDmzExpireTimestamp(long dmzExpireTimestamp) {
-		this.dmzExpireTimestamp = dmzExpireTimestamp;
-	}
-	
-	public void setDmzExpirationTimeInSeconds(int expires) {	
-		setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
-	}
-	
-	public void setMzExpirationTimeInSeconds(int expires) {
-		setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
+
+	public void setTransport(String transport) {
+		this.transport = transport;
 	}	
 
 }

@@ -20,11 +20,13 @@
 
 package org.restcomm.sbc.managers;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.sip.PeerUnavailableException;
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
 
@@ -41,7 +43,7 @@ import org.restcomm.sbc.bo.LocationFilter;
  */
 public class LocationManager {
 	
-	private Cache<Object, Object> registers;
+	private Cache<String, Location> registers;
 	private static LocationManager locationManager;
 	private static final Logger LOG = Logger.getLogger(LocationManager.class);
 
@@ -61,24 +63,37 @@ public class LocationManager {
 	}
 	
 	
-	public Location register(String user, String host, int port, String userAgent, String transport, int ttl) {
-		Location location=new Location();
-		location.setHost(host);
-		location.setPort(port);
+	public void register(Location location, String userAgent, int ttl) {
+	
 		location.setUserAgent(userAgent);
-		location.setTransport(transport);
-		location.setUser(user);
-		location.setDmzExpirationTimeInSeconds(ttl);
-		location.setMzExpirationTimeInSeconds(ttl);
-		registers.put(user, location, ttl, TimeUnit.SECONDS);
+		location.setExpirationTimeInSeconds(ttl);
+		registers.put(location.getUser(), location, ttl, TimeUnit.SECONDS);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("registers.put "+location.getUser());
+		}
 		
-		return location;
-			
 	}
 	
-	public Location getLocation(String user) {
-		return (Location) registers.get(user);
+	public Location unregister(String user) {
+		return registers.remove(user);
 	}
+	
+	
+	public Location getLocation(String user) {
+		return registers.get(user);
+	}
+	
+	public Location getLocation(String user, String host) {
+		for(Location location:registers.values()) {
+			if(location.getHost().equals(host) &&
+			   location.getUser().equals(user)) {
+				return location;
+			}
+			
+		}
+		return null;
+	}
+	
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Collection<Location> getLocations() {	
@@ -87,15 +102,17 @@ public class LocationManager {
 		return al;
 	}
 	
-	public boolean isMzAlive(String user) {
-		Location location=getLocation(user);
-		return (location!=null && !location.isMzExpired())?true:false;
-		
-	}
 	
-	public boolean isDmzAlive(String user) {
+	public boolean isExpired(String user) {
 		Location location=getLocation(user);
-		return (location!=null && !location.isDmzExpired())?true:false;
+		
+		boolean result=(location!=null && !location.isExpired())?true:false;
+		
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("isExpired "+result+":"+location);
+		}
+		return result;
+		
 		
 	}
 	
@@ -103,33 +120,19 @@ public class LocationManager {
 		return getLocation(user)!=null;
 	}
 	
-	public boolean match(String user, String host, int port) {
+	public boolean match(String user) {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("match "+user);
+		}
 		Location location=getLocation(user);
-		if(location!=null && location.getHost().equals(host) && location.getPort()==port) {
+		if(location!=null) {
 			return true;
 		}
 		return false;
 		
 	}
 
-	public Location unregister(String user) {	
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Unregistering User: "+user);
-		}
-		return (Location) registers.remove(user);	
-	}
 	
-	public void setDmzExpirationTimeInSeconds(String user, int expires) {
-		Location location=getLocation(user);
-		location.setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
-		
-	}
-	
-	public void setMzExpirationTimeInSeconds(String user, int expires) {
-		Location location=getLocation(user);
-		location.setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
-		
-	}
 
 	public int getTotalLocations(LocationFilter filterForTotal) {
 		int counter = 0;
@@ -194,29 +197,16 @@ public class LocationManager {
 		return locations;
 				
 	}
-	
-	
-	public static void main(String argv[]) {
+	public static void main(String argv[]) throws PeerUnavailableException, ParseException, InterruptedException {
 		LocationManager lm=LocationManager.getLocationManager();
-		lm.register("00", "192.168.0.2", 5060, "friendly-scanner", "UDP", 30);
-		lm.register("01", "192.168.0.2", 5060, "friendly-scanner", "UDP", 40);
-		lm.register("02", "192.168.0.2", 5060, "friendly-scanner", "UDP", 50);
-		lm.register("03", "192.168.0.2", 5060, "friendly-scanner", "UDP", 60);
+		Location location=new Location("11","192.168.0.96",5060,"udp");
+		lm.register(location, "userAgent", 30);
 		while(true) {
-			for(Location location:lm.getLocations()) {
-				System.err.println(location);
-			}
-			System.err.println("---------"+lm.getLocations().size());
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			System.out.println("Expired "+lm.isExpired(location.getUser()));
+			Thread.sleep(1000);
 		}
 	}
-	
-	
-	
 
+	
+	
 }
