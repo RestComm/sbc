@@ -110,6 +110,16 @@ public class Location {
 
 	public void setTransport(String transport) {
 		this.transport = transport;
-	}	
+	}
+	
+	@Override
+	public boolean equals(Object location) {
+		Location otherLocation=(Location) location;
+		if (otherLocation.host.equals(host) && otherLocation.user.equals(user)) {
+			return true;
+		}
+		return false;
+		
+	}
 
 }

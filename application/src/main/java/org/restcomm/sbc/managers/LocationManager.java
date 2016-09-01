@@ -20,16 +20,12 @@
 
 package org.restcomm.sbc.managers;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.sip.PeerUnavailableException;
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
-
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
@@ -37,11 +33,11 @@ import org.restcomm.sbc.bo.LocationFilter;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:47:34
- * @class   LocationHelper.java
+ * @date    1 sept. 2016 20:08:51
+ * @class   LocationManager.java
  *
  */
-public class LocationManager {
+public class LocationManager  {
 	
 	private Cache<String, Location> registers;
 	private static LocationManager locationManager;
@@ -84,13 +80,11 @@ public class LocationManager {
 	}
 	
 	public Location getLocation(String user, String host) {
-		for(Location location:registers.values()) {
-			if(location.getHost().equals(host) &&
-			   location.getUser().equals(user)) {
-				return location;
-			}
-			
+		Location location=registers.get(user);
+		if(location.getHost().equals(host)) {
+			return location;
 		}
+		
 		return null;
 	}
 	
@@ -197,16 +191,6 @@ public class LocationManager {
 		return locations;
 				
 	}
-	public static void main(String argv[]) throws PeerUnavailableException, ParseException, InterruptedException {
-		LocationManager lm=LocationManager.getLocationManager();
-		Location location=new Location("11","192.168.0.96",5060,"udp");
-		lm.register(location, "userAgent", 30);
-		while(true) {
-			System.out.println("Expired "+lm.isExpired(location.getUser()));
-			Thread.sleep(1000);
-		}
-	}
-
 	
 	
 }
