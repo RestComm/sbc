@@ -1,0 +1,201 @@
+= Restcomm API – Network Point
+
+[[MetworkPoints]]
+== NetworkPoints
+
+Network Points are addressable links hosted at a real hardware communication interface (NIC). These points are known as virtual interfaces.
+
+.Network Points example, one NIC, multiple virtual interfaces
+[ditaa,net-point,png]
+--
+
+           +------------------+
+           |eth0              |
+ ---eth00 ->                  |
+ ---eth01 -> MAC 448A5B2D1934 |
+ ---eth02 ->                  |  
+           |                  |
+           +-------++++++++++-+
+                   ||||||||||    
+                   ++++++++++
+--
+A special case of a non-virtualized interface,  is the one that can only be hardware addressed thru a unique point. In such a case (perharps the most common), this unique address will be XXX0-0.
+
+
+NOTE: Network Points have nothing to do with IP Addresses. They are hardware addresses at a lower layer OSI perspective.
+
+Network points are auto-detected by the SBC. You cannot create a new one. If one NIC is added to the system, it will appear at the next boot time with an IDLE tag. You will have to tag *ONLY* those Network points used by the SBC.
+
+Network Points have to be tagged to give them its direction perspective, in other words, to give them DMZ or MZ ownership.
+
+
+=== NetworkPoints Resource URI
+
+*/2012-04-24/NetworkPoints/\{Id}*
+
+=== Resource Properties
+
+[cols=",",options="header",]
+|=========================================================================================================================
+|Property |Description
+|Id |A string that uniquely identifies this location entry.
+|MacAddress |Hardware address that uniquely identifies a NIC.
+|Description |Descriptive driver name.
+|Tag| A string representing which side of the network has its ownership (MZ/DMZ/UNINITIALIZED/ORPHAN).
+|AccountSid | Unique identifier representing the account that tagged the Network point.
+|=========================================================================================================================
+
+=== Supported Operations
+
+*HTTP GET.* Returns the representation of an NetworkPoint resource, including the properties above.
+
+* NetworkPoint Resource URI. */2012-04-24/NetworkPoints/\{Id}*
+
+**HTTP POST**. Returns the NetworkPoint representation, including the properties above. Below you will find a list of optional parameters.
+
+=== Request Parameters
+
+[cols=",",options="header",]
+|==============================================================================================
+|Parameter |Description
+|Id |A string that uniquely identifies this point entry.
+|==============================================================================================
+
+**Get information about the Network point.**
+
+....
+curl -X GET  http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints
+....
+
+
+
+....
+curl -X GET  http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints/eth1-2
+....
+
+The above commands will print an output similar to the one below:
+
+----
+
+ <RestcommResponse>
+     <NetworkPoint>
+       <Id>eth1-2</Id>
+       <MacAddress>448A5B2D1934</MacAddress>
+       <Description>Realtek PCIe GBE Family Controller</Description>
+       <Tag>DMZ</Tag>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+     </NetworkPoint>
+ </RestcommResponse>
+
+----
+
+[[NetworkPoints_List]]
+== NetworkPoints List Resource
+
+* NetworkPoints List Resource URI. */2012-04-24/NetworkPoints*
+
+=== Supported Operations
+
+**HTTP GET**. Returns the list representation of all the *NetworkPoints* resources.
+
+**HTTP POST**. Tags a *NetworkPoint* resource.
+
+**HTTP DELETE**. Untags a *NetworkPoint* resource already tagged.
+
+=== Request Parameters
+
+[cols=",",options="header",]
+|==============================================================================================================================================================================================================================
+|Parameter |Description
+|Id(Required) |The unique identifier.
+|==============================================================================================================================================================================================================================
+
+
+=== Get a list of all current points
+
+----
+curl -X GET http://[primarySid]:[primaryAuthToken]@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints/
+----
+
+
+=== Supported Operations
+
+
+----
+<RestcommResponse>
+   <NetworkPoints>
+     <NetworkPoint>
+       <Id>net0-0</Id>
+       <MacAddress>00000000000000E0</MacAddress>
+       <Description>Teredo Tunneling Pseudo-Interface</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>net0-1</Id>
+       <MacAddress>00000000000000E0</MacAddress>
+       <Description>Teredo Tunneling Pseudo-Interface</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>net6-0</Id>
+       <MacAddress>00000000000000E0</MacAddress>
+       <Description>Microsoft ISATAP Adapter</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>net6-1</Id>
+       <MacAddress>00000000000000E0</MacAddress>
+       <Description>Microsoft ISATAP Adapter</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>eth1-0</Id>
+       <MacAddress>448A5B2D1934</MacAddress>
+       <Description>Realtek PCIe GBE Family Controller</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>eth2-0</Id>
+       <MacAddress>00FFCA4C7593</MacAddress>
+       <Description>TAP-Windows Adapter V9</Description>
+       <Tag>IDLE</Tag>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>eth1-1</Id>
+       <MacAddress>448A5B2D1934</MacAddress>
+       <Description>Realtek PCIe GBE Family Controller</Description>
+       <Tag>MZ</Tag>
+       <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+     </NetworkPoint>
+     <NetworkPoint>
+       <Id>eth1-2</Id>
+       <MacAddress>448A5B2D1934</MacAddress>
+       <Description>Realtek PCIe GBE Family Controller</Description>
+       <Tag>DMZ</Tag>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+     </NetworkPoint>
+   </NetworkPoints>
+ </RestcommResponse>
+----
+
+[[tag-netpoints]]
+=== Tag a NetworkPoint
+
+.XML NetworkPoint tagging
+----
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/NetworkPoints/ -d "Id=net0-0" -d "Tag=DMZ"
+----
+
+
+[[delete-points]]
+=== Untag a NetworkPoint
+
+.XML NetworkPoint Untagging
+----
+curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/NetworkPoints/<Id>
+----
+
+.JSON NetworkPoint Untagging
+----
+curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/NetworkPoints.json/<Id>.json
+----

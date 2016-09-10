@@ -17,33 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.dao;
+package org.restcomm.sbc.bo;
 
-import org.mobicents.servlet.sip.restcomm.Configurable;
-import org.mobicents.servlet.sip.restcomm.LifeCycle;
+import java.util.List;
 
+import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    1 ago. 2016 19:31:13
- * @class   DaoManager.java
+ * @date    1 ago. 2016 20:07:51
+ * @class   RoutingPolicyList.java
  *
  */
-public interface DaoManager extends Configurable, LifeCycle {
-    
-	CallDetailRecordsDao getCallDetailRecordsDao();
+@NotThreadSafe
+public final class RouteList {
+    private final List<Route> routes;
 
-	AccountsDao getAccountsDao();
+    public RouteList(final List<Route> routes) {
+        super();
+        this.routes = routes;
+    }
 
-	WhiteListDao getWhiteListDao();
-	
-	BlackListDao getBlackListDao();
-	
-	NetworkPointsDao getNetworkPointDao();
-	
-	ConnectorsDao getConnectorsDao();
-	
-	RoutesDao getRoutesDao();
-    
+    public List<Route> getRouteList() {
+        return routes;
+    }
 }

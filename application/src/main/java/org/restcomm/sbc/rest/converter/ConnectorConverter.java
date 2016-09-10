@@ -32,6 +32,8 @@ import java.lang.reflect.Type;
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.NetworkPoint;
+import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.managers.NetworkManager;
 
 
@@ -60,12 +62,16 @@ public final class ConnectorConverter extends AbstractConverter implements JsonS
     public void marshal(final Object object, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final Connector connector = (Connector) object;
         writer.startNode("Connector");
-        writeID(NetworkManager.getNetworkPoint(connector.getPoint()).getAddress().getHostAddress(), "IpAddress", writer);
+        NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
+        if(point!=null)
+        	writeID(point.getAddress().getHostAddress(), "IpAddress", writer);
+        else
+        	writeID("N/A", "IpAddress", writer);   	
+        writeSid(connector.getSid(), writer);
         writePort(connector.getPort(), writer);
         writeID(connector.getPoint(), "NetworkPointId", writer);
-        writeID(connector.getRoute(), "NetworkPointRouteId", writer);
-        writeID(connector.getAltRoute(), "NetworkPointRouteAltId", writer);
         writeTransport(connector.getTransport().toString(), writer);
+        writeState(connector.getState().toString(), writer);
         writeAccountSid(connector.getAccountSid(), writer);
         
         writer.endNode();
@@ -76,14 +82,24 @@ public final class ConnectorConverter extends AbstractConverter implements JsonS
     public JsonElement serialize(final Connector connector, Type type, final JsonSerializationContext context) {
         final JsonObject object = new JsonObject();
         writeID(NetworkManager.getNetworkPoint(connector.getPoint()).getAddress().getHostAddress(), "ip_address", object);
+        writeSid(connector.getSid(), object);
         writePort(connector.getPort(), object);
         writeID(connector.getPoint(), "n_point", object);
-        writeID(connector.getRoute(), "n_point_route", object);
-        writeID(connector.getAltRoute(), "n_point_route_alt", object);
         writeTransport(connector.getTransport().toString(), object);
+        writeState(connector.getState().toString(), object);
         writeAccountSid(connector.getAccountSid(), object);
         
         return object;
+    }
+    
+    protected void writeSid(final Sid sid, String name, final HierarchicalStreamWriter writer) {
+        writer.startNode(name);
+        writer.setValue(sid.toString());
+        writer.endNode();
+    }
+
+    protected void writeSid(final Sid sid, String name, final JsonObject object) {
+        object.addProperty(name, sid.toString());
     }
 
     private void writePort(final int port, final HierarchicalStreamWriter writer) {
@@ -108,6 +124,18 @@ public final class ConnectorConverter extends AbstractConverter implements JsonS
 
     private void writeTransport(final String transport, final JsonObject object) {
         object.addProperty("transport", transport);
+    }
+    
+    private void writeState(final String state, final HierarchicalStreamWriter writer) {
+        writer.startNode("State");
+        if (state != null) {
+            writer.setValue(state);
+        }
+        writer.endNode();
+    }
+
+    private void writeState(final String state, final JsonObject object) {
+        object.addProperty("state", state);
     }
     
     private void writeID(final String id, final String name, final HierarchicalStreamWriter writer) {

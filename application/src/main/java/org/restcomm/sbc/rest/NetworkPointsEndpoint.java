@@ -24,11 +24,14 @@ import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.configuration.Configuration;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
+import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.managers.NetworkManager;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.bo.Account;
+import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.bo.NetworkPointList;
 import org.restcomm.sbc.bo.NetworkPoint.Tag;
@@ -53,6 +56,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 
@@ -76,7 +80,7 @@ public abstract class NetworkPointsEndpoint extends SecuredEndpoint {
     protected String instanceId;
 	protected NetworkPointListConverter listConverter;
 
-
+	private static transient Logger LOG = Logger.getLogger(NetworkPointsEndpoint.class);
 
     public NetworkPointsEndpoint() {
         super();
@@ -193,6 +197,14 @@ public abstract class NetworkPointsEndpoint extends SecuredEndpoint {
             NetworkPointsDao dao = daos.getNetworkPointDao();
             NetworkPoint point=dao.getNetworkPoint(id);
             
+            ConnectorsDao cdao = daos.getConnectorsDao();
+            List<Connector> connectors=cdao.getConnectorsByNetworkPoint(point.getId());
+            
+            if(connectors.size()>0) { // Cannot re-Tag npoints with assigned connectors
+            	LOG.error("Connector dependancies exists!, cannot update");
+            	return status(CONFLICT).build();
+            }
+            
             update(point, data);
             
             dao.updateNetworkPoint(point);
@@ -212,11 +224,7 @@ public abstract class NetworkPointsEndpoint extends SecuredEndpoint {
     	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Read:NetworkPoints");
 
-       
-        NetworkPointsDao dao = daos.getNetworkPointDao();
-
-
-        final List<NetworkPoint> points = NetworkManager.mergeNetworkPoints(dao.getNetworkPoints());
+        final List<NetworkPoint> points = NetworkManager.getPersistentNetworkPoints();
 
 
         if (APPLICATION_XML_TYPE == responseType) {

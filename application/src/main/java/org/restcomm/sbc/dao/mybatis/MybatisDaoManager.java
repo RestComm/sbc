@@ -33,6 +33,7 @@ import org.restcomm.sbc.dao.CallDetailRecordsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
+import org.restcomm.sbc.dao.RoutesDao;
 import org.restcomm.sbc.dao.WhiteListDao;
 import org.restcomm.sbc.dao.BlackListDao;
 
@@ -49,9 +50,14 @@ public final class MybatisDaoManager implements DaoManager {
     private BlackListDao blackListDao;
     private NetworkPointsDao networkPointDao;
 	private ConnectorsDao connectorDao;
+	private RoutesDao routesDao;
     
 
-    public MybatisDaoManager() {
+    public RoutesDao getRoutesDao() {
+		return routesDao;
+	}
+
+	public MybatisDaoManager() {
         super();
     }
 
@@ -125,6 +131,7 @@ public final class MybatisDaoManager implements DaoManager {
         blackListDao = new MybatisBlackListDao(sessions);
         networkPointDao = new MybatisNetworkPointsDao(sessions);
         connectorDao = new MybatisConnectorsDao(sessions);
+        routesDao = new MybatisRoutesDao(sessions);
         
       
     }

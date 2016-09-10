@@ -39,55 +39,47 @@ import org.restcomm.sbc.bo.Sid;
 
 
 
+
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    27 jul. 2016 19:44:29
- * @class   ConnectorsXmlEndpoint.java
+ * @date    30 ago. 2016 15:12:21
+ * @class   RoutesXmlEndpoint.java
  *
  */
-@Path("/Connectors")
+@Path("/Routes")
 @ThreadSafe
-public final class ConnectorsXmlEndpoint extends ConnectorsEndpoint {
-    public ConnectorsXmlEndpoint() {
+public final class RoutesXmlEndpoint extends RoutesEndpoint {
+    public RoutesXmlEndpoint() {
         super();
     }
 
     @Path("/{sid}.json")
     @GET
-    public Response getConnectorAsJson(@PathParam("sid") final String sid) {
-        return getConnector(new Sid(sid), APPLICATION_JSON_TYPE);
+    public Response getRouteAsJson(@PathParam("sid") final String sid) {
+        return getRoute(new Sid(sid), APPLICATION_JSON_TYPE);
     }
 
     @Path("/{sid}")
     @GET
-    public Response getConnectorAsXml(@PathParam("sid") final String sid) {
-        return getConnector(new Sid(sid), APPLICATION_XML_TYPE);
+    public Response getRouteAsXml(@PathParam("sid") final String sid) {
+        return getRoute(new Sid(sid), APPLICATION_XML_TYPE);
     }
     
     @Path("/{sid}")
     @DELETE
-    public Response deleteConnectorAsXml(@PathParam("sid") final String sid) {
-        return deleteConnector(new Sid(sid));
+    public Response deleteRouteAsXml(@PathParam("sid") final String sid) {
+        return deleteRoute(new Sid(sid));
     }
 
     @GET
-    public Response getConnectors(@Context UriInfo info) {
-        return getConnectors(info, APPLICATION_XML_TYPE);
+    public Response getRoutingPolicies(@Context UriInfo info) {
+        return getRoutes(info, APPLICATION_XML_TYPE);
     }
 
     @Consumes(APPLICATION_FORM_URLENCODED)
     @POST
-    public Response putConnector(final MultivaluedMap<String, String> data) {
-        return putConnector(data, APPLICATION_XML_TYPE);
-    }
-    
-    @Path("/{sid}")
-    @Consumes(APPLICATION_FORM_URLENCODED)
-    @POST
-    public Response updateAccountAsXmlPost(@PathParam("sid") final String sid,
-            final MultivaluedMap<String, String> data) {
-    	return updateConnector(new Sid(sid), data, APPLICATION_XML_TYPE);
-        
+    public Response putRoute(final MultivaluedMap<String, String> data) {
+        return putRoute(data, APPLICATION_XML_TYPE);
     }
     
     

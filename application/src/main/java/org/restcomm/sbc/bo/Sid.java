@@ -34,7 +34,7 @@ public final class Sid {
     private final String id;
 
     public enum Type {
-        ACCOUNT
+        ACCOUNT, CONNECTOR, ROUTE
     };
 
     private static final Sid INVALID_SID = new Sid("IN00000000000000000000000000000000");
@@ -66,12 +66,17 @@ public final class Sid {
         return true;
     }
 
-    // Issue 108: https://bitbucket.org/telestax/telscale-restcomm/issue/108/account-sid-could-be-a-hash-of-the
     public static Sid generate(final Type type, String string) {
         String token = new Md5Hash(string).toString();
         switch (type) {
             case ACCOUNT: {
                 return new Sid("AC" + token);
+            }
+            case CONNECTOR: {
+                return new Sid("CN" + token);
+            }
+            case ROUTE: {
+                return new Sid("RT" + token);
             }
             default: {
                 return generate(type);
@@ -85,7 +90,12 @@ public final class Sid {
             case ACCOUNT: {
                 return new Sid("AC" + uuid);
             }
-            
+            case CONNECTOR: {
+                return new Sid("CN" + uuid);
+            }
+            case ROUTE: {
+                return new Sid("RT" + uuid);
+            }
             default: {
                 return null;
             }

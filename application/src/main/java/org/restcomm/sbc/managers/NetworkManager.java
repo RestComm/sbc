@@ -13,7 +13,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.bo.NetworkPoint;
-
+import org.restcomm.sbc.bo.NetworkPoint.Tag;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
+import org.restcomm.sbc.dao.DaoManager;
+import org.restcomm.sbc.dao.NetworkPointsDao;
 
 import static java.lang.System.out;
 
@@ -26,10 +29,11 @@ import static java.lang.System.out;
 public class NetworkManager  {
 	
 	private static transient Logger LOG = Logger.getLogger(NetworkManager.class);
-	private static int id=0;
+	
 
 	private static ArrayList<NetworkPoint> eths;
 	private static ArrayList<NetworkPoint> tots;
+	
 	
 	static {
 		eths = new ArrayList<NetworkPoint>();
@@ -46,22 +50,28 @@ public class NetworkManager  {
 		return eths;
 	}
 	
-	public static List<NetworkPoint> mergeNetworkPoints(List<NetworkPoint> persistents) {
+	public static List<NetworkPoint> getPersistentNetworkPoints() {
+		return tots;
+	}
+	
+	private static void mergeNetworkPoints() {
+		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);	
+		NetworkPointsDao dao = daos.getNetworkPointDao();
+		List<NetworkPoint> persistents=dao.getNetworkPoints();
 		tots = new ArrayList<NetworkPoint>(eths);
 		for(NetworkPoint realPoint:eths) {
 			for(NetworkPoint persistentPoint:persistents) {
 				if(persistentPoint.getId().equals(realPoint.getId())) {
 					persistentPoint.setMacAddress(realPoint.getMacAddress());
 					persistentPoint.setDescription(realPoint.getDescription());
+					persistentPoint.setAddress(realPoint.getAddress());
 					tots.remove(realPoint);
 					tots.add(persistentPoint);		
 				}
 			}
 			
 		}
-		
-		return tots;
-		
+	
 	}
 	
 	public static NetworkPoint getNetworkPoint(String id) {
@@ -73,13 +83,46 @@ public class NetworkManager  {
 		return null;
 	}
 	
+	public static String getIpAddress(String npoint) {
+		NetworkPoint point=getNetworkPoint(npoint);
+		if(point!=null&& point.getAddress()!=null)
+			return point.getAddress().getHostAddress();
+		
+		return null;
+	}
+	
 	public static NetworkPoint getNetworkPointByIpAddress(String ipAddress) {
 		for(NetworkPoint point:eths) {
+			if(LOG.isTraceEnabled()) {
+				//LOG.trace("Searching points "+point.toPrint());
+			}
 			if(point.getAddress().getHostAddress().equals(ipAddress)) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("Found point "+point.toPrint());
+				}
 				return point;
 			}
 		}
 		return null;
+	}
+	public static NetworkPoint getPersistentNetworkPointByIpAddress(String ipAddress) {
+		for(NetworkPoint point:tots) {
+			if(LOG.isTraceEnabled()) {
+				//LOG.trace("Searching points "+point.toPrint());
+			}
+			if(point.getAddress().getHostAddress().equals(ipAddress)) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("Found point "+point.toPrint());
+				}
+				return point;
+			}
+		}
+		return null;
+	}
+	
+	public static Tag getTag(String ipAddress) {
+		NetworkPoint point=getPersistentNetworkPointByIpAddress(ipAddress);
+		return point.getTag();
 	}
 	
 	public static boolean exists(String id) {
@@ -92,6 +135,7 @@ public class NetworkManager  {
 	}
 
 	private static void init() throws SocketException {
+			int id=0;
 	        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 	        int group=0;
 	        for (NetworkInterface netIf : Collections.list(nets)) {
@@ -118,6 +162,7 @@ public class NetworkManager  {
 		        id=0;
 	         
 	        }
+	        mergeNetworkPoints();
 	       
 	    }
 	
