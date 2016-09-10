@@ -37,6 +37,7 @@ public class LocationFilter {
 
 	private String user;
 	private String host;
+	private String domain;
 	private String userAgent;
 	private int port;
 	private String transport;
@@ -44,11 +45,11 @@ public class LocationFilter {
 	private Integer offset;
 	
 
-    public LocationFilter(String user, String host, int port, String transport, String userAgent, Integer limit, Integer offset) throws ParseException {
-        this(user, host, port, transport, userAgent, limit, offset, null);
+    public LocationFilter(String user, String domain, String host, int port, String transport, String userAgent, Integer limit, Integer offset) throws ParseException {
+        this(user, domain, host, port, transport, userAgent, limit, offset, null);
     }
 
-    public LocationFilter(String user, String host, int port, String transport, String userAgent, Integer limit, Integer offset, String instanceId) throws ParseException {
+    public LocationFilter(String user, String domain, String host, int port, String transport, String userAgent, Integer limit, Integer offset, String instanceId) throws ParseException {
         //
     	// The LIKE keyword uses '%' to match any (including 0) number of characters, and '_' to match exactly one character
         // Add here the '%' keyword so +15126002188 will be the same as 15126002188 and 6002188
@@ -61,6 +62,7 @@ public class LocationFilter {
         this.transport = transport;
         this.host = host;
         this.user = user;
+        this.domain = domain;
         
         this.limit = limit;
         this.offset = offset;
@@ -125,5 +127,13 @@ public class LocationFilter {
 
 	public void setTransport(String transport) {
 		this.transport = transport;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 }

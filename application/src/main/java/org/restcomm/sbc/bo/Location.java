@@ -31,6 +31,7 @@ import org.joda.time.DateTime;
 public class Location {
 	
 	private String user;
+	private String domain;
 	private String host;
 	private int port;
 	private String transport;
@@ -38,18 +39,16 @@ public class Location {
 	
 	private DateTime expires;
 	
-	public Location(String user, String host, int port, String transport) {
-		this(user);
+	public Location(String user, String domain, String host, int port, String transport) {
+		this.user=user;
+		this.domain=domain;
 		this.host=host;
-		this.port=(port<0?5060:port);
-		this.transport=transport.toUpperCase();
+		this.port=(port<=0?5060:port);
+		this.transport=(transport==null?"UDP":transport.toUpperCase());
 		
 	}
 	
-	public Location(String user) {
-		this.user=user;
-		
-	}
+	
 	
 	public String getUser() {
 		return user;
@@ -77,7 +76,7 @@ public class Location {
 	}
 	
 	public String toString() {
-		return "<Location> user:"+user+" expires on MZ "+getMiliSecondsToExpiration()+" ms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent;
+		return "<Location> user:"+user+"@"+domain+" expires on MZ "+getMiliSecondsToExpiration()+" ms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent;
 	}
 	
 	public String getHost() {
@@ -115,11 +114,33 @@ public class Location {
 	@Override
 	public boolean equals(Object location) {
 		Location otherLocation=(Location) location;
-		if (otherLocation.host.equals(host) && otherLocation.user.equals(user)) {
+		if (!(location instanceof Location)) {
+			return false;
+		}
+		
+		if (otherLocation.domain.equals(domain) && otherLocation.user.equals(user)) {
 			return true;
 		}
 		return false;
 		
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 1;
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
+		return result;
+
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
 
 }

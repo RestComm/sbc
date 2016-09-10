@@ -66,6 +66,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writer.startNode("Location");
         writeHost(location.getHost(), writer);
         writeUser(location.getUser(), writer);
+        writeDomain(location.getDomain(), writer);
         writeTransport(location.getTransport(), writer);
         writeExpires(location.getExpires(), writer);
         writeUserAgent(location.getUserAgent(), writer);
@@ -79,6 +80,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         final JsonObject object = new JsonObject();
         writeUser(location.getUser(), object);
         writeHost(location.getHost(), object);
+        writeDomain(location.getDomain(), object);
         writeTransport(location.getTransport(), object);
         writePort(location.getPort(), object);
         writeExpires(location.getExpires(), object);
@@ -96,6 +98,18 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
 
     private void writeHost(final String host, final JsonObject object) {
         object.addProperty("host", host);
+    }
+    
+    private void writeDomain(final String domain, final HierarchicalStreamWriter writer) {
+        writer.startNode("Domain");
+        if (domain != null) {
+            writer.setValue(domain);
+        }
+        writer.endNode();
+    }
+
+    private void writeDomain(final String domain, final JsonObject object) {
+        object.addProperty("domain", domain);
     }
 
     private void writeUserAgent(final String userAgent, final HierarchicalStreamWriter writer) {

@@ -29,6 +29,7 @@ import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
+import org.restcomm.sbc.bo.LocationNotFoundException;
 
 
 /**
@@ -63,31 +64,37 @@ public class LocationManager  {
 	
 		location.setUserAgent(userAgent);
 		location.setExpirationTimeInSeconds(ttl);
-		registers.put(location.getUser(), location, ttl, TimeUnit.SECONDS);
+		registers.put(key(location.getUser(),location.getDomain()), location, ttl, TimeUnit.SECONDS);
+		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("registers.put "+location.getUser());
+			LOG.debug("registers.put "+key(location.getUser(),location.getDomain()));
 		}
 		
 	}
 	
-	public Location unregister(String user) {
-		return registers.remove(user);
+	public Location unregister(String user, String domain) {
+		return registers.remove(key(user, domain));
 	}
 	
-	
-	public Location getLocation(String user) {
-		return registers.get(user);
+	public Location unregister(String aor) {
+		return registers.remove(aor);
 	}
 	
-	public Location getLocation(String user, String host) {
-		Location location=registers.get(user);
-		if(location.getHost().equals(host)) {
-			return location;
-		}
+	public Location getLocation(String user, String domain) throws LocationNotFoundException {
+		Location location=registers.get(key(user, domain));
+		if(location == null)
+			throw new LocationNotFoundException(key(user, domain));
 		
-		return null;
+		return location;
 	}
 	
+	public Location getLocation(String aor) throws LocationNotFoundException {
+		Location location=registers.get(aor);
+		if(location == null)
+			throw new LocationNotFoundException(aor);
+		
+		return location;
+	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Collection<Location> getLocations() {	
@@ -97,8 +104,8 @@ public class LocationManager  {
 	}
 	
 	
-	public boolean isExpired(String user) {
-		Location location=getLocation(user);
+	public boolean isExpired(String user, String domain) throws LocationNotFoundException {
+		Location location=getLocation(user, domain);
 		
 		boolean result=(location!=null && !location.isExpired())?true:false;
 		
@@ -110,15 +117,19 @@ public class LocationManager  {
 		
 	}
 	
-	public boolean exists(String user) {
-		return getLocation(user)!=null;
+	public boolean exists(String user, String domain) {
+		try {
+			return getLocation(user, domain)!=null;
+		} catch (LocationNotFoundException e) {
+			return false;
+		}
 	}
 	
-	public boolean match(String user) {
+	public boolean match(String user, String domain) throws LocationNotFoundException {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("match "+user);
 		}
-		Location location=getLocation(user);
+		Location location=getLocation(user, domain);
 		if(location!=null) {
 			return true;
 		}
@@ -192,5 +203,8 @@ public class LocationManager  {
 				
 	}
 	
+	private String key(String user, String domain) {
+		return user+"@"+domain;
+	}
 	
 }

@@ -44,16 +44,16 @@ public final class LocationsJsonEndpoint extends LocationsEndpoint {
         return getLocations(info, APPLICATION_JSON_TYPE);
     }
     
-    @Path("/{user}")
+    @Path("/{aor}")
     @GET
-    public Response getLocationAsJson(@PathParam("user") final String user) {
-        return getLocation(user, APPLICATION_JSON_TYPE);
+    public Response getLocationAsJson(@PathParam("aor") final String aor) {
+        return getLocation(aor, APPLICATION_JSON_TYPE);
     }
     
-    @Path("/{user}")
+    @Path("/{aor}")
     @DELETE
-    public Response deleteLocationAsJson(@PathParam("user") final String user) {
-        return deleteLocation(user);
+    public Response deleteLocationAsJson(@PathParam("aor") final String aor) {
+        return deleteLocation(aor);
     }
 
     
