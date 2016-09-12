@@ -78,7 +78,7 @@ private final static String namespace = "org.restcomm.sbc.dao.NetworkPointsDao."
     }
     
    
-    public boolean isTaged(final String point) {
+    public boolean isTagged(final String point) {
     	NetworkPoint entry = null;
     	entry = getNetworkPoint(namespace + "getEntry", point);        
         
@@ -86,7 +86,7 @@ private final static String namespace = "org.restcomm.sbc.dao.NetworkPointsDao."
     		return false;   
         }
     	
-    	return entry.getTag().isTaged();
+    	return entry.getTag().isTagged();
 
     }
 

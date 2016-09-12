@@ -99,7 +99,13 @@ public final class DaoUtils {
             return null;
         }
     }
-    
+    public static Connector.State readState(final Object object) {
+        if (object != null) {
+            return Connector.State.getValueOf((String) object);
+        } else {
+            return null;
+        }
+    }
     public static BigDecimal readBigDecimal(final Object object) {
         if (object != null) {
             return new BigDecimal((String) object);
@@ -215,6 +221,10 @@ public final class DaoUtils {
     
     public static String writeTransport(final Connector.Transport transport) {
         return transport.toString();
+    }
+    
+    public static String writeState(final Connector.State state) {
+        return state.toString();
     }
     
     public static String writePoint(final NetworkPoint point) {

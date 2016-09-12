@@ -24,6 +24,7 @@ import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
+import org.apache.shiro.crypto.hash.Md5Hash;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.managers.JMXManager;
@@ -36,6 +37,7 @@ import org.restcomm.sbc.bo.ConnectorList;
 import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.bo.RestCommResponse;
 import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.Sid.Type;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.rest.converter.ConnectorConverter;
 import org.restcomm.sbc.rest.converter.ConnectorListConverter;
@@ -121,11 +123,11 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
        
     }
 
-    protected Response getConnector(final String pointId, final String transport, final int port, final MediaType responseType) {
+    protected Response getConnector(final Sid sid, final MediaType responseType) {
     	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Read:Connectors");
         final ConnectorsDao dao = daos.getConnectorsDao();
-        Connector connector = dao.getConnector(pointId, transport, port);
+        Connector connector = dao.getConnector(sid);
         
         if (connector == null) {
             return status(NOT_FOUND).build();
@@ -163,33 +165,36 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         }
     }
     
-    protected Response deleteConnector(final String pointId, final String transport, final int port) {
+    protected Response deleteConnector(final Sid sid) {
     	Account account=userIdentityContext.getEffectiveAccount();
         
        
         secure(account, "RestComm:Delete:Connectors", SecuredType.SECURED_ACCOUNT);
         final ConnectorsDao dao = daos.getConnectorsDao();
-        final Connector connector = dao.getConnector(pointId, transport, port);
+        final Connector connector = dao.getConnector(sid);
         
         if (connector == null)
             return status(NOT_FOUND).build();
         
-        NetworkPoint point=NetworkManager.getNetworkPoint(pointId);
+        NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
         boolean status=false;
         
         if(point!=null) {
-        	String ipAddress=point.getAddress().getHostAddress();
         	try {
-				status=jmxManager.removeSipConnector(ipAddress, port, transport);
+				status=jmxManager.removeSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
 			} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
 				LOG.error("JMX Manager failed");
 			}
 
         }
-        if (!status)
-            return status(PRECONDITION_FAILED).build();
-        
-        dao.removeConnector(pointId, transport, port);
+        if (!status) {
+        	LOG.error("SIP Connector was not unbound");
+        	return status(PRECONDITION_FAILED).entity("Cannot unbind SIP Connector").build();
+        }
+        if(LOG.isDebugEnabled()) {
+        	LOG.debug("Unbinding SIP Connector on "+point.getName()+" "+point.getAddress().getHostAddress()+":"+ connector.getPort()+"/"+connector.getTransport().toString());
+        }
+        dao.removeConnector(sid);
 
         return ok().build();
     }
@@ -216,6 +221,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
     
     private Connector createFrom(final String accountSid, final MultivaluedMap<String, String> data) {
         final Connector.Builder builder = Connector.builder();
+       
         int port = Integer.parseInt(data.getFirst("Port"));
         builder.setPort(port);
         builder.setAccountSid(new Sid(accountSid));
@@ -223,8 +229,9 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         builder.setTransport(Connector.Transport.valueOf(transport));
         String point = data.getFirst("NetworkPointId");
         builder.setPoint(point);
-        String route = data.getFirst("NetworkPointRouteId");
-        builder.setRoute(route);
+        builder.setState(Connector.State.DOWN);
+        Sid sid=Sid.generate(Type.CONNECTOR, point+":"+port+":"+transport);
+        builder.setSid(sid);
         return builder.build();
     }
     
@@ -240,11 +247,12 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         
         final Connector connector = createFrom(account.getSid().toString(), data);
         
-        NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
+       // NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
+        String ipAddress=NetworkManager.getIpAddress(connector.getPoint());
+        
         boolean status=false;
         
-        if(point!=null) {
-        	String ipAddress=point.getAddress().getHostAddress();
+        if(ipAddress!=null) {
         	try {
 				status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString());
 			} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
@@ -252,9 +260,14 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
 			}
 
         }
-        if (!status)
-            return status(PRECONDITION_FAILED).entity("Cannot add SIP Connector").build();
-        
+        if (!status) {
+        	LOG.error("SIP Connector was not unbound");
+        	return status(PRECONDITION_FAILED).entity("Cannot bind SIP Connector").build();
+        }
+        if(LOG.isDebugEnabled()) {
+        	LOG.debug("Binding SIP Connector on "+connector.getPoint()+" "+ipAddress+":"+ connector.getPort()+"/"+connector.getTransport().toString());
+        }
+               
         dao.addConnector(connector);
         
         if (APPLICATION_XML_TYPE == responseType) {
@@ -266,16 +279,79 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
             return null;
         }
     }
+    
+    protected Response updateConnector(final Sid sid, final MultivaluedMap<String, String> data,
+            final MediaType responseType) {
+    	boolean status=false;
+    	Connector.State state=null;
+    	
+    	Account account=userIdentityContext.getEffectiveAccount();
+        
+        
+        secure(account, "RestComm:Delete:Connectors", SecuredType.SECURED_ACCOUNT);
+        final ConnectorsDao dao = daos.getConnectorsDao();
+        Connector connector = dao.getConnector(sid);
+        
+        if (connector == null)
+        	return status(NOT_FOUND).entity("Cannot find Connector!").build();
+     
+        if (data.containsKey("State")) {
+            state=Connector.State.getValueOf(data.getFirst("State").toUpperCase());
+            connector.setState(state);
+        } 
+        
+        
+        
+        NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
+        
+        if (point == null)
+        	return status(NOT_FOUND).entity("Cannot find NetworkPoint!").build();
+        
+        switch(state){
+	        case UP:
+	        	try {
+	    			status=jmxManager.addSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
+	    		} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
+	    			LOG.error("JMX Manager failed");
+	    		}
+	        	break;
+	        case DOWN:
+	        	try {
+	    			status=jmxManager.removeSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
+	    		} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
+	    			LOG.error("JMX Manager failed");
+	    		}
+	        	break;
+	        default:
+	        	return status(NOT_FOUND).entity("Unknown State").build();
+        }
+        
+        if (!status) {
+        	LOG.debug("SIP Connector was not rebound! "+point.getId()+" "+point.getAddress().getHostAddress()+":"+ connector.getPort()+"/"+connector.getTransport().toString());
+        	return status(PRECONDITION_FAILED).entity("Cannot rebind SIP Connector").build();
+        }
+        
+        if(LOG.isDebugEnabled()) {
+        	LOG.debug("Rebinding SIP Connector on "+point.getId()+" "+point.getAddress().getHostAddress()+":"+ connector.getPort()+"/"+connector.getTransport().toString());
+        }
+        dao.updateConnector(sid, state.toString());
+
+        return ok().build();
+    }
+    /**
+     * Connectors depends on NetworkPoints
+     * @param data
+     */
 
     private void validate(final MultivaluedMap<String, String> data) {
     	final NetworkPointsDao dao = daos.getNetworkPointDao();
         
     	if (!data.containsKey("Port")) {
-            throw new NullPointerException("Port can not be null.");
+            throw new NullPointerException("Port cannot be null.");
         } 
     	
         if (!data.containsKey("Transport")) {
-            throw new NullPointerException("Transport can not be null.");
+            throw new NullPointerException("Transport cannot be null.");
         }
         
         String id = data.getFirst("NetworkPointId");
@@ -284,25 +360,12 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         	throw new NullPointerException("Real NetworkPointId does not exist.");
         	
         }
-        
-        
-        String rid = data.getFirst("NetworkPointRouteId");
-        
-        if(!NetworkManager.exists(rid)){
-        	throw new NullPointerException("Real NetworkPointRouteId does not exist.");
-        	
-        }
+             
         
         NetworkPoint point= dao.getNetworkPoint(id);
-        NetworkPoint rpoint= dao.getNetworkPoint(rid);
         
-        if(point==null||rpoint==null) {
-        	throw new NullPointerException("Real NetworkPointRouteId does not exist.");
-        }
-        
-        if(!point.getTag().isRouting(rpoint.getTag())) {
-        	throw new NullPointerException("NetworkPoint/Route does not fit routing policy. Check NetworkPoints involved are already taged.");
-        	
+        if(point==null) {
+        	throw new NullPointerException("Real NetworkPointId does not exist.");
         }
         
         

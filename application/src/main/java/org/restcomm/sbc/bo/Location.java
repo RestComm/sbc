@@ -20,7 +20,7 @@
 package org.restcomm.sbc.bo;
 
 
-
+import org.joda.time.DateTime;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
@@ -31,20 +31,27 @@ package org.restcomm.sbc.bo;
 public class Location {
 	
 	private String user;
+	private String domain;
 	private String host;
 	private int port;
-	private String userAgent;
 	private String transport;
-
-	private long mzExpireTimestamp;
-	private long dmzExpireTimestamp;
+	private String userAgent;
+	
+	private DateTime expires;
+	
+	public Location(String user, String domain, String host, int port, String transport) {
+		this.user=user;
+		this.domain=domain;
+		this.host=host;
+		this.port=(port<=0?5060:port);
+		this.transport=(transport==null?"UDP":transport.toUpperCase());
+		
+	}
+	
 	
 	
 	public String getUser() {
 		return user;
-	}
-	public void setUser(String user) {
-		this.user = user;
 	}
 	
 	public String getUserAgent() {
@@ -56,63 +63,84 @@ public class Location {
 	
 	
 	public String getTransport() {
-		return transport;
-	}
-	public void setTransport(String transport) {
-		this.transport = transport;
+		return transport;	
 	}
 	
-	public boolean isMzExpired() {
-		return (System.currentTimeMillis())>=getMzExpireTimestamp()?true:false;
+	public boolean isExpired() {
+		return (getExpires().isAfterNow())?true:false;
 	}
 	
-	public long getMzMiliSecondsToExpiration() {
-		return (getMzExpireTimestamp()-(System.currentTimeMillis()));
-	}
 	
-	public boolean isDmzExpired() {
-		return (System.currentTimeMillis())>=getDmzExpireTimestamp()?true:false;
-	}
-	
-	public long getDmzMiliSecondsToExpiration() {
-		return (getDmzExpireTimestamp()-(System.currentTimeMillis()));
+	public long getMiliSecondsToExpiration() {
+		return getExpires().minus(System.currentTimeMillis()).getMillis();
 	}
 	
 	public String toString() {
-		return "<Location> user:"+user+" expires on MZ/DMZ "+getMzMiliSecondsToExpiration()+"/"+getDmzMiliSecondsToExpiration()+" ms host:"+host+":"+port+" transport:"+transport+" User-Agent:"+userAgent;
+		return "<Location> user:"+user+"@"+domain+" expires on MZ "+getMiliSecondsToExpiration()+" ms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent;
 	}
 	
 	public String getHost() {
 		return host;
 	}
-	public void setHost(String host) {
-		this.host = host;
-	}
+	
 	public int getPort() {
 		return port;
 	}
+	
+	public DateTime getExpires() {
+		return expires;
+	}
+	public void setExpires(DateTime expireTimestamp) {
+		this.expires = expireTimestamp;
+	}
+	
+	public void setExpirationTimeInSeconds(int expires) {	
+		setExpires(DateTime.now().plus(expires*1000));	
+	}
+	
+	
+	public void setHost(String host) {
+		this.host = host;
+	}
+
 	public void setPort(int port) {
 		this.port = port;
 	}
-	public long getMzExpireTimestamp() {
-		return mzExpireTimestamp;
-	}
-	public void setMzExpireTimestamp(long mzExpireTimestamp) {
-		this.mzExpireTimestamp = mzExpireTimestamp;
-	}
-	public long getDmzExpireTimestamp() {
-		return dmzExpireTimestamp;
-	}
-	public void setDmzExpireTimestamp(long dmzExpireTimestamp) {
-		this.dmzExpireTimestamp = dmzExpireTimestamp;
+
+	public void setTransport(String transport) {
+		this.transport = transport;
 	}
 	
-	public void setDmzExpirationTimeInSeconds(int expires) {	
-		setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
+	@Override
+	public boolean equals(Object location) {
+		Location otherLocation=(Location) location;
+		if (!(location instanceof Location)) {
+			return false;
+		}
+		
+		if (otherLocation.domain.equals(domain) && otherLocation.user.equals(user)) {
+			return true;
+		}
+		return false;
+		
 	}
 	
-	public void setMzExpirationTimeInSeconds(int expires) {
-		setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));	
-	}	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 1;
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
+		return result;
+
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
 
 }

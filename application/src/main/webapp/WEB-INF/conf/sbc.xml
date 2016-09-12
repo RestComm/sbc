@@ -30,11 +30,9 @@
 				<permission>RestComm:*:BanLists</permission>
 				<permission>RestComm:*:NetworkPoints</permission>
 				<permission>RestComm:Create,Delete,Read:Faxes</permission>
-				<permission>RestComm:Create,Delete,Read:Connectors</permission>
-				<permission>RestComm:*:IncomingPhoneNumbers</permission>
+				<permission>RestComm:*:Connectors</permission>
+				<permission>RestComm:*:Routes</permission>
 				<permission>RestComm:Read:Notifications</permission>
-				<permission>RestComm:*:OutgoingCallerIds</permission>
-				<permission>RestComm:Delete,Read:Recordings</permission>
 				<permission>RestComm:*:EmailMessages</permission>
 				<permission>RestComm:*:Usage</permission>
 			</role>
@@ -85,12 +83,8 @@
                         <!-- Parameters for static routing policiy provider -->
                         <militarized-zone-target>
 	                        <ip-address>192.168.0.2</ip-address>
-	                        <transport>udp</transport>
-	                        <port>5060</port>
 	                        
 	                        <failover-ip-address>192.168.0.6</failover-ip-address>
-	                        <failover-transport>tcp</failover-transport>
-	                        <failover-port>5080</failover-port>
 
 	                        <!-- Allow failover to backup target -->
 	                        <allow-failover>false</allow-failover>
@@ -102,28 +96,12 @@
                 </routing-policy>
                 
              
-                
-                <militarized-zone>
-                	<iface-name>eth0</iface-name>
-                	<ip-address>192.168.88.2</ip-address>
-                	<transport>udp</transport>
-                	<port>5080</port>
-                </militarized-zone>
-                
-                <de-militarized-zone>
-                	<iface-name>eth1</iface-name>
-                	<ip-address>192.168.88.3</ip-address>
-                	<transport>udp</transport>
-                	<port>5060</port>
-                </de-militarized-zone>
-               
-				
         </runtime-settings>
         
 		<registrar-throttle>
-                <enable>true</enable>
-                <min-registrar-expiration>120</min-registrar-expiration>
-                <max-ua-expiration>30</max-ua-expiration>
+                <enable>false</enable>
+                <force-mz-expiration>800</force-mz-expiration>
+                <force-ua-expiration>30</force-ua-expiration>
         </registrar-throttle>
        
         <smtp-notify>

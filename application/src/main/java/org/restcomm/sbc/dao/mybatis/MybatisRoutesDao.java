@@ -30,30 +30,30 @@ import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
-import org.restcomm.sbc.dao.ConnectorsDao;
-import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.dao.RoutesDao;
+import org.restcomm.sbc.bo.Route;
 import org.restcomm.sbc.bo.Sid;
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    27 jul. 2016 19:06:21
- * @class   MybatisConnectorsDao.java
+ * @class   MybatisRoutingPoliciesDao.java
  *
  */
 @ThreadSafe
-public final class MybatisConnectorsDao implements ConnectorsDao {  
-private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
+public final class MybatisRoutesDao implements RoutesDao {  
+private final static String namespace = "org.restcomm.sbc.dao.RoutesDao.";
     private final SqlSessionFactory sessions;
-    private static transient Logger LOG = Logger.getLogger(MybatisConnectorsDao.class);
+    private static transient Logger LOG = Logger.getLogger(MybatisRoutesDao.class);
 	
-    public MybatisConnectorsDao(final SqlSessionFactory sessions) {
+    public MybatisRoutesDao(final SqlSessionFactory sessions) {
         super();
         this.sessions = sessions;
     }
 
     @Override
-    public void addConnector(final Connector entry) {
+    public void addRoute(final Route entry) {
         final SqlSession session = sessions.openSession();
         try {
             session.insert(namespace + "addEntry", toMap(entry));
@@ -64,21 +64,21 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
     }
 
     @Override
-    public Connector getConnector(final Sid sid) {
-    	Connector entry = null;
+    public Route getRoute(final Sid sid) {
+    	Route entry = null;
     	Map<String, Object> parms = new HashMap<String, Object>();
     	parms.put("sid", sid.toString());
-        entry = getConnector(namespace + "getEntry", parms);
+        entry = getRoutingPolicy(namespace + "getEntry", parms);
         
         return entry;
     }
 
-    private Connector getConnector(final String selector, final Object parameters) {
+    private Route getRoutingPolicy(final String selector, final Object parameters) {
         final SqlSession session = sessions.openSession();
         try {
             final Map<String, Object> result = session.selectOne(selector, parameters);
             if (result != null) {
-                return toConnector(result);
+                return toRoutingPolicy(result);
             } else {
                 return null;
             }
@@ -88,14 +88,14 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
     }
 
     @Override
-    public List<Connector> getConnectors() {
+    public List<Route> getRoutes() {
         final SqlSession session = sessions.openSession();
         try {
             final List<Map<String, Object>> results = session.selectList(namespace + "getEntries");
-            final List<Connector> entrys = new ArrayList<Connector>();
+            final List<Route> entrys = new ArrayList<Route>();
             if (results != null && !results.isEmpty()) {
                 for (final Map<String, Object> result : results) {
-                    entrys.add(toConnector(result));
+                    entrys.add(toRoutingPolicy(result));
                 }
             }
             return entrys;
@@ -104,39 +104,14 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
         }
     }
 
-    @Override
-    public List<Connector> getConnectorsByNetworkPoint(String pointId) {
-        final SqlSession session = sessions.openSession();
-        try {
-            final List<Map<String, Object>> results = session.selectList(namespace + "getEntriesByNetworkPoint", pointId);
-            final List<Connector> entrys = new ArrayList<Connector>();
-            if (results != null && !results.isEmpty()) {
-                for (final Map<String, Object> result : results) {
-                    entrys.add(toConnector(result));
-                }
-            }
-            return entrys;
-        } finally {
-            session.close();
-        }
-    }
-    @Override
-	public void removeConnector(Sid sid) {
-    	Map<String, Object> parms = new HashMap<String, Object>();
-    	parms.put("sid", sid.toString());
-        removeConnector(namespace + "updateEntry", parms);
-		
-	}
+   
     
     @Override
-    public void updateConnector(final Sid sid, final String state) {
-    	Map<String, Object> parms = new HashMap<String, Object>();
-    	parms.put("sid", sid.toString());
-    	parms.put("state", state);
-        updateConnector(namespace + "updateEntry", parms);
+    public void removeRoute(final Sid sid) {
+        removeRoutingPolicy(namespace + "removeEntry", sid.toString());
     }
-    
-    private void removeConnector(final String selector, final Object parameters) {
+
+    private void removeRoutingPolicy(final String selector, final Object parameters) {
         final SqlSession session = sessions.openSession();
         try {
             session.delete(selector, parameters);
@@ -145,39 +120,22 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
             session.close();
         }
     }
-    
-    private void updateConnector(final String selector, final Object parameters) {
-        final SqlSession session = sessions.openSession();
-        try {
-            session.update(selector, parameters);
-            session.commit();
-        } finally {
-            session.close();
-        }
-    }
 
-    private Connector toConnector(final Map<String, Object> map) {
+    private Route toRoutingPolicy(final Map<String, Object> map) {
     	final Sid sid = readSid(map.get("sid"));
-        final int port = readInteger(map.get("port"));
-        final String point=readString(map.get("n_point"));
+    	final Sid sourceConnector = readSid(map.get("source_connector_sid"));
+    	final Sid targetConnector = readSid(map.get("target_connector_sid"));
         final Sid entrySid = readSid(map.get("account_sid"));
-        final Connector.Transport transport = readTransport(map.get("transport"));
-        final Connector.State state = readState(map.get("state"));
-        return new Connector(sid, entrySid, port, transport, point, state);
+        return new Route(sid, entrySid, sourceConnector, targetConnector);
     }
    
-    private Map<String, Object> toMap(final Connector entry) {
+    private Map<String, Object> toMap(final Route entry) {
         final Map<String, Object> map = new HashMap<String, Object>();
         map.put("sid", writeSid(entry.getSid()));
-        map.put("port", entry.getPort());
-        map.put("transport", writeTransport(entry.getTransport()));
-        map.put("state", writeState(entry.getState()));
+        map.put("source_connector_sid", writeSid(entry.getSourceConnector()));
+        map.put("target_connector_sid", writeSid(entry.getTargetConnector()));
         map.put("account_sid", writeSid(entry.getAccountSid()));
-        map.put("n_point", entry.getPoint());
-    
         return map;
     }
-
-	
     
 }

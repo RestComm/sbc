@@ -19,31 +19,25 @@
  */
 package org.restcomm.sbc.dao;
 
-import org.mobicents.servlet.sip.restcomm.Configurable;
-import org.mobicents.servlet.sip.restcomm.LifeCycle;
+import java.util.List;
 
+import org.restcomm.sbc.bo.Route;
+import org.restcomm.sbc.bo.Sid;
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    1 ago. 2016 19:31:13
- * @class   DaoManager.java
+ * @date    1 ago. 2016 19:21:23
+ * @class   RoutingPoliciesDao.java
  *
  */
-public interface DaoManager extends Configurable, LifeCycle {
-    
-	CallDetailRecordsDao getCallDetailRecordsDao();
+public interface RoutesDao {
+	
+    void addRoute(Route route);
+   
+    Route getRoute(Sid sid);
 
-	AccountsDao getAccountsDao();
+    List<Route> getRoutes();
 
-	WhiteListDao getWhiteListDao();
-	
-	BlackListDao getBlackListDao();
-	
-	NetworkPointsDao getNetworkPointDao();
-	
-	ConnectorsDao getConnectorsDao();
-	
-	RoutesDao getRoutesDao();
-    
+	void removeRoute(Sid sid);
 }

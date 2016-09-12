@@ -33,10 +33,9 @@ import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationList;
+import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.bo.RestCommResponse;
-import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
-import org.restcomm.sbc.rest.SecuredEndpoint.SecuredType;
 import org.restcomm.sbc.rest.converter.LocationConverter;
 import org.restcomm.sbc.rest.converter.LocationsListConverter;
 import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
@@ -116,24 +115,26 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         normalizePhoneNumbers = configuration.getBoolean("normalize-numbers-for-outbound-calls");
     }
 
-    protected Response getLocation(final String user, final MediaType responseType) {
+    protected Response getLocation(final String aor, final MediaType responseType) {
     	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Read:Locations");
         
-        final Location location = locationManager.getLocation(user);
-        if (location == null) {
-            return status(NOT_FOUND).build();
-        } else {
+        Location location;
+		try {
+			location = locationManager.getLocation(aor);
+		} catch (LocationNotFoundException e) {
+			return status(NOT_FOUND).build();
+		}   
             
-            if (APPLICATION_XML_TYPE == responseType) {
-                final RestCommResponse response = new RestCommResponse(location);
+        if (APPLICATION_XML_TYPE == responseType) {
+               final RestCommResponse response = new RestCommResponse(location);
                 return ok(xstream.toXML(response), APPLICATION_XML).build();
-            } else if (APPLICATION_JSON_TYPE == responseType) {
+        } else if (APPLICATION_JSON_TYPE == responseType) {
                 return ok(gson.toJson(location), APPLICATION_JSON).build();
-            } else {
+        } else {
                 return null;
-            }
         }
+        
     }
 
     protected Response getLocations(UriInfo info, MediaType responseType) {
@@ -151,6 +152,7 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         String pageSize = info.getQueryParameters().getFirst("PageSize");
         String page = info.getQueryParameters().getFirst("Page");
         String user = info.getQueryParameters().getFirst("User");
+        String domain = info.getQueryParameters().getFirst("Domain");
         String userAgent = info.getQueryParameters().getFirst("UserAgent");
         String host = info.getQueryParameters().getFirst("Host");
         String sport = info.getQueryParameters().getFirst("Port");
@@ -180,9 +182,9 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         try {
 
             if (localInstanceOnly) {
-                filterForTotal = new LocationFilter(user, host, port, transport, userAgent, limit, offset, null);
+                filterForTotal = new LocationFilter(user, domain, host, port, transport, userAgent, limit, offset, null);
             } else {
-                filterForTotal = new LocationFilter(user, host, port, transport, userAgent, limit, offset, instanceId);
+                filterForTotal = new LocationFilter(user, domain, host, port, transport, userAgent, limit, offset, instanceId);
             }
         } catch (ParseException e) {
             return status(BAD_REQUEST).build();
@@ -197,9 +199,9 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         LocationFilter filter = null;
         try {
         	if (localInstanceOnly) {
-                filter = new LocationFilter(user, host, port, transport, userAgent, limit, offset, null);
+                filter = new LocationFilter(user, domain, host, port, transport, userAgent, limit, offset, null);
             } else {
-                filter = new LocationFilter(user, host, port, transport, userAgent, limit, offset, instanceId);
+                filter = new LocationFilter(user, domain, host, port, transport, userAgent, limit, offset, instanceId);
             }
         } catch (ParseException e) {
             return status(BAD_REQUEST).build();
@@ -222,16 +224,19 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
         }
     }
     
-    protected Response deleteLocation(final String user) {
+    protected Response deleteLocation(final String aor) {
     	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Delete:Locations");
         
-        final Location location = locationManager.getLocation(user);      
+        Location location;
+		try {
+			location = locationManager.getLocation(aor);
+		} catch (LocationNotFoundException e) {
+			return status(NOT_FOUND).build();
 
-        if (location == null)
-            return status(NOT_FOUND).build();
-
-        locationManager.unregister(user);
+		}      
+            
+        locationManager.unregister(aor);
 
         return ok().build();
     }

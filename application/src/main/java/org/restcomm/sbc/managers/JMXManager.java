@@ -77,9 +77,7 @@ public class JMXManager implements
 	}
 	
 	public boolean removeSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("-------Removing SipConnector "+ipAddress+":"+port+"/"+transport);
-		}
+		
         Boolean stat=(Boolean) mbsc.invoke(objectName, "removeSipConnector",
         		new Object[] {ipAddress , port, transport},
         		new String[]{String.class.getCanonicalName(), int.class.getCanonicalName(), String.class.getCanonicalName()});
@@ -88,17 +86,15 @@ public class JMXManager implements
 	}
 	
 	public boolean addSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("-------Adding SipConnector "+ipAddress+":"+port+"/"+transport);
-		}
+		
 		// adding connector
-        SipConnector udpSipConnector = new SipConnector();
-        udpSipConnector.setIpAddress(ipAddress);
-        udpSipConnector.setPort(port);
-        udpSipConnector.setTransport(transport);
-        
+        SipConnector sipConnector = new SipConnector();
+        sipConnector.setIpAddress(ipAddress);
+        sipConnector.setPort(port);
+        sipConnector.setTransport(transport);
+       
         Boolean stat = (Boolean) mbsc.invoke(objectName, "addSipConnector",
-        		new Object[] {udpSipConnector}, 
+        		new Object[] {sipConnector}, 
         		new String[]{SipConnector.class.getCanonicalName()});
 		return stat;
 	}
@@ -113,7 +109,7 @@ public class JMXManager implements
 					LOG.debug("SipConnector "+sipConnectors[i]);		
 				}
 				NetworkPoint point=NetworkManager.getNetworkPointByIpAddress(sipConnectors[i].getIpAddress());
-				Connector connector=new Connector(sipConnectors[i].getPort(), Connector.Transport.getValueOf(sipConnectors[i].getTransport()), point.getId());
+				Connector connector=new Connector(sipConnectors[i].getPort(), Connector.Transport.getValueOf(sipConnectors[i].getTransport()), point.getId(), Connector.State.DOWN);
 				connectors.add(connector);		
 			}
 		} catch (InstanceNotFoundException e) {

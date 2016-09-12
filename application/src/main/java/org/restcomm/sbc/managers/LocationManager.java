@@ -24,24 +24,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
-
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
+import org.restcomm.sbc.bo.LocationNotFoundException;
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:47:34
- * @class   LocationHelper.java
+ * @date    1 sept. 2016 20:08:51
+ * @class   LocationManager.java
  *
  */
-public class LocationManager {
+public class LocationManager  {
 	
-	private Cache<Object, Object> registers;
+	private Cache<String, Location> registers;
 	private static LocationManager locationManager;
 	private static final Logger LOG = Logger.getLogger(LocationManager.class);
 
@@ -61,23 +60,40 @@ public class LocationManager {
 	}
 	
 	
-	public Location register(String user, String host, int port, String userAgent, String transport, int ttl) {
-		Location location=new Location();
-		location.setHost(host);
-		location.setPort(port);
+	public void register(Location location, String userAgent, int ttl) {
+	
 		location.setUserAgent(userAgent);
-		location.setTransport(transport);
-		location.setUser(user);
-		location.setDmzExpirationTimeInSeconds(ttl);
-		location.setMzExpirationTimeInSeconds(ttl);
-		registers.put(user, location, ttl, TimeUnit.SECONDS);
+		location.setExpirationTimeInSeconds(ttl);
+		registers.put(key(location.getUser(),location.getDomain()), location, ttl, TimeUnit.SECONDS);
 		
-		return location;
-			
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("registers.put "+key(location.getUser(),location.getDomain()));
+		}
+		
 	}
 	
-	public Location getLocation(String user) {
-		return (Location) registers.get(user);
+	public Location unregister(String user, String domain) {
+		return registers.remove(key(user, domain));
+	}
+	
+	public Location unregister(String aor) {
+		return registers.remove(aor);
+	}
+	
+	public Location getLocation(String user, String domain) throws LocationNotFoundException {
+		Location location=registers.get(key(user, domain));
+		if(location == null)
+			throw new LocationNotFoundException(key(user, domain));
+		
+		return location;
+	}
+	
+	public Location getLocation(String aor) throws LocationNotFoundException {
+		Location location=registers.get(aor);
+		if(location == null)
+			throw new LocationNotFoundException(aor);
+		
+		return location;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -87,49 +103,41 @@ public class LocationManager {
 		return al;
 	}
 	
-	public boolean isMzAlive(String user) {
-		Location location=getLocation(user);
-		return (location!=null && !location.isMzExpired())?true:false;
+	
+	public boolean isExpired(String user, String domain) throws LocationNotFoundException {
+		Location location=getLocation(user, domain);
+		
+		boolean result=(location!=null && !location.isExpired())?true:false;
+		
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("isExpired "+result+":"+location);
+		}
+		return result;
+		
 		
 	}
 	
-	public boolean isDmzAlive(String user) {
-		Location location=getLocation(user);
-		return (location!=null && !location.isDmzExpired())?true:false;
-		
+	public boolean exists(String user, String domain) {
+		try {
+			return getLocation(user, domain)!=null;
+		} catch (LocationNotFoundException e) {
+			return false;
+		}
 	}
 	
-	public boolean exists(String user) {
-		return getLocation(user)!=null;
-	}
-	
-	public boolean match(String user, String host, int port) {
-		Location location=getLocation(user);
-		if(location!=null && location.getHost().equals(host) && location.getPort()==port) {
+	public boolean match(String user, String domain) throws LocationNotFoundException {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("match "+user);
+		}
+		Location location=getLocation(user, domain);
+		if(location!=null) {
 			return true;
 		}
 		return false;
 		
 	}
 
-	public Location unregister(String user) {	
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Unregistering User: "+user);
-		}
-		return (Location) registers.remove(user);	
-	}
 	
-	public void setDmzExpirationTimeInSeconds(String user, int expires) {
-		Location location=getLocation(user);
-		location.setDmzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
-		
-	}
-	
-	public void setMzExpirationTimeInSeconds(String user, int expires) {
-		Location location=getLocation(user);
-		location.setMzExpireTimestamp((System.currentTimeMillis())+(((long)expires)*1000L));
-		
-	}
 
 	public int getTotalLocations(LocationFilter filterForTotal) {
 		int counter = 0;
@@ -195,28 +203,8 @@ public class LocationManager {
 				
 	}
 	
-	
-	public static void main(String argv[]) {
-		LocationManager lm=LocationManager.getLocationManager();
-		lm.register("00", "192.168.0.2", 5060, "friendly-scanner", "UDP", 30);
-		lm.register("01", "192.168.0.2", 5060, "friendly-scanner", "UDP", 40);
-		lm.register("02", "192.168.0.2", 5060, "friendly-scanner", "UDP", 50);
-		lm.register("03", "192.168.0.2", 5060, "friendly-scanner", "UDP", 60);
-		while(true) {
-			for(Location location:lm.getLocations()) {
-				System.err.println(location);
-			}
-			System.err.println("---------"+lm.getLocations().size());
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	private String key(String user, String domain) {
+		return user+"@"+domain;
 	}
 	
-	
-	
-
 }

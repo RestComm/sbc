@@ -28,7 +28,7 @@ public class NetworkPoint {
 	
 	public NetworkPoint(String id) {
 		this.id = id;
-		this.tag=Tag.UNINITIALIZED;
+		this.tag=Tag.IDLE;
 	}
 	
 	public NetworkPoint(final String id, final Sid accountSid, final Tag tag) {
@@ -118,7 +118,7 @@ public class NetworkPoint {
 	}
 	
 	public enum Tag {
-        DMZ("DMZ"), MZ("MZ"), UNINITIALIZED("UNINITIALIZED"), ORPHAN("ORPHAN");
+        DMZ("DMZ"), MZ("MZ"), IDLE("IDLE"), ORPHAN("ORPHAN");
 
         private final String text;
 
@@ -126,7 +126,7 @@ public class NetworkPoint {
             this.text = text;
         }
         
-        public boolean isTaged() {
+        public boolean isTagged() {
         	switch(this) {
 	        	case DMZ:
 	        	case MZ:
@@ -136,19 +136,17 @@ public class NetworkPoint {
         	}
         }
         /**
-         * DMZ<->MZ allowed
+         * DMZ ->MZ allowed
+         * Routing
          * @param tag
          * @return
          */
         
-        public boolean isRouting(Tag tag) {
-        	if(isTaged()&& tag.isTaged()) {
-        		if(this.equals(tag)) {
-        			return false;
-        		}
+        public boolean allowRouting(Tag tag) {
+        	if(this==DMZ && tag==MZ)
         		return true;
-        	}
-        	return false; 	  	
+        	return false;
+        	  	
         }
 
         public static Tag getValueOf(final String text) {

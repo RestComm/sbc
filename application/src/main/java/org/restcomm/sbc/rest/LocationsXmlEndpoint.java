@@ -45,16 +45,16 @@ public final class LocationsXmlEndpoint extends LocationsEndpoint {
     }
 
 
-    @Path("/{user}")
+    @Path("/{aor}")
     @GET
-    public Response getLocationAsXml(@PathParam("user") final String user) {
-        return getLocation(user, APPLICATION_XML_TYPE);
+    public Response getLocationAsXml(@PathParam("aor") final String aor) {
+        return getLocation(aor, APPLICATION_XML_TYPE);
     }
     
-    @Path("/{user}")
+    @Path("/{aor}")
     @DELETE
-    public Response deleteLocationAsXml(@PathParam("user") final String user) {
-        return deleteLocation(user);
+    public Response deleteLocationAsXml(@PathParam("aor") final String aor) {
+        return deleteLocation(aor);
     }
 
     @GET

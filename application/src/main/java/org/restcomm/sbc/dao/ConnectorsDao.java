@@ -22,6 +22,8 @@ package org.restcomm.sbc.dao;
 import java.util.List;
 
 import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.Connector.State;
+import org.restcomm.sbc.bo.Sid;
 
 
 
@@ -35,13 +37,14 @@ import org.restcomm.sbc.bo.Connector;
 public interface ConnectorsDao {
 	
     void addConnector(Connector connector);
-
-    Connector getConnector(String pointId, String transport, int port);
+   
+    Connector getConnector(Sid sid);
 
     List<Connector> getConnectors();
     
     List<Connector> getConnectorsByNetworkPoint(String pointId);
 
+	void removeConnector(Sid sid);
 
-	void removeConnector(String pointId, String transport, int port);
+	void updateConnector(Sid sid, String state);
 }
