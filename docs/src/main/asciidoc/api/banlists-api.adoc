@@ -96,7 +96,7 @@ The above commands will print an output similar to the one below:
 Here is an example of how to create a new ban entry.
 
 ....
-curl -X POST http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteListss/ -d "IpAddress=201.215.232.188" 
+curl -X POST http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteLists/ -d "IpAddress=201.215.232.188" 
 ....
 
 
