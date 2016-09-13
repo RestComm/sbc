@@ -6,7 +6,7 @@ The Restcomm SBC REST API allows you to query meta-data about your account, phon
 
 All URLs referenced in the documentation have the following base:
 
-https://cloud.restcomm.com/2012-04-24
+https://cloud.eolos.la/2012-04-24
 
 The Restcomm SBC REST API is served over HTTPS. To ensure data privacy, unencrypted HTTP is not supported.
 
@@ -16,4 +16,7 @@ Click on a link to read the API documentation for accessing or modifying each re
 * <<calls-api.adoc#calls,Restcomm SBC API – Calls>>
 * <<monitoring-service.adoc#monitoring, Restcomm SBC API - Supervisor/Monitoring Service>>
 * <<locations-api.adoc#locationapi, Restcomm SBC API - Location>>
-* <<banlists-api.adoc#banlistsapi, Restcomm SBC API - Ban Lists>>
+* <<banlists-api.adoc#banlistsapi, Restcomm SBC API - Ban List>>
+* <<connectors-api.adoc#connectorsapi, Restcomm SBC API - Connector>>
+* <<net-points-api.adoc#netpointsapi, Restcomm SBC API - NetworkPoint>>
+* <<routes-api.adoc#routesapi, Restcomm SBC API - Route>>
