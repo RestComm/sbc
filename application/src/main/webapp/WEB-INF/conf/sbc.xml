@@ -38,12 +38,8 @@
 			</role>
 		</security-roles>
                
-                <!-- The URL to the errors dictionary. -->
-                <error-dictionary-uri>/sbc/errors</error-dictionary-uri>
-
-                <!-- The IP to use for out-bound SIP REGISTER requests. This is useful
-                        when you want to report a different IP than the one RestComm picked by default. -->
-                <external-ip>192.168.0.2</external-ip>
+                
+                <domain>192.168.88.3</domain>
 
                 <!-- If set to true RestComm will use the To header to determine the destination.
                         If set to false RestComm will use the Request URI to determine the destination. -->
@@ -127,7 +123,10 @@
                 <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml
                 </configuration-file>
                 <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
+                <!-- 
                 <sql-files>${sbc:home}/WEB-INF/scripts/mariadb/sql</sql-files>
+                -->
+                <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
         </dao-manager>
          <!-- Adjust http client behaviour for outgoing requests -->
 		<http-client>
