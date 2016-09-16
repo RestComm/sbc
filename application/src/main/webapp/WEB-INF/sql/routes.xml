@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author ocarriles@eolos.la (Oscar Carriles)
+-->
+<mapper namespace="org.restcomm.sbc.dao.RoutesDao">
+  <insert id="addEntry" parameterType="map">
+    INSERT INTO "restcomm_routes" ("sid", "account_sid", "source_connector_sid", "target_connector_sid")
+    VALUES(#{sid}, #{account_sid}, #{source_connector_sid}, #{target_connector_sid});
+  </insert>
+   
+  <select id="getEntry" parameterType="map" resultType="hashmap">
+    SELECT * FROM "restcomm_routes" WHERE "sid"=#{sid};
+  </select>
+  
+  <select id="getEntries" parameterType="string" resultType="hashmap">
+    SELECT * FROM "restcomm_routes";
+  </select>
+  
+  <delete id="removeEntry" parameterType="map">
+    DELETE FROM "restcomm_routes" WHERE "sid"=#{sid};
+  </delete>
+    
+  
+</mapper>
