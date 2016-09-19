@@ -21,6 +21,9 @@ package org.restcomm.sbc.testsuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.restcomm.sbc.testsuite.rest.AccountsEndpointTest;
+import org.restcomm.sbc.testsuite.rest.BanListsEndpointTest;
+import org.restcomm.sbc.testsuite.rest.CallsEndpointTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({ 
@@ -30,7 +33,10 @@ import org.junit.runners.Suite.SuiteClasses;
 				ParallelChainTest.class,
 				ReusableSerialChainTest.class,
 				ReusableComplexChainTest.class,
-				SuspectActivityCacheTest.class})
+				SuspectActivityCacheTest.class,
+				AccountsEndpointTest.class,
+				CallsEndpointTest.class,
+				BanListsEndpointTest.class})
 
 public class AllTest {
 
