@@ -24,12 +24,11 @@ import java.io.IOException;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:44:21
- * @class   UnavailableTransportAdapterException.java
- * @project Servlet2.5SBC
+ * @date    30 ago. 2016 13:28:26
+ * @class   UnavailableProtocolAdapterException.java
  *
  */
-public class UnavailableTransportAdapterException extends IOException { 
+public class UnavailableProtocolAdapterException extends IOException { 
 	
 	private static final long serialVersionUID = 3026030994173806039L;
 
@@ -38,7 +37,7 @@ public class UnavailableTransportAdapterException extends IOException {
 	 * 
 	 * @param transport
 	 */
-	public UnavailableTransportAdapterException(String transport) {
+	public UnavailableProtocolAdapterException(String transport) {
 		super(transport);
 	}
 

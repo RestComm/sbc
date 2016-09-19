@@ -16,55 +16,74 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- * @author Oscar Andres Carriles <ocarriles@eolos.la>.
- *******************************************************************************/
+ ********************************************************************************/
 
 package org.restcomm.sbc.adapter.impl;
+
+import java.net.NoRouteToHostException;
 
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
+
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.adapter.TransportAdapter;
+import org.restcomm.sbc.adapter.ProtocolAdapter;
+import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.managers.ProtocolAdapterFactory;
+import org.restcomm.sbc.managers.RouteManager;
+
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    28/4/2016 10:48:28
- * @class   UDPTransportAdapter.java
- * @project Servlet2.5SBC
+ * @date    30 ago. 2016 13:30:01
+ * @class   TCPProtocolAdapter.java
  *
  */
-public class UDPTransportAdapter implements TransportAdapter {
+public class TCPProtocolAdapter implements ProtocolAdapter {
 	
-	private static transient Logger LOG = Logger.getLogger(UDPTransportAdapter.class);
+	private static transient Logger LOG = Logger.getLogger(TCPProtocolAdapter.class);
 	
 	private SipFactory sipFactory;
 	
-	
-	public UDPTransportAdapter() {
+	public TCPProtocolAdapter() {
 		this.sipFactory=ConfigurationCache.getSipFactory();
 		
 	}
 	
-	public SipServletMessage adapt(SipServletMessage message) {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> adapt() Adapting transport [->udp]");
-	    }
+
+	public SipServletMessage adapt(SipServletMessage message) throws NoRouteToHostException {
+		String sourceTransport=message.getInitialTransport();
+		if(sourceTransport==null) {
+			sourceTransport=ProtocolAdapterFactory.PROTOCOL_UDP;
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("o Contact "+message.getHeader("Contact"));
+			LOG.trace("o Transport "+sourceTransport);
+			LOG.trace("o Message follows:\n"+message.toString());
+			LOG.trace(">> adapt() Adapting protocol [->TCP]");
+		}
+		
+		
 		String user = ((SipURI) message.getFrom().getURI()).getUser();
+		String host = ((SipURI) message.getFrom().getURI()).getHost();
+		int port    = ((SipURI) message.getFrom().getURI()).getPort();
 		
-		SipURI sipUri = sipFactory.createSipURI(user, ConfigurationCache.getRouteMZIPAddress());
-		
-		sipUri.setTransportParam("udp");
-		
-		sipUri.setPort(ConfigurationCache.getRouteMZPort());
-		
+		SipURI sipUri = sipFactory.createSipURI(user, host);
+		sipUri.setTransportParam("tcp");
+		sipUri.setPort(port);
 		if(message instanceof SipServletRequest)
 			((SipServletRequest) message).setRequestURI(sipUri);
 	
 		return message;
+
+	}
+	
+	@Override
+	public String getProtocol() {
+		return ProtocolAdapterFactory.PROTOCOL_TCP;
 	}
 
 }

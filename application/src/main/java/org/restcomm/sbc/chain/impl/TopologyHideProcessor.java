@@ -19,7 +19,13 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
+import java.net.NoRouteToHostException;
+
+import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
+import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
@@ -28,6 +34,9 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.adapter.ProtocolAdapter;
+import org.restcomm.sbc.adapter.UnavailableProtocolAdapterException;
+import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.chain.processor.Processor;
 /**
  * 
@@ -42,11 +51,12 @@ import org.restcomm.chain.processor.Processor;
  * MZ Data. 
  *
  */
-public class TopologyHideProcessor extends DefaultProcessor implements Processor, ProcessorCallBack {
+public class TopologyHideProcessor extends DefaultProcessor
+	implements ProcessorCallBack {
 
 
 	private static transient Logger LOG = Logger.getLogger(TopologyHideProcessor.class);
-	private String name;
+	private String name="Topology Hide Processor";
 	
 	public TopologyHideProcessor(ProcessorChain callback) {
 		super(callback);
@@ -57,7 +67,7 @@ public class TopologyHideProcessor extends DefaultProcessor implements Processor
 	
 	
 	public String getName() {
-		return "Topology Hide Processor";
+		return name;
 	}
 
 
@@ -67,38 +77,67 @@ public class TopologyHideProcessor extends DefaultProcessor implements Processor
 	}
 
 
-
-	
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> doProcess() "+getName());
-	    }
-		return message;
-	}
-
-
-
 	@Override
 	public void setName(String name) {
 		this.name=name;
 		
 	}
 
+	private SipServletResponse processResponse(SipServletResponse message) {
+		String oContact=message.getRequest().getHeader(MessageUtil.B2BUA_ORIG_CONTACT_ADDR);
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("o          Contact "+message.getHeader("Contact"));
+			LOG.trace("o Orig Req Contact "+oContact);
+			LOG.trace("o Message follows:\n"+message.toString());
+			
+		}
+		/*
+		 * Replace Contact address from original Message
+		 * is coming from
+		 */
+		
+		
+		message.setHeader("Contact", oContact);
+		
+		return message;
+	}
+
+	private SipServletRequest processRequest(SipServletRequest mzRequest) {
+		if(LOG.isTraceEnabled()){
+	          LOG.trace(">> processRequest()");
+	    }
+		return mzRequest;
+			
+	}
 
 
 	@Override
 	public ProcessorCallBack getCallback() {
 		return this;
 	}
-	@Override
-	public void doProcess(Message message) throws ProcessorParsingException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
-		doProcess(m.getContent());
+	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
+		
+		if(message instanceof SipServletRequest) {		
+			message=processRequest((SipServletRequest) message);
+		}
+		if(message instanceof SipServletResponse) {		
+			message=processResponse((SipServletResponse) message);
+		}
+		
+		return message;
 	}
+	
 	
 	@Override
 	public String getVersion() {
 		return "1.0.0";
+	}
+	
+	@Override
+	public void doProcess(Message message) throws ProcessorParsingException {
+		SIPMutableMessage m=(SIPMutableMessage) message;
+		m.setContent(doProcess(m.getContent()));
 	}
 
 	

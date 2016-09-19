@@ -19,19 +19,20 @@
  */
 package org.restcomm.sbc.managers;
 
+import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.sip.ServletParseException;
+import javax.servlet.sip.Address;
+import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Connector;
-import org.restcomm.sbc.bo.Location;
-import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.bo.Route;
 import org.restcomm.sbc.bo.NetworkPoint.Tag;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
@@ -50,15 +51,12 @@ import org.restcomm.sbc.dao.RoutesDao;
 public class RouteManager {
 	
 	private static RouteManager routeManager;
-	private LocationManager locationManager;
 	private HashMap<String, Connector> dmzTable =null;
-	private HashMap<String, Connector> mzTable  =null;
 	
 	private static transient Logger LOG = Logger.getLogger(RouteManager.class);
 	
 	private RouteManager() {
 		updateRoutingTable();
-		locationManager=LocationManager.getLocationManager();
 		
 	}
 	
@@ -71,7 +69,6 @@ public class RouteManager {
 	
 	private void updateRoutingTable() {
 		dmzTable =new HashMap<String, Connector>();
-		mzTable  =new HashMap<String, Connector>();
 		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);		
         RoutesDao rdao = daos.getRoutesDao();
         ConnectorsDao cdao = daos.getConnectorsDao();
@@ -81,17 +78,39 @@ public class RouteManager {
         	Connector source=cdao.getConnector(dmzRoute.getSourceConnector());
         	Connector target=cdao.getConnector(dmzRoute.getTargetConnector());	
         	
-        	dmzTable.put(source.getTransport()+":"+source.getPort(), target);
-        	mzTable. put(target.getTransport()+":"+target.getPort(), source);
+        	dmzTable.put(NetworkManager.getIpAddress(source.getPoint())+":"+source.getTransport()+":"+source.getPort(), target);
+        	
         	if(LOG.isInfoEnabled()) {
         		LOG.info("DMZ Route add "+source.toPrint()+" => "+target.toPrint());
-        		LOG.info("MZ  Route add "+target.toPrint()+" => "+source.toPrint());
+        		
         	}
         }
    
 	}
 	
-	public Connector getRouteToDMZ(int sourcePort, String sourceTransport) throws NoRouteToHostException {
+	public Address getRegistrationContactAddress(SipServletRequest request) throws NoRouteToHostException {
+		
+		SipURI uri=(SipURI) request.getFrom().getURI();
+		SipFactory sipFactory = ConfigurationCache.getSipFactory();
+		Connector connector=null;
+		connector = getRouteToMZ(uri.getHost(), uri.getPort(), uri.getTransportParam());
+		
+		SipURI contactUri = sipFactory.createSipURI(uri.getUser(), NetworkManager.getIpAddress(connector.getPoint()));
+		contactUri.setPort(connector.getPort());
+		contactUri.setTransportParam(connector.getTransport().toString());
+		return sipFactory.createAddress(contactUri);
+	}
+	
+	public SipURI getContactAddress(String user, InetSocketAddress address) throws NoRouteToHostException {
+		
+		SipFactory sipFactory = ConfigurationCache.getSipFactory();
+		SipURI contactUri = sipFactory.createSipURI(user, address.getHostString());
+		
+		contactUri.setPort(address.getPort());
+		return contactUri;
+	}
+	
+	public Connector getRouteToMZ(String sourceHost, int sourcePort, String sourceTransport) throws NoRouteToHostException {
 		if(sourceTransport==null) {
 			// implicit transport
 			sourceTransport="UDP";
@@ -100,35 +119,18 @@ public class RouteManager {
 			// implicit port
 			sourcePort=5060;
 		}
-		Connector connector=dmzTable.get(sourceTransport.toUpperCase()+":"+sourcePort);
-		if(connector==null)
-			throw new NoRouteToHostException("No source Connector for "+sourceTransport+":"+sourcePort);
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("oo Getting route for transport="+sourceTransport+" port="+sourcePort);
+			LOG.trace("oo Getting route to MZ for host="+sourceHost+" transport="+sourceTransport+" port="+sourcePort);
+		}
+		Connector connector=dmzTable.get(sourceHost+":"+sourceTransport.toUpperCase()+":"+sourcePort);
+		if(connector==null)
+			throw new NoRouteToHostException("No source Connector for "+sourceHost+":"+sourceTransport+":"+sourcePort);
+		if(LOG.isTraceEnabled()) {
 			LOG.trace("ooo "+connector.toPrint());
 		}
 		return connector;
 	}
-	
-	public Connector getRouteToMZ(int sourcePort, String sourceTransport) throws NoRouteToHostException {
-		if(sourceTransport==null) {
-			// implicit transport
-			sourceTransport="UDP";
-		}
-		if(sourcePort<0) {
-			// implicit port
-			sourcePort=5060;
-		}
-		Connector connector=mzTable.get(sourceTransport.toUpperCase()+":"+sourcePort);
-		if(connector==null)
-			throw new NoRouteToHostException("No source Connector for "+sourceTransport+":"+sourcePort);
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("oo Getting route for transport="+sourceTransport+" port="+sourcePort);
-			LOG.trace("ooo "+connector.toPrint());
-		}
-		return connector;
-	}
-	
+	/*
 	public String getTargetTransport(SipServletMessage sourceMessage) throws NoRouteToHostException, LocationNotFoundException {
 		String user=sourceMessage.getHeader("To");
 		int sourcePort=sourceMessage.getLocalPort();
@@ -186,21 +188,18 @@ public class RouteManager {
 		return sipUri;
 		
 	}
+	*/
 	
-	public static Tag getSourceTag(SipServletMessage message) {	
-		String host =message.getLocalAddr();	
-		Tag tag=NetworkManager.getTag(host);
-		if(tag!=Tag.DMZ&&tag!=Tag.MZ) {
-			LOG.warn("Not tagged NetworkPoint for host "+host);
-			
-		}
-		return tag;
-		
-		
-	}
 	
 	public static boolean isFromDMZ(SipServletMessage message) {	
-		String host =message.getLocalAddr();	
+		String host =message.getLocalAddr();
+		int port =message.getLocalPort();
+		String transport=message.getTransport();
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Message "+message.getMethod()+" comming from "+host+":"+port+"/"+transport);		
+		}
+		
 		return NetworkManager.getTag(host)==Tag.DMZ?true:false;	
 		
 	}
