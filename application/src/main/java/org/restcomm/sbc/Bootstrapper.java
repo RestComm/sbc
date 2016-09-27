@@ -19,7 +19,6 @@
  *******************************************************************************/
 package org.restcomm.sbc;
 
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -32,19 +31,24 @@ import org.apache.commons.configuration.interpol.ConfigurationInterpolator;
 
 
 import org.apache.log4j.Logger;
+import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.identity.IdentityContext;
+import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
+import org.restcomm.sbc.managers.JMXManager;
+import org.restcomm.sbc.managers.NetworkManager;
+import org.restcomm.sbc.managers.rmi.JMXServer;
 
 import com.typesafe.config.ConfigFactory;
 
 
 public final class Bootstrapper extends SipServlet {
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = Logger.getLogger(Bootstrapper.class);
+    private static final Logger LOG = Logger.getLogger(Bootstrapper.class);
 
    
     
@@ -81,7 +85,7 @@ public final class Bootstrapper extends SipServlet {
         try {
             xml = new XMLConfiguration(path);
         } catch (final ConfigurationException exception) {
-            logger.error(exception);
+            LOG.error(exception);
         }
         xml.setProperty("runtime-settings.home-directory", home(config));
         xml.setProperty("runtime-settings.root-uri", uri(config));
@@ -98,21 +102,61 @@ public final class Bootstrapper extends SipServlet {
         } catch (final ObjectInstantiationException exception) {
             throw new ServletException(exception);
         }
-         
+        
         context.setAttribute(DaoManager.class.getName(), storage);
         ShiroResources.getInstance().set(DaoManager.class, storage);
         ShiroResources.getInstance().set(Configuration.class, xml.subset("runtime-settings"));
+       
         // Create high-level restcomm configuration
         RestcommConfiguration.createOnce(xml);
         // Initialize identityContext
         IdentityContext identityContext = new IdentityContext(xml);
         context.setAttribute(IdentityContext.class.getName(), identityContext);
-        
-        logger.info("Extern IP:"+xml.getString("runtime-settings.external-ip"));
-     
+        try {
+        	//launchJMXServer();
+			bindConnectors(storage);
+			
+		} catch (Exception e) {
+			LOG.error(e);
+		}
+       
         Version.printVersion();
         
         
+    }
+    
+    
+    private void bindConnectors(DaoManager storage) throws Exception {
+    	JMXManager jmxManager=null;
+    	boolean status;
+		jmxManager=JMXManager.getInstance();
+		
+    	ConnectorsDao dao=storage.getConnectorsDao();
+    	for(Connector connector:dao.getConnectors()) {
+    		String npoint=connector.getPoint();
+    		String ipAddress=NetworkManager.getIpAddress(npoint);
+    		if(connector.getState()==Connector.State.UP) {
+	    		status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString());
+	    		if(status) {
+		    		if(LOG.isDebugEnabled()) {
+		    			LOG.debug("Binding Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
+		    		}
+	    		}	
+	    		else {
+		    		if(LOG.isDebugEnabled()) {
+		    			LOG.debug("CANNOT Bind Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
+		    		}
+	    		}
+    		}
+    	}
+    	
+    }
+    
+    private void launchJMXServer() throws Exception {
+    	// fire up JMX
+	    final JMXServer jmxServer = new JMXServer();
+	    jmxServer.start(); 
+	    LOG.info("JMXServer started");
     }
 
     private DaoManager storage(final Configuration configuration, final ClassLoader loader) throws ObjectInstantiationException {
@@ -120,7 +164,7 @@ public final class Bootstrapper extends SipServlet {
         final DaoManager daoManager = (DaoManager) new ObjectFactory(loader).getObjectInstance(classpath);
         daoManager.configure(configuration.subset("dao-manager"));
         daoManager.start();
-        logger.info("DaoManager started");
+        LOG.info("DaoManager started");
         return daoManager;
     }
     

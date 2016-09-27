@@ -22,6 +22,7 @@ package org.restcomm.chain.processor.impl;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Processor;
+import org.restcomm.chain.processor.Message;
 
 
 
@@ -34,30 +35,30 @@ import org.restcomm.chain.processor.Processor;
  */
 public abstract class DefaultDPIProcessor extends DefaultProcessor   {
 
-	private static transient Logger LOG = Logger.getLogger(DefaultProcessor.class);
+	private static transient Logger LOG = Logger.getLogger(DefaultDPIProcessor.class);
 
-	
 	public DefaultDPIProcessor() {
+		super();
 		type=Type.CHAIN;
 		
 	}
 	
 	public DefaultDPIProcessor(String name) {
-		this();
-		setName(name);
+		super(name);
+		type=Type.CHAIN;
 		
 	}
 	
 	public DefaultDPIProcessor(ProcessorChain chain) {
-		this.chain=chain;
+		super(chain);
 		type=Type.SINGLE_PROCESSOR;
 		
 	}
 	
 	
 	public DefaultDPIProcessor(String name, ProcessorChain chain) {
-		this(chain);
-		setName(name);
+		super(name, chain);
+		
 	}
 
 	@Override
@@ -70,7 +71,7 @@ public abstract class DefaultDPIProcessor extends DefaultProcessor   {
 	
 		fireProcessingEvent(immutableMessage, (Processor) getCallback());
 		
-		getCallback().doProcess(immutableMessage);
+		getCallback().doProcess((Message)immutableMessage);
 		
 		fireEndEvent(immutableMessage, (Processor) getCallback());
 		

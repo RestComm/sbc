@@ -28,6 +28,7 @@ import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.EndpointProcessor;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
+import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 
 
@@ -146,8 +147,9 @@ public abstract class DefaultProcessor implements Processor {
 		
 		Processor nextLink = null;
 		if(chain!=null) {
-			if(LOG.isDebugEnabled())
+			if(LOG.isDebugEnabled()) {
 				LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" chain "+chain.getName());
+			}
 			nextLink=chain.getNextLink(this);
 		}
 				
@@ -156,8 +158,8 @@ public abstract class DefaultProcessor implements Processor {
 			if(LOG.isDebugEnabled())
 				LOG.debug("DP "+type+" from callback "+((Processor)getCallback()).getName()+" nextlink "+nextLink.getName());
 			nextLink.process(message);
+			
 		}
-		
 		
 	}
 	
@@ -166,5 +168,21 @@ public abstract class DefaultProcessor implements Processor {
 	public Type getType() {
 		return type;
 	}
+	
+
+	@Override
+	public abstract String getVersion();
+
+	@Override
+	public abstract String getName();
+
+	@Override
+	public abstract void setName(String name);
+
+	@Override
+	public abstract int getId();
+
+	@Override
+	public abstract ProcessorCallBack getCallback();
 	
 }

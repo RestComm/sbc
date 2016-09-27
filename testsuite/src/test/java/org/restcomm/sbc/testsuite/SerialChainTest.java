@@ -24,7 +24,7 @@ import org.restcomm.chain.impl.MalformedProcessorChainException;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorListener;
-import org.restcomm.chain.processor.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 import static org.junit.Assert.*;

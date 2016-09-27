@@ -200,12 +200,11 @@ public class Connector {
 	}
 
 	public String toPrint() {
-		return point+"/"+outboundInterface.toString()+":"+transport+":"+port+":"+state;
+		return "["+NetworkManager.getIpAddress(point)+":"+transport+":"+port+"]"+point+"/"+outboundInterface.toString()+":"+state;
 	}
 
 	public InetSocketAddress getOutboundInterface() {
 		return outboundInterface;
 	}
 
-	
 }

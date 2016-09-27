@@ -43,8 +43,9 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
     
     private SuspectActivityCache(int size, int ttl) {
         this.ttl=ttl;
-    	cache = new DefaultCacheManager().getCache("suspectactivity");
-    	
+        
+    	cache = new DefaultCacheManager().getCache("suspectactivity", true);
+    	cache.start();
     }
     
     public static SuspectActivityCache<String, SuspectActivityElectable> getCache(int size, int ttl) {

@@ -18,7 +18,7 @@
  *
  *******************************************************************************/
 
-package org.restcomm.chain.processor.impl;
+package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 
@@ -28,30 +28,28 @@ import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
+import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
+import org.restcomm.chain.processor.impl.ProcessorParsingException;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
 
 
-/**
- * Specialized Object Processor responsible to check grammar and syntax
- * health of the UAC incoming sip message. 
- *
- */
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    27/5/2016 13:37:39
- * @class   DispatchProcessor.java
+ * @date    27/5/2016 14:33:56
+ * @class   DPIUserAgentACLProcessor.java
  *
  */
-public class DispatchProcessor extends DefaultProcessor 
-	implements ProcessorCallBack {
+public class DispatchDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
+
+	private String name="Dispatch DPI Processor";
+	private static transient Logger LOG = Logger.getLogger(DispatchDPIProcessor.class);
+
+	public DispatchDPIProcessor(ProcessorChain processorChain) {
+			super(processorChain);
+	}
 	
-	private static transient Logger LOG = Logger.getLogger(DispatchProcessor.class);
-	
-	
-	private String name="#Low level dispatcher";
-	
-	public DispatchProcessor(String name,	ProcessorChain chain) {
-		super(name, chain);
-		setName(name);
+	public DispatchDPIProcessor(String name, ProcessorChain processorChain) {
+			super(name, processorChain);
 	}
 
 	public String getName() {
@@ -62,20 +60,18 @@ public class DispatchProcessor extends DefaultProcessor
 		return this.hashCode();
 	}
 
-	@Override
-	public ProcessorCallBack getCallback() {
-		return this;
-	}
-
-	@Override
-	public void doProcess(Message message) throws ProcessorParsingException {
+	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
 		SipServletMessage m=(SipServletMessage) message.getContent();
+		if(LOG.isTraceEnabled()) {	
+			LOG.trace("Dispatching message: \n"+m);
+		}
 		try {
 			m.send();
 		} catch (IOException e) {
 			LOG.error(e.getMessage());
 		}
 		
+		return m;
 	}
 
 	@Override
@@ -85,7 +81,18 @@ public class DispatchProcessor extends DefaultProcessor
 	}
 
 	@Override
+	public ProcessorCallBack getCallback() {
+		return this;
+	}
+
+	@Override
+	public void doProcess(Message message) throws ProcessorParsingException {
+		doProcess((SIPMutableMessage)message);
+	}
+	
+	@Override
 	public String getVersion() {
 		return "1.0.0";
 	}
+
 }

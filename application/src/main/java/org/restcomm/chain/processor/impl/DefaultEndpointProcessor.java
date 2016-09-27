@@ -21,6 +21,7 @@ package org.restcomm.chain.processor.impl;
 
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.EndpointProcessor;
+import org.restcomm.chain.processor.ProcessorCallBack;
 
 
 
@@ -30,32 +31,34 @@ import org.restcomm.chain.processor.EndpointProcessor;
  * @class   DefaultEndpointProcessor.java
  *
  */
-public abstract class DefaultEndpointProcessor extends DefaultProcessor implements EndpointProcessor {
+public  abstract class DefaultEndpointProcessor extends DefaultDPIProcessor implements EndpointProcessor {
 
-	public DefaultEndpointProcessor() {
-		type=Type.CHAIN;
-		
-	}
-	
-	public DefaultEndpointProcessor(String name) {
-		this();
-		setName(name);
-		
-	}
 	
 	public DefaultEndpointProcessor(String name, ProcessorChain chain) {
-		this(name);
-		this.chain=chain;
+		super(name, chain);
 		type=Type.SINGLE_PROCESSOR;
 		
 	}
 	
 	public DefaultEndpointProcessor(ProcessorChain chain) {
-		this();
-		this.chain=chain;
+		super(chain);
 		type=Type.SINGLE_PROCESSOR;
 		
 	}
+
+	@Override
+	public abstract String getVersion();
+
+	@Override
+	public abstract String getName();
+
+	@Override
+	public abstract void setName(String name);
+	@Override
+	public abstract int getId();
+
+	@Override
+	public abstract ProcessorCallBack getCallback();
 	
 	
 }

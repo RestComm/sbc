@@ -20,109 +20,55 @@
  *******************************************************************************/
 package org.restcomm.sbc;
 
+
 import javax.servlet.sip.SipFactory;
-
 import org.apache.commons.configuration.Configuration;
+import org.apache.log4j.Logger;
 
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    30 ago. 2016 10:32:30
+ * @class   ConfigurationCache.java
+ *
+ */
 public class ConfigurationCache {
 	
-	
-	private static String mzIface;
-	private static String mzIPAddress;
-	private static String mzTransport;
-	private static int mzPort;
-	private static String dmzIface;
-	private static String dmzIPAddress;
-	private static String dmzTransport;
-	private static int dmzPort;
-	private static String routeMZIPAddress;
-	private static String routeMZTransport;
-	private static int routeMZPort;
+	private static String domain;
+	private static String targetHost;
+	private static String targetHAHost;
 	private static SipFactory sipFactory;
 	private static boolean regThrottleEnabled;
-	private static int regThrottleMinRegistartTTL;
-	private static int regThrottleMaxUATTL;
-	
+	private static int regThrottleMZTTL;
+	private static int regThrottleUATTL;
 
+	private static transient Logger LOG = Logger.getLogger(ConfigurationCache.class);
+	
 	private ConfigurationCache(SipFactory factory, Configuration configuration) {
 		sipFactory=factory;
-		mzIface    =configuration.getString("runtime-settings.militarized-zone.iface-name");
-	    mzIPAddress=configuration.getString("runtime-settings.militarized-zone.ip-address");
-	    mzTransport=configuration.getString("runtime-settings.militarized-zone.transport");
-	    mzPort     =configuration.getInt   ("runtime-settings.militarized-zone.port");
-	    
-	    dmzIface    =configuration.getString("runtime-settings.de-militarized-zone.iface-name");
-	    dmzIPAddress=configuration.getString("runtime-settings.de-militarized-zone.ip-address");
-	    dmzTransport=configuration.getString("runtime-settings.de-militarized-zone.transport");
-	    dmzPort     =configuration.getInt   ("runtime-settings.de-militarized-zone.port");
-	  
-	    routeMZIPAddress=configuration.getString("runtime-settings.routing-policy.militarized-zone-target.ip-address");
-		routeMZTransport=configuration.getString("runtime-settings.routing-policy.militarized-zone-target.transport");
-		routeMZPort     =configuration.getInt   ("runtime-settings.routing-policy.militarized-zone-target.port");
 		
-		regThrottleEnabled=configuration.getBoolean    ("registrar-throttle.enable");  
-        regThrottleMinRegistartTTL=configuration.getInt("registrar-throttle.min-registrar-expiration");
-        regThrottleMaxUATTL=configuration.getInt       ("registrar-throttle.max-ua-expiration");
+		domain=configuration.getString		("runtime-settings.domain");	
+	    targetHost=configuration.getString		("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
+	    targetHAHost=configuration.getString	("runtime-settings.routing-policy.militarized-zone-target.failover-ip-address");	
+		regThrottleEnabled=configuration.getBoolean ("registrar-throttle.enable");  
+        regThrottleMZTTL=configuration.getInt		("registrar-throttle.force-mz-expiration");
+        regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
         
-
 	}
-
+	
+	
 	public static void build(SipFactory factory, Configuration configuration){
 		new ConfigurationCache(factory, configuration);
 		
 	}
-	public static String getMzIface() {
-		return mzIface;
+	
+
+	public static String getTargetHost() {
+		return targetHost;
 	}
-
-
-	public static String getMzIPAddress() {
-		return mzIPAddress;
-	}
-
-
-	public static String getMzTransport() {
-		return mzTransport;
-	}
-
-
-	public static int getMzPort() {
-		return mzPort;
-	}
-
-
-	public static String getDmzIface() {
-		return dmzIface;
-	}
-
-
-	public static String getDmzIPAddress() {
-		return dmzIPAddress;
-	}
-
-
-	public static String getDmzTransport() {
-		return dmzTransport;
-	}
-
-
-	public static int getDmzPort() {
-		return dmzPort;
-	}
-
-
-	public static String getRouteMZIPAddress() {
-		return routeMZIPAddress;
-	}
-
-
-	public static String getRouteMZTransport() {
-		return routeMZTransport;
-	}
-
-
-	public static int getRouteMZPort() {
-		return routeMZPort;
+	
+	public static String getHATargetHost() {
+		return targetHAHost;
 	}
 
 
@@ -134,12 +80,17 @@ public class ConfigurationCache {
 		return regThrottleEnabled;
 	}
 
-	public static int getRegThrottleMinRegistartTTL() {
-		return regThrottleMinRegistartTTL;
+	public static int getRegThrottleMZTTL() {
+		return regThrottleMZTTL;
 	}
 
-	public static int getRegThrottleMaxUATTL() {
-		return regThrottleMaxUATTL;
+	public static int getRegThrottleUATTL() {
+		return regThrottleUATTL;
+	}
+
+
+	public static String getDomain() {
+		return domain;
 	}
 	
 

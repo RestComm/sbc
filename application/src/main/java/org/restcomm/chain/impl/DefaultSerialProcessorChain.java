@@ -124,6 +124,7 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		}
 		
 		
+		
 		fireEndEvent(message, (Processor) getCallback());
 
 		

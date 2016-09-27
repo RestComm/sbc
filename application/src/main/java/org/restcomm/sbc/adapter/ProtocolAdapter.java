@@ -19,17 +19,19 @@
  *******************************************************************************/
 
 package org.restcomm.sbc.adapter;
+import java.net.NoRouteToHostException;
+
 import javax.servlet.sip.SipServletMessage;
+
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    28/4/2016 10:01:30
- * @class   TransportAdapter.java
- * @project Servlet2.5SBC
+ * @date    30 ago. 2016 13:27:49
+ * @class   ProtocolAdapter.java
  *
  */
-public interface TransportAdapter {
+public interface ProtocolAdapter {
 	/**
 	 * TransportAdapter must be implemented for those transport
 	 * specialized convertors to forward messages between them-
@@ -40,9 +42,9 @@ public interface TransportAdapter {
 	 * @param message
 	 * @return adapted message to target transport
 	 */
-	SipServletMessage adapt(SipServletMessage message);
+	SipServletMessage adapt(SipServletMessage message) throws NoRouteToHostException;
 	
-	
+	String getProtocol();
 	
 
 }
