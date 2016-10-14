@@ -22,20 +22,30 @@ package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
+import javax.servlet.sip.Parameterable;
 import javax.servlet.sip.ServletParseException;
+import javax.servlet.sip.SipApplicationSession;
+import javax.servlet.sip.SipApplicationSession.Protocol;
+import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
+import javax.servlet.sip.SipSessionsUtil;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TooManyHopsException;
-
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -44,134 +54,365 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
-
+import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.Location;
+import org.restcomm.sbc.bo.LocationNotFoundException;
+import org.restcomm.sbc.managers.LazyRule;
+import org.restcomm.sbc.managers.LocationManager;
+import org.restcomm.sbc.managers.MD5Digest;
+import org.restcomm.sbc.managers.MessageUtil;
+import org.restcomm.sbc.managers.RouteManager;
 
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3/5/2016 22:48:44
- * @class   B2BUABuilderProcessor.java
+ * @author ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date 3/5/2016 22:48:44
+ * @class B2BUABuilderProcessor.java
  *
  */
 public class B2BUABuilderProcessor extends DefaultProcessor implements ProcessorCallBack {
-	
+
 	private static transient Logger LOG = Logger.getLogger(B2BUABuilderProcessor.class);
-	private ProcessorChain chain;
+
+	private RouteManager routeManager;
+	private LocationManager locationManager;
+	private SipFactory sipFactory;
+	private SipApplicationSession aSession;
 	
+
 	public B2BUABuilderProcessor(ProcessorChain chain) {
 		super(chain);
-		this.chain=chain;	
+		this.chain = chain;
+		routeManager = RouteManager.getRouteManager();
+		locationManager = LocationManager.getLocationManager();
+		this.sipFactory = ConfigurationCache.getSipFactory();
+		
+		
+		
 	}
-	
+
 	public B2BUABuilderProcessor(String name, ProcessorChain chain) {
 		this(chain);
 		setName(name);
 	}
+	/*
+	 * <------------UPSTREAM -----------------------
+    				|        			|
+				+---------+         +---------+
+	 <--------- |  UA     |         | UA      | <---------
+	            |<--------|         |		  |
+	 ---------> + @MZ     |-------->|  @DMZ   + --------->      
+	  Message   |         |         |         |  Message
+				|         |         |         |
+				+---------+         +---------+
+			MZ Leg  |      			   | DMZ Leg
+			
+	   -------------DOWNSTREAM---------------------->
+     */
 
-	
-	/**
-	 * 
-	 *                                   
-	 *                                   
-	 *                                          |-----TO Militarized Zone-->
-	 *                         SBC              |
-	 *                         +----------------+-----------------+                  +---------+
-	 *  +----+                 | +------+   +---+---+   +---+---+ |                  |         |
-	 *  |    +<--DMZ Request-->+ |      +<==+===|   |   |   |   | +<---MZ Request--->+ PROXY   |
-	 *  | UA |                 | |  PU  |   | B2BUA |   |TA |PU | |                  | SERVER  |
-	 *  |    +<--DMZ Response->+ |      |   |   |   |   |   |   | +<---MZ Response-->+         |
-	 *  +----+                 | +------+   +---+---+   +---+---+ |                  |         |
-	 *                         +----------------+-----------------+                  +---------+
-	 *                                          |
-	 *             <--To Demilitarized Zone-----|
-	 *             
-	 *  UA     User Agent
-	 *  PU     Processor Unit
-	 *  TA     Transport Adapter
-	 *  B2BUA  Back to Back User Agent
-	 *  MZ     Miltarized Zone (LAN)
-	 *  DMZ    Demilitarized Zone (WAN)
-	 *  SBC    Session Border Controller
-	 *  
-	 * @param dmzRequest
-	 * @return
-	 */
-	
-	private SipServletRequest processRequest(SipServletRequest dmzRequest) {
+	private SipServletRequest processRequest(SipServletRequest request) {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processRequest()");
+			
+		}
+		B2buaHelper helper = request.getB2buaHelper();
+		SipServletRequest newRequest = null;
+		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		
-		String user = ((SipURI) dmzRequest.getFrom().getURI()).getUser();
-		
-		//dmzRequest.setHeader(MessageUtil.B2BUA_FINGERPRINT_HEADER, "Made in RequestBuilder to DMZ");
-		
-		Map<String, List<String>> headers=new HashMap<String, List<String>>();
+		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
+		SipURI toURI 	= (SipURI) request.getTo().  getURI();
+		SipURI newSipToUri = toURI;
+		SipURI contactURI = null;
 
-		B2buaHelper helper = dmzRequest.getB2buaHelper();
-		SipServletRequest tomzRequest = null;
+		RouteManager routeManager = RouteManager.getRouteManager();
+		Connector connector = null;
+		InetSocketAddress outBoundInterface = null;
+		String route;
+		
+		
+		if (RouteManager.isFromDMZ(request)) {
+			// Must create Leg to MZ based on router info
+			try {
+				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
+						request.getTransport());
+				outBoundInterface = connector.getOutboundInterface();
+				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
+				contactURI.setTransportParam(connector.getTransport().toString());
+				
+
+			} catch (NoRouteToHostException e) {
+				LOG.error("ERROR", e);
+			}
+
+			if (LOG.isTraceEnabled()) {
+				headers.put(MessageUtil.B2BUA_FINGERPRINT_HEADER, Arrays.asList("Made in RequestBuilder to MZ"));
+			}
+
+			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
+			// ConfigurationCache.getTargetHost());
+			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
+			route="sip:" + ConfigurationCache.getTargetHost();
+
+		} else {
+			// Comes from MZ Must create LEG to DMZ based on Location info
+			Location location = null;
+			
+			try {
+				location = locationManager.getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
+				outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
+				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
+				contactURI.setTransportParam(location.getTransport());
+
+			} catch (LocationNotFoundException e) {
+				SipServletResponse response =
+				request.createResponse(SipServletResponse.SC_DOES_NOT_EXIST_ANYWHERE);
+				try {
+					response.send();
+				} catch (IOException e1) {
+					LOG.error("ERROR", e);
+				}
+				
+				return null;
+				
+			} catch (NoRouteToHostException e) {
+				LOG.error("ERROR", e);
+			}
+			
+			newSipToUri = sipFactory.createSipURI(toURI.getUser(), location.getHost());
+			newSipToUri.setPort(location.getPort());
+			newSipToUri.setTransportParam(location.getTransport());
+			route=null; //"sip:" + location.getHost();
+			//headers.put("To",	Arrays.asList(newSipToUri.toString()));
+			
+			
+
+		}
+		// Feed new leg with LAZY_rules to be applied later
+		//@SuppressWarnings("unchecked")
+		//List<String> rules = IteratorUtils.toList(request.getHeaders(LazyRule.LAZY_RULE));			
+		//headers.put(LazyRule.LAZY_RULE, rules);
+
+		
+		
 		try {
-			tomzRequest = helper.createRequest(dmzRequest, true, headers);
+			
+
+			if (request.isInitial()) {
+				headers.put("Contact",	Arrays.asList(contactURI.toString()));
+				
+				
+				
+				if (LOG.isTraceEnabled()) {
+					
+					if(aSession!=null&&aSession.isValid()){
+					LOG.trace("LNK "+aSession.getAttribute(request.getSession().getCallId()));
+					}
+				}
+				
+				SipServletRequest usedRequest=null;
+				
+				if(aSession!=null&&aSession.isValid()) {
+					usedRequest=(SipServletRequest) aSession.getAttribute(request.getSession().getCallId());
+					
+					
+				}
+				if(usedRequest!=null&&usedRequest.getSession().isValid()) {
+					LOG.trace("REUSING SESSION REQ "+usedRequest.getCallId()+":"+usedRequest.getHeader("CSeq"));
+					newRequest = helper.createRequest(usedRequest.getSession(), request, headers);
+					
+					
+				}
+				else {
+					newRequest = helper.createRequest(request, true, headers);
+					aSession = sipFactory.createApplicationSession();
+					aSession.setAttribute(request.getSession().getCallId(), newRequest);
+					
+				}
+			
+				
+				newRequest.getSession().setOutboundInterface(outBoundInterface);
+
+				//newRequest.getFrom().setURI(sipFactory.createSipURI(fromURI.getUser(),  ConfigurationCache.getTargetHost()));
+				//newRequest.getTo().  setURI(newSipToUri);
+
+				if(route!=null)
+					newRequest.pushRoute(sipFactory.createAddress(route));
+				else
+					newRequest.setRequestURI(newSipToUri);
+				
+				
+				// apply just to initial requests
+				// newRequest=(SipServletRequest) applyLazyRules(newRequest);
+				
+			} else {
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("NOT Initial Request " + request.getMethod());
+				}
+
+				if (request.getMethod().equals("BYE")) {
+					SipSession session = request.getSession();
+					SipSession linkedSession = helper.getLinkedSession(session);
+					newRequest = linkedSession.createRequest("BYE");
+					
+				} 
+				else if (request.getMethod().equals("ACK")) {
+					SipSession session = request.getSession();
+					SipSession linkedSession = helper.getLinkedSession(session);
+					newRequest = linkedSession.createRequest("ACK");
+					
+				} 
+				else if (request.getMethod().equals("INFO")) {
+					SipSession session = request.getSession();
+					SipSession linkedSession = helper.getLinkedSession(session);
+					newRequest = linkedSession.createRequest("INFO");
+					newRequest.setContent(request.getContent(), request.getContentType());
+					
+				} 
+				
+				else if (request.getMethod().equals("CANCEL")) {
+					
+					SipSession session = request.getSession();
+					SipSession linkedSession = helper.getLinkedSession(session);
+					SipServletRequest originalRequest = (SipServletRequest) linkedSession
+							.getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+					newRequest = helper.getLinkedSipServletRequest(originalRequest).createCancel();
+					
+					
+				} 
+				else {
+					LOG.error(request.getMethod() + " not implemented!");
+				}
+				
+
+			}
+
+			
+			//newRequest.setAddressHeader("Contact", sipFactory.createAddress(contactURI));
+			newRequest.getSession().setAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR, request);
+	
+			
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("Initial Request " + request.getMethod()+" on session "+newRequest.getSession().getId());
+				LOG.trace("Routing thru outboundInterface " + outBoundInterface.toString());
+				LOG.trace("Routing To " + route);
+				LOG.trace("Contact back " + contactURI.toString());
+				LOG.trace("Sending Message: \n " + newRequest.toString());
+			}
+			
 			
 		} catch (IllegalArgumentException e) {
-			LOG.error(e.getMessage());
+			LOG.error("", e);
 		} catch (TooManyHopsException e) {
-			LOG.error(e.getMessage());
+			LOG.error("", e);
+		} catch (ServletParseException e) {
+			LOG.error("", e);
+		} catch (RuntimeException e) {
+			LOG.error("", e);
+		} catch (UnsupportedEncodingException e) {
+			LOG.error("", e);
+		} catch (IOException e) {
+			LOG.error("", e);
 		} 
 		
-		/*
-		tomzRequest.setHeader(MessageUtil.B2BUA_FINGERPRINT_HEADER, "Made in RequestBuilder to MZ");
 		
-		
-		SipURI sipUri = ConfigurationCache.getSipFactory().createSipURI(user, ConfigurationCache.getRouteMZIPAddress());
-		sipUri.setTransportParam(ConfigurationCache.getRouteMZTransport());
-		
-		sipUri.setPort(ConfigurationCache.getRouteMZPort());
-		
-		tomzRequest.setRequestURI(sipUri);
-		*/
-		
-		return tomzRequest;
-		
-		
-	}
-	
-	private SipServletResponse processResponse(SipServletResponse dmzResponse) {
-			
-			B2buaHelper helper = dmzResponse.getRequest().getB2buaHelper();
-			//create and sends OK for the first call leg
-			SipSession originalSession =   
-			    helper.getLinkedSession(dmzResponse.getSession());					
-			SipServletResponse mzResponse = 
-				helper.createResponseToOriginalRequest(originalSession, dmzResponse.getStatus(), dmzResponse.getReasonPhrase());
-			try {
-				if(dmzResponse.getContent() != null) {
-					mzResponse.setContent(dmzResponse.getContent(), dmzResponse.getContentType());
-				}
-				mzResponse.setHeaderForm(dmzResponse.getHeaderForm());
-			
-				//Address address = originalSession.getLocalParty();
-				Address address = mzResponse.getRequest().getAddressHeader("Contact");
-				mzResponse.setHeader("Contact", address.toString());
-				//mzResponse.setHeader(MessageUtil.B2BUA_FINGERPRINT_HEADER, "Made in ResponseBuilder to DMZ");	
-				
-			} catch (UnsupportedEncodingException e) {
-				LOG.error("ERROR",e);
-			} catch (IOException e) {
-				LOG.error("ERROR",e);
-			} catch (ServletParseException e) {
-				LOG.error("ERROR",e);
-			}
-			
-			if (dmzResponse.getStatus() == SipServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED) {
-				mzResponse.setHeader("Proxy-Authenticate", dmzResponse.getHeader("Proxy-Authenticate"));
-			}
-			else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {
-				mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));
-			}
-			
-			return mzResponse;
-		
+		return newRequest;
+
 	}
 
+	private SipServletResponse processResponse(SipServletResponse dmzResponse) {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processResponse()");
+		}
+		SipURI toURI = (SipURI) dmzResponse.getTo().getURI();
+
+		B2buaHelper helper = dmzResponse.getRequest().getB2buaHelper();
+		SipServletResponse mzResponse;
+
+		int statusResponse = dmzResponse.getStatus();
+		String reasonResponse = dmzResponse.getReasonPhrase();
+		
+		if (dmzResponse.getStatus() == SipServletResponse.SC_RINGING) {
+			
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("180 Detected->183");
+			}
+			//statusResponse = SipServletResponse.SC_SESSION_PROGRESS;
+			//reasonResponse = "Session Progress";
+			
+
+		}
+		if (dmzResponse.getStatus() == SipServletResponse.SC_OK) {
+			if(dmzResponse.getMethod().equals("REGISTER")) {
+			
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("Final Response Discarding dialog");
+				}
+				aSession=null;
+			}
+		}
+		
+		SipServletRequest linked = helper.getLinkedSipServletRequest(dmzResponse.getRequest()); 
+		SipSession originalSession = helper.getLinkedSession(dmzResponse.getSession());
+		
+		if(linked!=null) {
+			mzResponse = linked.createResponse(statusResponse, reasonResponse); 
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("Reusing linked session");
+			}
+		}
+		else {
+			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
+		}
+		
+		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("mz Response created for session "+originalSession.getId());
+		}
+
+		try {
+			if (dmzResponse.getContent() != null) {
+				mzResponse.setContent(dmzResponse.getContent(), dmzResponse.getContentType());
+			}
+			mzResponse.setHeaderForm(dmzResponse.getHeaderForm());
+			
+		} catch (UnsupportedEncodingException e) {
+			LOG.error("ERROR", e);
+		} catch (IOException e) {
+			LOG.error("ERROR", e);
+		} catch (IllegalStateException e) {
+			LOG.error("ERROR", e);
+		} 
+
+		if (dmzResponse.getStatus() == SipServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED) {
+			mzResponse.setHeader("Proxy-Authenticate", dmzResponse.getHeader("Proxy-Authenticate"));
+			
+		}
+
+		else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {
+			mzResponse.getSession().setAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR, dmzResponse.getRequest());
+			mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));
+			
+		}
+		
+		
+		return mzResponse;
+
+	}
 	
+	private SipServletMessage applyLazyRules(SipServletMessage message) throws ServletParseException {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("Applying Lazy Rules ...");
+		}
+		ListIterator<String> rules = message.getHeaders(LazyRule.LAZY_RULE);
+			while(rules.hasNext()) {
+				LazyRule rule=LazyRule.parse(rules.next());
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("Applying LazyRule " + rule.getValue());
+				}
+			}
+		return message;
+	}
+
 	public String getName() {
 		return "B2BUA leg builder Processor";
 	}
@@ -180,49 +421,44 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		return this.hashCode();
 	}
 
- 
 	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> process()");
-	    }
-		
-		
-		if(message instanceof SipServletRequest) {
-			message=processRequest((SipServletRequest) message);
+
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("-------" + message.getLocalAddr() + "->" + message.getRemoteAddr());
+			LOG.trace("-------Receiving message: \n" + message);
 		}
-		if(message instanceof SipServletResponse) {
-			message=processResponse((SipServletResponse) message);
+
+		if (message instanceof SipServletRequest) {
+			message = processRequest((SipServletRequest) message);
+			
+		}
+		if (message instanceof SipServletResponse) {
+			message = processResponse((SipServletResponse) message);
 		}
 		
 		return message;
 	}
 
-
-
 	@Override
 	public void setName(String name) {
-		this.name=name;
-		
-	}
+		this.name = name;
 
+	}
 
 	@Override
 	public ProcessorCallBack getCallback() {
 		return this;
 	}
 
-
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
+		SIPMutableMessage m = (SIPMutableMessage) message;
 		m.setContent(doProcess(m.getContent()));
 	}
-	
+
 	@Override
 	public String getVersion() {
 		return "1.0.0";
 	}
-
 
 }

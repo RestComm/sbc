@@ -21,13 +21,19 @@
 
 package org.restcomm.sbc.adapter.impl;
 
+import java.io.IOException;
 import java.net.NoRouteToHostException;
+
+import javax.sdp.SdpException;
+import javax.sdp.SdpParseException;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
+import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
+import org.restcomm.sbc.managers.SdpUtils;
 
 
 /**
@@ -61,7 +67,35 @@ public class UDPProtocolAdapter implements ProtocolAdapter {
 		}
 		//SipServletRequest  oRequest = (SipServletRequest) message.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		//String oTransport=oRequest.getTransport();
-		
+		/*
+		if (message.getMethod().equals("INVITE") && message.getContentLength() > 0) {
+			try {
+				String sdpContent = SdpUtils.patch("application/sdp", message.getRawContent(),
+						message.getRemoteAddr());
+				sdpContent = SdpUtils.endWithNewLine(sdpContent);
+
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Session In state " + message.getSession().getState().name());
+					LOG.debug("Content:\n" + sdpContent);
+				}
+				message.setContent(sdpContent, "application/sdp");
+
+			} catch (IOException e) {
+				LOG.error("No SDP content!", e);
+				return message;
+			} catch (SdpParseException e) {
+				LOG.error("Bad SDP", e);
+				return message;
+			} catch (SdpException e) {
+				LOG.error("Bad SDP treatment", e);
+				return message;
+			} catch (IllegalStateException e) {
+				LOG.error("State SDP treatment", e);
+				return message;
+			}
+
+		}
+		*/
 		return message;
 	}
 

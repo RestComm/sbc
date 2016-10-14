@@ -29,12 +29,13 @@ import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
-import org.restcomm.chain.processor.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
-import org.restcomm.sbc.chain.impl.RegistrarProcessor;
+import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
 import org.restcomm.sbc.chain.impl.TopologyHideProcessor;
+
 
 
 
@@ -50,23 +51,24 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 	private String name="Downstream REGISTRAR Processor Chain";
 	
 	public DownstreamRegistrarProcessorChain() {
-		// initialize the chain
-		// works with original message
-		Processor c1 = new RegistrarProcessor(this);
+		
+		Processor c1 = new B2BUABuilderProcessor(this);
 		c1.addProcessorListener(this);
-		Processor c2 = new B2BUABuilderProcessor(this);
+		Processor c2 = new RegistrarProcessor(this);
 		c2.addProcessorListener(this);
-		// works with B2BUA Leg message
-		Processor c3 = new TopologyHideProcessor(this);
+		Processor c3 = new ProtocolAdaptProcessor(this);
 		c3.addProcessorListener(this);
-		Processor c4 = new DispatchDPIProcessor("Dispatch", this);
+		Processor c4 = new TopologyHideProcessor(this);
 		c4.addProcessorListener(this);
+		Processor c5 = new DispatchDPIProcessor("Dispatcher",this);
+		c5.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		try {
 			link(c1, c2);
 			link(c2, c3);
 			link(c3, c4);
+			link(c4, c5);
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);
 		}
@@ -74,14 +76,6 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 		this.addProcessorListener(this);
 		
 			
-	}
-	
-	
-	public static void main(String argv[]) {
-		new UpstreamRegistrarProcessorChain();
-		System.err.println("_________________________________________");
-		new DownstreamRegistrarProcessorChain();
-		
 	}
 
 	@Override
@@ -120,7 +114,7 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 	public void onProcessorProcessing(Message message, Processor processor) {
 		SipServletMessage m = (SipServletMessage) message.getContent();
 		if(LOG.isDebugEnabled())
-			LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[<-"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
+			LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[<-"+m.getFrom()+"][To:"+m.getTo()+"]");	
 	}
 
 	@Override
@@ -135,6 +129,13 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 	public void onProcessorAbort(Processor processor) {
 		if(LOG.isDebugEnabled())
 			LOG.debug(">>onProcessorAbort() "+processor.getType()+"("+processor.getName()+")");
+	}
+	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
 	}
 	
 }

@@ -107,6 +107,12 @@ public class RouteManager {
 		SipURI contactUri = sipFactory.createSipURI(user, address.getHostString());
 		
 		contactUri.setPort(address.getPort());
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("from-Outbound-Intf  "+address.toString());
+    		LOG.trace("getContactAddress() "+contactUri.toString());		
+    	}
+		
 		return contactUri;
 	}
 	
@@ -191,7 +197,8 @@ public class RouteManager {
 	*/
 	
 	
-	public static boolean isFromDMZ(SipServletMessage message) {	
+	public static boolean isFromDMZ(SipServletMessage message) {
+		
 		String host =message.getLocalAddr();
 		int port =message.getLocalPort();
 		String transport=message.getTransport();

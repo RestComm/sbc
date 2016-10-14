@@ -46,7 +46,7 @@ public class LocationManager  {
 
 	
 	private LocationManager() {
-		registers = new DefaultCacheManager().getCache("location");
+		registers = CacheManager.getCacheManager().getCache("location");
 		registers.start();
 		
 	}
@@ -60,14 +60,16 @@ public class LocationManager  {
 	}
 	
 	
-	public void register(Location location, String userAgent, int ttl) {
+	public void register(Location location, String userAgent, String callID, int cSeq, int ttl) {
 	
 		location.setUserAgent(userAgent);
+		location.setCallID(callID);
+		location.setcSeq(cSeq);
 		location.setExpirationTimeInSeconds(ttl);
 		registers.put(key(location.getUser(),location.getDomain()), location, ttl, TimeUnit.SECONDS);
 		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("registers.put "+key(location.getUser(),location.getDomain()));
+			LOG.debug("registers.put "+key(location.getUser(),location.getDomain())+":"+ttl+" secs.");
 		}
 		
 	}

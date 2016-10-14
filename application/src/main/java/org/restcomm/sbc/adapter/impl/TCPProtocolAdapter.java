@@ -31,9 +31,8 @@ import javax.servlet.sip.SipURI;
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
-import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
-import org.restcomm.sbc.managers.RouteManager;
+
 
 
 /**
