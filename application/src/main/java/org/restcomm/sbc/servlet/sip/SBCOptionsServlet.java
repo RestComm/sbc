@@ -33,9 +33,9 @@ import javax.servlet.sip.SipServletResponse;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-
 import org.restcomm.sbc.chain.impl.options.DownstreamOptionsProcessorChain;
 import org.restcomm.sbc.chain.impl.options.UpstreamOptionsProcessorChain;
+import org.restcomm.sbc.managers.RouteManager;
 
 
 public class SBCOptionsServlet extends SipServlet {	
@@ -46,6 +46,7 @@ public class SBCOptionsServlet extends SipServlet {
 	
 	private UpstreamOptionsProcessorChain upChain;
 	private DownstreamOptionsProcessorChain dwChain;
+	
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
@@ -59,17 +60,19 @@ public class SBCOptionsServlet extends SipServlet {
 		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
 		
 		
-		
 	}
 	
 	
 	@Override
-	protected void doOptions(SipServletRequest request) throws ServletException,
-			IOException {
-
-		if(request.isInitial()) {
-		    upChain.process(new SIPMutableMessage(request));
+	protected void doOptions(SipServletRequest request) throws ServletException,	IOException {
+		if (RouteManager.isFromDMZ(request)) {
+			upChain.process(new SIPMutableMessage(request));
 		}
+		else {
+			dwChain.process(new SIPMutableMessage(request));
+		}
+		    
+		
 	}
 
 	/**
@@ -78,7 +81,6 @@ public class SBCOptionsServlet extends SipServlet {
 	protected void doResponse(SipServletResponse sipServletResponse)
 			throws ServletException, IOException {
 		
-		dwChain.process(new SIPMutableMessage(sipServletResponse));
 		super.doResponse(sipServletResponse);
 	}
 	

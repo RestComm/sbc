@@ -8,6 +8,7 @@ public class SIPMutableMessage implements  MutableMessage {
 	
 	private SipServletMessage  content;
 	private boolean linked=true;
+	private boolean aborted=false;
 	
 	public SIPMutableMessage(SipServletMessage content) {	
 		this.content=content;
@@ -34,6 +35,18 @@ public class SIPMutableMessage implements  MutableMessage {
 	public boolean isLinked() {
 		return linked;
 	}
-
 	
+	@Override
+	public boolean isAborted() {
+		return aborted;
+	}
+
+	@Override
+	public void abort() {
+		aborted=true;
+		
+	}
+
+
+
 }
