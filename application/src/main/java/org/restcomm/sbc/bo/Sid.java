@@ -34,7 +34,7 @@ public final class Sid {
     private final String id;
 
     public enum Type {
-        ACCOUNT, CONNECTOR, ROUTE
+        ACCOUNT, CONNECTOR, ROUTE, RANDOM
     };
 
     private static final Sid INVALID_SID = new Sid("IN00000000000000000000000000000000");
@@ -78,6 +78,9 @@ public final class Sid {
             case ROUTE: {
                 return new Sid("RT" + token);
             }
+            case RANDOM: {
+                return new Sid("RN" + token);
+            }
             default: {
                 return generate(type);
             }
@@ -95,6 +98,9 @@ public final class Sid {
             }
             case ROUTE: {
                 return new Sid("RT" + uuid);
+            }
+            case RANDOM: {
+                return new Sid("RN" + uuid);
             }
             default: {
                 return null;

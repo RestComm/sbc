@@ -20,17 +20,28 @@
  *******************************************************************************/
 package org.restcomm.sbc.managers;
 
+import java.net.NoRouteToHostException;
+
+import javax.servlet.sip.Address;
+import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-
+import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
+import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.bo.Connector;
+
 
 public class MessageUtil {
-	private static transient Logger logger = Logger.getLogger(MessageUtil.class);
+	private static transient Logger LOG = Logger.getLogger(MessageUtil.class);
 	
 	public static String B2BUA_FINGERPRINT_HEADER="X-SBC-fingerprint";
+	public static String B2BUA_ORIG_REQUEST_ATTR ="X-SBC-OriginalRequest";
+	public static String B2BUA_PATCH_NAT ="X-SBC-Patch-NAT";
+	public static String B2BUA_ORIG_CONTACT_ADDR ="X-SBC-OriginalContact-Address";
+	public static String B2BUA_ORIG_REGISTER_ATTR ="X-SBC-OriginalRegister";
 	
 	public static void tracer(SipServletMessage message) {
 		
@@ -57,7 +68,7 @@ public class MessageUtil {
 				" ua "+(uagent==null?server:uagent);
 		//logger.info(getOrigination(message));
 		//logger.info(getApplicationData(message));
-		logger.info(m);
+		LOG.info(m);
 		
 	}
 	
@@ -70,22 +81,26 @@ public class MessageUtil {
 		return (!(fingerprint==null||fingerprint.equals(""))?true:false);	
 	}
 	
-	private static String getOrigination(SipServletMessage message) {
-		String remote=(isB2BUALeg(message)?"Remote:Not stablished yet":"Remote:"+message.getRemoteAddr()+":"+message.getRemotePort()+", "+message.getTransport());
-		String local =" Local :"+message.getLocalAddr() +":"+message.getLocalPort() +", "+message.getTransport();
-		return remote+local;
-		
-	}
 	
 	private static String getApplicationData(SipServletMessage message) {
 		return "APP-DATA:"+message.getSession().getApplicationSession().getApplicationName();
 	}
 	
-	public static boolean isOwnedByMZDomain(SipServletMessage message) {
-		return false;
+	
+	/*
+	public static Address getInviteContactAddress(SipServletRequest request) throws NoRouteToHostException {
+		SipURI uri=(SipURI) request.getFrom().getURI();
+		SipFactory sipFactory = ConfigurationCache.getSipFactory();
+		Connector connector=null;
+		RouteManager routeManager = RouteManager.getRouteManager();
+		connector = routeManager.getRouteToDMZ(uri.getPort(), uri.getTransportParam());
 		
+		SipURI contactUri = sipFactory.createSipURI(uri.getUser(), NetworkManager.getIpAddress(connector.getPoint()));
+		contactUri.setPort(connector.getPort());
+		contactUri.setTransportParam(connector.getTransport().toString());
+		return sipFactory.createAddress(contactUri);
 	}
+	*/
 	
 	
-
 }

@@ -20,7 +20,6 @@
 package org.restcomm.chain.processor;
 
 
-
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    27/5/2016 13:34:57
@@ -29,18 +28,33 @@ package org.restcomm.chain.processor;
  */
 public interface Message {
 	
+	
 	Object getContent() ;
 	
 	/**
 	 * unlinks itself from its processor container
-	 * disabling any further processing of the message. 
+	 * disabling any further processing of the message,
+	 * producing immediate dispatch. 
 	 */
 	
 	void unlink();
+	
+	/**
+	 * aborts delivery of the message
+	 * interrupting the process chain. 
+	 */
+	
+	void abort();
 	
 	/**
 	 * Gets link message state
 	 */
 	
 	boolean isLinked();
+	
+	/**
+	 * Gets aborted message state
+	 */
+	
+	boolean isAborted();
 }

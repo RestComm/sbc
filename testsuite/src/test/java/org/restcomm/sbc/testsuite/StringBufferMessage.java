@@ -7,6 +7,7 @@ public class StringBufferMessage implements MutableMessage {
 	
 	private StringBuffer content=new StringBuffer();
 	private boolean linked=true;
+	private boolean aborted=false;
 
 	public StringBufferMessage(String content) {
 		StringBuffer ct = new StringBuffer(content);
@@ -35,6 +36,19 @@ public class StringBufferMessage implements MutableMessage {
 	public void setContent(Object value) {
 		this.content=(StringBuffer) value;
 		
+	}
+
+
+	@Override
+	public void abort() {
+		aborted=true;
+		
+	}
+
+
+	@Override
+	public boolean isAborted() {
+		return aborted;
 	}
 
 }

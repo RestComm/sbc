@@ -112,6 +112,13 @@ public class ComplexProcessorChain extends DefaultSerialProcessorChain implement
 	
 	}
 	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
+	
 	public static void main(String argv[]) throws ProcessorParsingException {
 		//new ComplexProcessChain().process(new StringBufferMessage("Mary has a little lamb"));
 		new ComplexProcessorChain().process(new StringBufferMessage("."));

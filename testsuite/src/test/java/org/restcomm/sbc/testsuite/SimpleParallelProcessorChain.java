@@ -107,7 +107,12 @@ public class SimpleParallelProcessorChain extends DefaultParallelProcessorChain
 		
 	}
 
-
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
 	@Override
 	public void setName(String name) {
 		this.name=name;
