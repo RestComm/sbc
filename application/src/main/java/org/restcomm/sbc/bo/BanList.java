@@ -23,7 +23,8 @@ package org.restcomm.sbc.bo;
 
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
-import org.restcomm.sbc.notification.impl.Monitor.Action;
+import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
+
 
 
 /**

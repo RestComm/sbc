@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.chain.processor.impl.MutableMessage;
+import org.restcomm.sbc.managers.CacheManager;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
 
  
@@ -37,6 +38,7 @@ import org.restcomm.sbc.notification.SuspectActivityElectable;
 public class SuspectActivityCache<K, T>  implements MutableMessage  {
  
     private boolean linked=true;
+    private boolean aborted=false;
     private int ttl;
     private Cache<Object, Object> cache;
     private static SuspectActivityCache<String, SuspectActivityElectable> scache;
@@ -44,7 +46,7 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
     private SuspectActivityCache(int size, int ttl) {
         this.ttl=ttl;
         
-    	cache = new DefaultCacheManager().getCache("suspectactivity", true);
+    	cache = CacheManager.getCacheManager().getCache("suspectactivity");
     	cache.start();
     }
     
@@ -104,6 +106,18 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
 	@Override
 	public boolean isLinked() {
 		return linked;
-	}    
+	}
+
+	@Override
+	public void abort() {
+		aborted=true;
+		
+	}
+
+	@Override
+	public boolean isAborted() {
+		return aborted;
+	}
+   
 	
 }

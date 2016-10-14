@@ -99,6 +99,13 @@ public class ProcessorTest implements ProcessorListener {
 		
 	}
 	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
+	
 	public static void main(String argv[]) {
 		ProcessorTest test=new ProcessorTest();
 		test.messageInstanceShouldBePreserved();

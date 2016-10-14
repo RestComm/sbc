@@ -32,6 +32,7 @@
 				<permission>RestComm:Create,Delete,Read:Faxes</permission>
 				<permission>RestComm:*:Connectors</permission>
 				<permission>RestComm:*:Routes</permission>
+				<permission>RestComm:*:Statistics</permission>
 				<permission>RestComm:Read:Notifications</permission>
 				<permission>RestComm:*:EmailMessages</permission>
 				<permission>RestComm:*:Usage</permission>

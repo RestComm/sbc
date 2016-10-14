@@ -28,6 +28,7 @@
   
   
   <mappers>
+    <mapper url="file:///${sql}/statistics.xml"/>
     <mapper url="file:///${sql}/routes.xml"/>
   	<mapper url="file:///${sql}/connectors.xml"/>
   	<mapper url="file:///${sql}/network-points.xml"/>

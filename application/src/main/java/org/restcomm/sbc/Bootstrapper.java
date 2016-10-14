@@ -43,6 +43,7 @@ import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.NetworkManager;
 import org.restcomm.sbc.managers.rmi.JMXServer;
 
+
 import com.typesafe.config.ConfigFactory;
 
 
@@ -74,6 +75,7 @@ public final class Bootstrapper extends SipServlet {
     @Override
     public void init(final ServletConfig config) throws ServletException {
         final ServletContext context = config.getServletContext();
+        
         final String path = context.getRealPath("WEB-INF/conf/sbc.xml");
         // Initialize the configuration interpolator.
         final ConfigurationStringLookup strings = new ConfigurationStringLookup();
@@ -121,11 +123,12 @@ public final class Bootstrapper extends SipServlet {
 		}
        
         Version.printVersion();
+       
         
         
     }
     
-    
+   
     private void bindConnectors(DaoManager storage) throws Exception {
     	JMXManager jmxManager=null;
     	boolean status;

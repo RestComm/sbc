@@ -34,6 +34,7 @@ public interface ProcessorListener extends EventListener {
 	void onProcessorProcessing (Message message, Processor processor);
 	void onProcessorEnd        (Message message, Processor processor);
 	void onProcessorAbort      (Processor processor);
+	void onProcessorUnlink     (Processor processor);
 	
 
 }

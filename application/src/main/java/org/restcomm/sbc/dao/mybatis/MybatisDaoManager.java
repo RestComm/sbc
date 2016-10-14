@@ -34,12 +34,16 @@ import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.dao.RoutesDao;
+import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
 import org.restcomm.sbc.dao.BlackListDao;
 
 
 /**
- * @author quintana.thomas@gmail.com (Thomas Quintana)
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    12 oct. 2016 14:46:56
+ * @class   MybatisDaoManager.java
+ *
  */
 @ThreadSafe
 public final class MybatisDaoManager implements DaoManager {
@@ -51,6 +55,7 @@ public final class MybatisDaoManager implements DaoManager {
     private NetworkPointsDao networkPointDao;
 	private ConnectorsDao connectorDao;
 	private RoutesDao routesDao;
+	private StatisticsDao statisticsDao;
     
 
     public RoutesDao getRoutesDao() {
@@ -96,6 +101,11 @@ public final class MybatisDaoManager implements DaoManager {
 	}
     
     @Override
+	public StatisticsDao getStatisticsDao() {
+		return statisticsDao;
+	}
+    
+    @Override
     public void shutdown() {
         // Nothing to do.
     }
@@ -132,9 +142,12 @@ public final class MybatisDaoManager implements DaoManager {
         networkPointDao = new MybatisNetworkPointsDao(sessions);
         connectorDao = new MybatisConnectorsDao(sessions);
         routesDao = new MybatisRoutesDao(sessions);
+        statisticsDao= new MybatisStatisticsDao(sessions);
         
       
     }
+
+	
 
 	
 

@@ -98,4 +98,11 @@ private boolean ok=true;
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
 }

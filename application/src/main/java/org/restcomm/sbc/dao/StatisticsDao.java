@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,23 +16,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- *******************************************************************************/
-package org.restcomm.chain;
-import java.util.EventListener;
+ */
+package org.restcomm.sbc.dao;
+
+import java.util.List;
+
+import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.Statistics;
+
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    30/4/2016 12:13:41
- * @class   MessageProcessorChainListener.java
- * @project Servlet2.5SBC
+ * @date    12 oct. 2016 14:43:09
+ * @class   StatisticsDao.java
  *
  */
-public interface ProcessorChainListener extends EventListener {
+public interface StatisticsDao {
 	
-	void onProcessorChainBegin (ProcessorChain chain);
-	void onProcessorChainEnd   (ProcessorChain chain);
-	void onProcessorChainUnlinked(ProcessorChain chain);
-	void onProcessorChainAborted(ProcessorChain chain);
+    void addRecord(Statistics record);
+   
+    Statistics getRecord(Sid sid);
 
+    List<Statistics> getRecords();
+
+	void removeRecord(Sid sid);
 }

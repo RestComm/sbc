@@ -1,14 +1,13 @@
 package org.restcomm.sbc.managers;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.MBeanException;
-import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
@@ -18,22 +17,27 @@ import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.sip.ListeningPoint;
+
+
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
+
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
 
 
+@SuppressWarnings("restriction")
 public class JMXManager implements
  NotificationListener, SipConnectorListener {
 	private static transient Logger LOG = Logger.getLogger(JMXManager.class);
 	
 	private JMXConnector jmxc;
 	private MBeanServerConnection mbsc;
+	private OperatingSystemMXBean osMBean;
 	private ObjectName objectName;
+
 	private static JMXManager jmxManager;
 	private ArrayList<Connector> connectors;
 	
@@ -59,11 +63,12 @@ public class JMXManager implements
 
 		objectName = new ObjectName("Sip-Servlets:type=Service");
 		
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("object "+objectName);
-		}
 		// Get the Platform MBean Server
 		mbsc = jmxc.getMBeanServerConnection();
+		osMBean = ManagementFactory.newPlatformMXBeanProxy(
+				mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+		
+		
 		mbsc.addNotificationListener(objectName, this, null, null);
 		
 
@@ -129,6 +134,7 @@ public class JMXManager implements
 	public void traceSipConnectors() throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
 		SipConnector[] sipConnectors = (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);  
 		for (int i = 0; i < sipConnectors.length; i++) {
+			System.out.println(sipConnectors[i]);
 			LOG.info(sipConnectors[i]);
 		}
 	}
@@ -136,81 +142,33 @@ public class JMXManager implements
 		jmxc.close();
 	}
 	
-	public void init() throws IOException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-		MBeanInfo mbeanInfo = mbsc.getMBeanInfo(objectName);
+	public int getCPULoadAverage() {
 		
-		MBeanOperationInfo[] operationInfos = mbeanInfo.getOperations();
-		System.out.println("MBean Operations:");
-		String[] operationNames = new String[operationInfos.length];
-	
-	        for (int i = 0; i < operationInfos.length; i++) {
-	           System.out.println(i + ": " + operationInfos[i].getDescription() + " " +
-	        		   operationInfos[i].getSignature());
-	           operationNames[i] = operationInfos[i].getName();
-	        }
-			
-	        SipConnector[] sipConnectors = (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);
-//	       
-	        for (int i = 0; i < sipConnectors.length; i++) {
-				LOG.info(sipConnectors[i]);
-			}
-	        LOG.info("-------Removing 192.168.88.2:5080/UDP");
-	        mbsc.invoke(objectName, "removeSipConnector",
-	        		new Object[] {"192.168.88.2" , 5080, "udp"},
-	        		new String[]{String.class.getCanonicalName(), int.class.getCanonicalName(), String.class.getCanonicalName()});
-	        
-	        		
-	        sipConnectors = (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);
-	        
-	        for (int i = 0; i < sipConnectors.length; i++) {
-				LOG.info(sipConnectors[i]);
-			}
-	       
-	        
-	        // adding udp connector
-	        SipConnector udpSipConnector = new SipConnector();
-	        udpSipConnector.setIpAddress("192.168.88.2");
-	        udpSipConnector.setPort(5072);
-	        udpSipConnector.setTransport(ListeningPoint.UDP);
-	        
-	        mbsc.invoke(objectName, "addSipConnector",
-	        		new Object[] {udpSipConnector}, 
-	        		new String[]{SipConnector.class.getCanonicalName()});
-	        LOG.info("-------Adding 192.168.88.2:5072/UDP");
-	        sipConnectors = (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);
-	        
-	        for (int i = 0; i < sipConnectors.length; i++) {
-				LOG.info(sipConnectors[i]);
-			}
-	        
-	        // adding tcp connector
-	        SipConnector tcpSipConnector = new SipConnector();
-	        tcpSipConnector.setIpAddress("" + System.getProperty("org.mobicents.testsuite.testhostaddr") + "");
-	        tcpSipConnector.setPort(5072);
-	        tcpSipConnector.setTransport(ListeningPoint.TCP);
-	       // assertTrue((Boolean)mbsc.invoke(objectName, "addSipConnector",new Object[] {tcpSipConnector}, new String[]{SipConnector.class.getCanonicalName()}));
-	        // making sure they were both added correctly
-	        sipConnectors = (SipConnector[]) mbsc.invoke(objectName, "findSipConnectors", null, null);
-	       // assertEquals(2, sipConnectors.length);
-	        
-	       // Thread.sleep(TIMEOUT);
+		return (int) (osMBean.getSystemCpuLoad()*100);
 	}
+	
+	public int getMemoryUsage() {
+		long free  = osMBean.getFreePhysicalMemorySize();
+		long total = osMBean.getTotalPhysicalMemorySize();
+		int used= (int) (((double)(total-free)/(double)total)*100);
+		
+		return used;
+	}
+	
+	
+	
 	public static void main(String argv[]) {
 		
 		try {
 			JMXManager m=JMXManager.getInstance();
-			m.traceSipConnectors();
-			m.removeSipConnector("192.168.88.3", 5060, "udp");
-			System.in.read();
-			m.traceSipConnectors();
-			m.addSipConnector("192.168.88.3", 5060, "udp");
+			System.out.println("CPU "+m.getCPULoadAverage());
+			System.out.println("MEM "+m.getMemoryUsage());
 			
-			m.traceSipConnectors();
-			System.in.read();
+			
 			m.close();
 			
 		} catch (MalformedObjectNameException | InstanceNotFoundException
-				| IntrospectionException | ReflectionException | MBeanException
+				| IntrospectionException | ReflectionException 
 				| IOException e) {
 			LOG.error("ERROR",e);
 		}
