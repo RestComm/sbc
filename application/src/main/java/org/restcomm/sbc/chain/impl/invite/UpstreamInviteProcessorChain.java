@@ -21,6 +21,7 @@
 package org.restcomm.sbc.chain.impl.invite;
 
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletResponse;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.impl.DefaultSerialProcessorChain;
@@ -29,12 +30,13 @@ import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
-import org.restcomm.chain.processor.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
 import org.restcomm.sbc.chain.impl.SanityCheckProcessor;
-import org.restcomm.sbc.chain.impl.TransportAdaptProcessor;
+import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
 
 
 /**
@@ -51,15 +53,13 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	public UpstreamInviteProcessorChain() {
 		
 		// initialize the chain
-		// works with original message
-		Processor c1 = new SanityCheckProcessor(this);
+		Processor c1 = new InviteDPIProcessor(this);
 		c1.addProcessorListener(this);
-		Processor c2 = new InviteProcessor(this);
+		Processor c2 = new B2BUABuilderProcessor(this);
 		c2.addProcessorListener(this);
-		Processor c3 = new B2BUABuilderProcessor(this);
-		c3.addProcessorListener(this);
-		// works with B2BUA Leg message
-		Processor c4 = new TransportAdaptProcessor(this);
+		Processor c3 = new SanityCheckProcessor(this);
+		c3.addProcessorListener(this);	
+		Processor c4 = new ProtocolAdaptProcessor(this);
 		c4.addProcessorListener(this);
 		Processor c5 = new DispatchDPIProcessor("Dispatch", this);
 		c5.addProcessorListener(this);
@@ -71,6 +71,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			link(c2, c3);
 			link(c3, c4);
 			link(c4, c5);
+			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);
 		}
@@ -110,15 +111,27 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	@Override
 	public void onProcessorProcessing(Message message, Processor processor) {
 		SipServletMessage m = (SipServletMessage) message.getContent();
-		if(LOG.isDebugEnabled())
-			LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(">>onProcessorProcessing() "+processor.getType()+"("+processor.getName()+")");
+			LOG.debug(">>onProcessorProcessing() "+m.getMethod()      +"[From:"+m.getFrom()+"][To:"+m.getTo()+"]");
+			if(m instanceof SipServletResponse) {
+				SipServletResponse r = (SipServletResponse) m;
+				LOG.debug(">>onProcessorProcessing() "+r.getStatus()+":"+r.getReasonPhrase());
+			}
+		}
 	}
 
 	@Override
 	public void onProcessorEnd(Message message, Processor processor) {
 		SipServletMessage m = (SipServletMessage) message.getContent();
-		if(LOG.isDebugEnabled())
-			LOG.debug(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")[->"+m.getRemoteAddr()+"][To:"+m.getTo()+"]");	
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(">>onProcessorEnd() "+processor.getType()+"("+processor.getName()+")");
+			LOG.debug(">>onProcessorEnd() "+m.getMethod()      +"[From:"+m.getFrom()+"][To:"+m.getTo()+"]");
+			if(m instanceof SipServletResponse) {
+				SipServletResponse r = (SipServletResponse) m;
+				LOG.debug(">>onProcessorEnd() "+r.getStatus()+":"+r.getReasonPhrase());
+			}
+		}	
 		
 	}
 
@@ -126,6 +139,13 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	public void onProcessorAbort(Processor processor) {	
 		if(LOG.isDebugEnabled())
 			LOG.debug(">>onProcessorAbort() "+processor.getType()+"("+processor.getName()+")");
+	}
+	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
 	}
 	
 
