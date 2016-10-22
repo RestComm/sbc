@@ -70,10 +70,8 @@ public class SBCMonitorServlet extends SipServlet {
 	    }
 		
 		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
-		//final ServletContext context = servletConfig.getServletContext();
-		SipApplicationSession aSession = sipFactory.createApplicationSession();
-		aSession.setExpires(0);
-		sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();
+		
+		
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		try {
@@ -250,9 +248,11 @@ public class SBCMonitorServlet extends SipServlet {
 
 	
 	class Task implements Runnable {
+		
 		@Override
 		public void run() {
-				
+			SipApplicationSession aSession = sipFactory.createApplicationSession();
+			sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
 			if(LOG.isInfoEnabled()) {
 				LOG.info("Monitor Thread tick pass");
 			}

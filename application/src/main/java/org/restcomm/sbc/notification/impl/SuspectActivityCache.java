@@ -22,7 +22,6 @@ package org.restcomm.sbc.notification.impl;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.sbc.managers.CacheManager;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
@@ -117,6 +116,36 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
 	@Override
 	public boolean isAborted() {
 		return aborted;
+	}
+
+	@Override
+	public int getDirection() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getSourceLocalAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSourceRemoteAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getTargetLocalAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getTargetRemoteAddress() {
+		// TODO Auto-generated method stub
+		return null;
 	}
    
 	
