@@ -33,6 +33,7 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.managers.LazyRule;
 import org.restcomm.sbc.managers.MessageUtil;
 
@@ -72,37 +73,36 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 
 	}
 
-	private SipServletResponse processResponse(SipServletResponse message) {
+	private void processResponse(SIPMutableMessage message) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
 		}
-
-		return message;
 	}
 
-	private SipServletRequest processRequest(SipServletRequest dmzRequest) {
-		// Gets data from original message
-		SipServletRequest oRequest=(SipServletRequest) dmzRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+	private void processRequest(SIPMutableMessage message) {
+		
+		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
 		
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processRequest()");
-			LOG.trace(">> oRequest: " + oRequest.getRemoteAddr()+":"+oRequest.getRemotePort());
 			LOG.trace(">> message: \n" + dmzRequest.toString());
 		}
-		if(!oRequest.isInitial()) {
+		if(!dmzRequest.isInitial()) {
 			if(LOG.isTraceEnabled()){ 
 				LOG.trace("No initial request, NAT does not apply.");
 			} // Nothing
-			return dmzRequest;
+			message.setContent(dmzRequest);
+			return;
 		}
 
-		if (!RouteManager.isFromDMZ(oRequest)) {
+		if (message.getDirection()==Message.SOURCE_MZ) {
 			if(LOG.isTraceEnabled()){ 
 				LOG.trace("-----> MZ");
 			} // Nothing
-			return dmzRequest;
-
+			message.setContent(dmzRequest);
+			return;
 		}
+		
 		try {
 			contactAddress = dmzRequest.getAddressHeader("Contact");
 			if(LOG.isTraceEnabled()){ 
@@ -112,17 +112,19 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 			LOG.error("Cannot get Contact Address!");
 		} catch (IllegalStateException e) {
 			LOG.error("",e);
-			return dmzRequest;
+			message.setContent(dmzRequest);
+			return;
 			
 		}
 		SipURI uri = (SipURI) contactAddress.getURI();
 
 		
-		if(uri.getHost().equals(oRequest.getRemoteAddr())) {
+		if(uri.getHost().equals(dmzRequest.getRemoteAddr())) {
 			if(LOG.isTraceEnabled()){ 
 				LOG.trace(">> ByPassing ...");
 			} // Nothing
-			return dmzRequest;
+			message.setContent(dmzRequest);
+			return;
 		 
 		}
 	
@@ -131,19 +133,18 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		 */
 
 		try {
-			uri.setHost(oRequest.getRemoteAddr());
-			uri.setPort(oRequest.getRemotePort());
+			uri.setHost(message.getSourceLocalAddress());
+			uri.setPort(dmzRequest.getRemotePort());
 			
-			LazyRule natRule=LazyRule.buildNATPatchRule(uri.getHost(), uri.getPort());
-							
-			dmzRequest.setHeader(LazyRule.LAZY_RULE, natRule.getValue());
 		} catch (IllegalStateException e) {
 			LOG.error("",e);
-			return dmzRequest;
+			message.setContent(dmzRequest);
+			return;
 			
 		}
-
-		return dmzRequest;
+		dmzRequest.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(uri));
+		message.setContent(dmzRequest);
+		return;
 
 	}
 
@@ -152,20 +153,6 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		return this;
 	}
 
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		if (LOG.isTraceEnabled()) {
-			LOG.trace(">> process() " + getName());
-		}
-
-		if (message instanceof SipServletRequest) {
-			message = processRequest((SipServletRequest) message);
-		}
-		if (message instanceof SipServletResponse) {
-			message = processResponse((SipServletResponse) message);
-		}
-
-		return message;
-	}
 
 	@Override
 	public String getVersion() {
@@ -175,7 +162,16 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m = (SIPMutableMessage) message;
-		m.setContent(doProcess(m.getContent()));
+		SipServletMessage sm=m.getContent();
+		
+		
+		if( sm instanceof SipServletRequest) {
+			processRequest(m);
+		}
+		if (message instanceof SipServletResponse) {
+			processResponse(m);
+		}
+		
 	}
 
 }

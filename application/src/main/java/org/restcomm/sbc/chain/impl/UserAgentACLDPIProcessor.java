@@ -37,16 +37,16 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
  * @class   DPIUserAgentACLProcessor.java
  *
  */
-public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
+public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
 
 	private String name="Simple ACL UA Processor";
-	private static transient Logger LOG = Logger.getLogger(DPIUserAgentACLProcessor.class);
+	private static transient Logger LOG = Logger.getLogger(UserAgentACLDPIProcessor.class);
 
-	public DPIUserAgentACLProcessor(ProcessorChain processorChain) {
+	public UserAgentACLDPIProcessor(ProcessorChain processorChain) {
 			super(processorChain);
 	}
 	
-	public DPIUserAgentACLProcessor(String name, ProcessorChain processorChain) {
+	public UserAgentACLDPIProcessor(String name, ProcessorChain processorChain) {
 			super(name, processorChain);
 	}
 
