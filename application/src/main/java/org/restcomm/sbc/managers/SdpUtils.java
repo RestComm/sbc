@@ -4,12 +4,14 @@ import java.net.UnknownHostException;
 import java.util.Vector;
 
 import javax.sdp.Connection;
+import javax.sdp.Media;
 import javax.sdp.MediaDescription;
 import javax.sdp.Origin;
 import javax.sdp.SdpException;
 import javax.sdp.SdpFactory;
 import javax.sdp.SdpParseException;
 import javax.sdp.SessionDescription;
+import javax.sdp.SessionName;
 
 import org.mobicents.servlet.sip.restcomm.util.IPUtils;
 
@@ -51,6 +53,9 @@ public class SdpUtils {
             for (final MediaDescription description : descriptions) {
                 fix(description.getConnection(), externalIp);
             }
+            // some fingreprint data arrives here
+            // patch here in honour of topology-hiding processor
+            sdp.getSessionName().setValue("SBC Call");
             patchedSdp = sdp.toString();
         } else {
             String boundary = contentType.split(";")[1].split("=")[1];
@@ -73,6 +78,79 @@ public class SdpUtils {
             patchedSdp = sdp.toString();
         }
         return patchedSdp;
+    }
+    
+    /*
+     * Returns audio/video port
+     */
+    @SuppressWarnings("unchecked")
+    public static int getMediaPort(String contentType, String mediaType, final byte[] data)
+            throws UnknownHostException, SdpException {
+        final String text = new String(data);
+        int port=-1;
+        if (contentType.equalsIgnoreCase("application/sdp")) {
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
+         // Handle the connections at the media description level.
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {
+            	final Media media=description.getMedia();
+            	
+            		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+            			port=media.getMediaPort();
+            		}
+            		
+            	
+            }
+        }
+        else {
+        	String boundary = contentType.split(";")[1].split("=")[1];
+            String[] parts = text.split(boundary);
+            String sdpText = null;
+            for (String part : parts) {
+                if (part.contains("application/sdp")) {
+                    sdpText = part.replaceAll("Content.*", "").replaceAll("--", "").trim();
+                }
+            }
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(sdpText);
+           
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {	
+                	final Media media=description.getMedia();
+                	
+                		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+                			port=media.getMediaPort();
+                		}
+                		
+                	
+               
+            }
+        	
+        }
+       
+        return port;
+    }
+    
+    /*
+     * Returns audio/video port
+     */
+    @SuppressWarnings("unchecked")
+    public static String fix(String mediaType, final int port, String text)
+            throws UnknownHostException, SdpException {
+        	
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
+         // Handle the connections at the media description level.
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {
+            	final Media media=description.getMedia();
+            	
+            		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+            			media.setMediaPort(port);
+            		}
+            		
+            	
+            }
+        
+        return sdp.toString();
     }
 
     public static String getSdp(final String contentType, final byte[] data) throws SdpParseException {

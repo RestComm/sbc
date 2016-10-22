@@ -2,11 +2,20 @@ package org.restcomm.chain.processor.impl;
 
 
 import javax.servlet.sip.SipServletMessage;
+
 import org.restcomm.chain.processor.impl.MutableMessage;
+
 
 public class SIPMutableMessage implements  MutableMessage {
 	
 	private SipServletMessage  content;
+	private String sourceLocalAddress;
+	private String targetLocalAddress;
+	private String sourceRemoteAddress;
+	private String targetRemoteAddress;
+	private int direction;
+	
+	
 	private boolean linked=true;
 	private boolean aborted=false;
 	
@@ -47,6 +56,51 @@ public class SIPMutableMessage implements  MutableMessage {
 		
 	}
 
+	@Override
+	public int getDirection() {
+		return direction;
+	}
 
 
+	public void setDirection(int direction) {
+		this.direction = direction;
+	}
+
+	@Override
+	public String getSourceLocalAddress() {
+		return sourceLocalAddress;
+	}
+
+	public void setSourceLocalAddress(String sourceLocalAddress) {
+		this.sourceLocalAddress = sourceLocalAddress;
+	}
+
+	@Override
+	public String getTargetLocalAddress() {
+		return targetLocalAddress;
+	}
+
+	public void setTargetLocalAddress(String targetLocalAddress) {
+		this.targetLocalAddress = targetLocalAddress;
+	}
+
+	@Override
+	public String getSourceRemoteAddress() {
+		return sourceRemoteAddress;
+	}
+
+	public void setSourceRemoteAddress(String sourceRemoteAddress) {
+		this.sourceRemoteAddress = sourceRemoteAddress;
+	}
+
+	@Override
+	public String getTargetRemoteAddress() {
+		return targetRemoteAddress;
+	}
+
+	public void setTargetRemoteAddress(String targetRemoteAddress) {
+		this.targetRemoteAddress = targetRemoteAddress;
+	}
+
+	
 }

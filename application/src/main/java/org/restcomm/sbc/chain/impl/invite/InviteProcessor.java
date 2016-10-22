@@ -22,44 +22,45 @@ package org.restcomm.sbc.chain.impl.invite;
 
 
 import java.io.IOException;
-
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
-import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
+import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.media.MediaManager;
 import org.restcomm.sbc.managers.MessageUtil;
-import org.restcomm.sbc.managers.RouteManager;
+
+
 
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    3 oct. 2016 12:44:29
- * @class   InviteDPIProcessor.java
+ * @date    15 oct. 2016 9:34:59
+ * @class   InviteProcessor.java
  *
  */
-public class InviteDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
+public class InviteProcessor extends DefaultProcessor implements ProcessorCallBack {
 	/**
 	 * 		
 	 */
-	private static transient Logger LOG = Logger.getLogger(InviteDPIProcessor.class);
-	private String name="INVITE DPI Processor";
+	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
+	private String name="INVITE Processor";
 	
 	
-	
-	public InviteDPIProcessor(ProcessorChain chain) {
+	public InviteProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain=chain;	
 	}
 	
-	public InviteDPIProcessor(String name, ProcessorChain chain) {
+	public InviteProcessor(String name, ProcessorChain chain) {
 		this(chain);
 		setName(name);
 	}
@@ -67,63 +68,58 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
-		
-		if(LOG.isTraceEnabled()) {	
-			LOG.trace("INVITE REQUEST DMZ:"+RouteManager.isFromDMZ(request));
-			LOG.trace("From/To "+request.getFrom()+"/"+request.getTo());
-		}
-		/*
-		  SipServletResponse trying = request.createResponse(SipServletResponse.SC_TRYING);
-		 
+		MediaManager audioManager = null;
+
+		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		try {
-			trying.send();
+			audioManager=new MediaManager("audio", message.getSourceLocalAddress());
+			if(LOG.isTraceEnabled()){
+		          LOG.trace("MEDIAMANAGER "+audioManager.toPrint());
+		    }
 			
-		} catch (IOException e) {
-			LOG.error("TRYING ERROR",e);
+		} catch (IOException e1) {
+			LOG.warn("Unavailable media port "+e1.getMessage());
 		}
+	
+		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
 		
-		*/		
+		message.setContent(request);	
 	}
 	
 	private void processInviteResponse(SIPMutableMessage message) {
+		
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
-		if(LOG.isTraceEnabled()) {	
-			LOG.trace("INVITE RESPONSE DMZ:"+RouteManager.isFromDMZ(response));
+		if(response.getStatus()==SipServletResponse.SC_OK) {
+			MediaManager audioManager=(MediaManager) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
-			LOG.trace("From/To "+response.getFrom()+"/"+response.getTo());
-		}
-		if (response.getStatus() == SipServletResponse.SC_OK) {			
-			
-				SipServletRequest ackRequest = response.createAck();
-				try {
-					ackRequest.send();
-				} catch (IOException e) {
-					LOG.error("Cannot send ACK!", e);
-				}
+			MediaManager peerAudioManager = null;
+			try {
+				peerAudioManager = new MediaManager("audio", message.getSourceLocalAddress(), audioManager.getPort());
+				if(LOG.isTraceEnabled()){
+			          LOG.trace("MEDIAMANAGER "+peerAudioManager.toPrint());
+			    }
 				
+				peerAudioManager.attach(audioManager);
+			} catch (UnknownHostException | SocketException e) {
+				LOG.error(message.getSourceLocalAddress()+":"+audioManager.getPort(),e);
+			}
+			
+			
+			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
+			
+			message.setContent(response);	
 		}
 		
 	}
 	
 	private void processByeRequest(SIPMutableMessage message)  {
-		SipServletRequest request=(SipServletRequest) message.getContent();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Got Request BYE: "	+ request.getMethod());	
-		}
-		SipServletResponse response = request.createResponse(200);
-		try {
-			response.send();
-		} catch (IOException e) {
-			LOG.error("",e);
-		}
 		
 		
 	}
 	
 	private void processAckRequest(SIPMutableMessage message)  {
-		
 		
 	}
 	
@@ -132,49 +128,21 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 	}
 	
 	private void processCancelRequest(SIPMutableMessage message)  {	
-		SipServletRequest request=(SipServletRequest) message.getContent();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Got Request CANCEL: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());	
-		}
-				
-		SipServletResponse ok = request.createResponse(SipServletResponse.SC_OK);
-		SipServletResponse terminated = request.createResponse(SipServletResponse.SC_REQUEST_TERMINATED);
-		
-		try {
-			ok.send();
-			terminated.send();
-		} catch (IOException e) {
-			LOG.error("",e);
-		}	
 		
 		
 	}
 	
 	private void processByeResponse(SIPMutableMessage message)  {
-		SipServletResponse response=(SipServletResponse) message.getContent();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Got Response BYE: "	+ response.getMethod());	
-		}
-		
 		
 	}
 	
 	private void processInfoResponse(SIPMutableMessage message)  {
-		SipServletResponse response=(SipServletResponse) message.getContent();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Got Response INFO: "	+ response.getMethod());	
-		}
 		
 		
 	}
 	
 	
 	private void processCancelResponse(SIPMutableMessage message)  {	
-		SipServletResponse response=(SipServletResponse) message.getContent();
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Got Response CANCEL: "	+ response.getMethod());	
-		}
-		
 		
 	}
 
@@ -207,10 +175,6 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 		SIPMutableMessage m  =(SIPMutableMessage) message;
 		
 		SipServletMessage sm = m.getContent();
-		
-		m.setSourceLocalAddress(sm.getLocalAddr());
-		m.setSourceRemoteAddress(sm.getRemoteAddr());
-		
 		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> doProcess()");

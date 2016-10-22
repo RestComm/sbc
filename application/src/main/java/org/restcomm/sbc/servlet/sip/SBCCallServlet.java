@@ -35,10 +35,10 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.bo.NetworkPoint.Tag;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
-
+import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 
 
@@ -62,6 +62,8 @@ public class SBCCallServlet extends SipServlet {
 	
 	private DownstreamInviteProcessorChain dwChain;
 	private boolean callStablished=false;
+	private MediaManager source;
+	private MediaManager target;
 	
 	
 	@Override
@@ -106,9 +108,12 @@ public class SBCCallServlet extends SipServlet {
 							
 		if(LOG.isTraceEnabled()) {	
 			LOG.trace("CALL REQUEST DMZ:"+RouteManager.isFromDMZ(request));	
+			LOG.trace("CALL REQUEST SES:"+request.getSession());	
 		}
 		
 		upChain. process(new SIPMutableMessage(request));
+		
+		
 		
 	}
 	
@@ -134,11 +139,11 @@ public class SBCCallServlet extends SipServlet {
 		if(response.getStatus()==SipServletResponse.SC_TRYING) {
 			return;
 		}
-		
+		/*
 		if(response.getStatus()==SipServletResponse.SC_RINGING) {
 			response.setStatus(SipServletResponse.SC_SESSION_PROGRESS);
 		}
-		
+		*/
 		dwChain.process(new SIPMutableMessage(response));
 		super.doResponse(response);
 	}
@@ -156,7 +161,16 @@ public class SBCCallServlet extends SipServlet {
 		}
 		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
 		response.send();
+		
 		upChain.process(new SIPMutableMessage(request));
+		
+		try {
+		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+		mediaManager.finalize();
+		mediaManager.getMediaManagerPeer().finalize();
+		} catch(RuntimeException e) {
+			LOG.error(e);
+		}
 
 	}
 	
@@ -168,9 +182,17 @@ public class SBCCallServlet extends SipServlet {
 	protected void doAck(SipServletRequest request) throws ServletException,
 			IOException {
 		if(LOG.isDebugEnabled()) {
+			LOG.debug("CALL ACK SES:"+request.getSession());	
 			LOG.debug("Got Request ACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 			LOG.debug("RTP Session might start");
+			
+			
 		}
+		
+		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+		mediaManager.getMediaManagerPeer().start();
+		mediaManager.start();
+		
 		callStablished=true;
 		
 
@@ -187,7 +209,13 @@ public class SBCCallServlet extends SipServlet {
 		response = request.createResponse(SipServletResponse.SC_REQUEST_TERMINATED);
 		response.send();
 		
+		
 		upChain.process(new SIPMutableMessage(request));
+		
+
+		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+		mediaManager.finalize();
+		mediaManager.getMediaManagerPeer().finalize();
 		
 	}
 

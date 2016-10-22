@@ -27,25 +27,20 @@ import java.net.NoRouteToHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
-import javax.servlet.sip.Parameterable;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipApplicationSession;
-import javax.servlet.sip.SipApplicationSession.Protocol;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
-import javax.servlet.sip.SipSessionsUtil;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TooManyHopsException;
-import org.apache.commons.collections.IteratorUtils;
+
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -57,9 +52,7 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
-import org.restcomm.sbc.managers.LazyRule;
 import org.restcomm.sbc.managers.LocationManager;
-import org.restcomm.sbc.managers.MD5Digest;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 
@@ -110,11 +103,13 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	   -------------DOWNSTREAM---------------------->
      */
 
-	private SipServletRequest processRequest(SipServletRequest request) {
+	private void processRequest(SIPMutableMessage message) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processRequest()");
 			
 		}
+		SipServletRequest request=(SipServletRequest) message.getContent();
+		
 		B2buaHelper helper = request.getB2buaHelper();
 		SipServletRequest newRequest = null;
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
@@ -124,13 +119,15 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		SipURI newSipToUri = toURI;
 		SipURI contactURI = null;
 
+		
 		RouteManager routeManager = RouteManager.getRouteManager();
 		Connector connector = null;
 		InetSocketAddress outBoundInterface = null;
 		String route;
 		
 		
-		if (RouteManager.isFromDMZ(request)) {
+		if (message.getDirection()==Message.SOURCE_DMZ) {
+			
 			// Must create Leg to MZ based on router info
 			try {
 				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
@@ -147,13 +144,15 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			if (LOG.isTraceEnabled()) {
 				headers.put(MessageUtil.B2BUA_FINGERPRINT_HEADER, Arrays.asList("Made in RequestBuilder to MZ"));
 			}
-
+			message.setTargetLocalAddress(connector.getHost());
+			message.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
 			// ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
 			route="sip:" + ConfigurationCache.getTargetHost();
 
 		} else {
+			
 			// Comes from MZ Must create LEG to DMZ based on Location info
 			Location location = null;
 			
@@ -162,6 +161,9 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
 				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
 				contactURI.setTransportParam(location.getTransport());
+				
+				message.setTargetLocalAddress(ConfigurationCache.getDomain());
+				message.setTargetRemoteAddress(location.getHost());
 
 			} catch (LocationNotFoundException e) {
 				SipServletResponse response =
@@ -171,8 +173,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				} catch (IOException e1) {
 					LOG.error("ERROR", e);
 				}
-				
-				return null;
+				message.abort();
+				return;
 				
 			} catch (NoRouteToHostException e) {
 				LOG.error("ERROR", e);
@@ -187,17 +189,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			
 
 		}
-		// Feed new leg with LAZY_rules to be applied later
-		//@SuppressWarnings("unchecked")
-		//List<String> rules = IteratorUtils.toList(request.getHeaders(LazyRule.LAZY_RULE));			
-		//headers.put(LazyRule.LAZY_RULE, rules);
-
-		
 		
 		try {
 			
-
+			
 			if (request.isInitial()) {
+				
 				headers.put("Contact",	Arrays.asList(contactURI.toString()));
 				
 				
@@ -240,9 +237,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				else
 					newRequest.setRequestURI(newSipToUri);
 				
-				
-				// apply just to initial requests
-				// newRequest=(SipServletRequest) applyLazyRules(newRequest);
 				
 			} else {
 				if (LOG.isTraceEnabled()) {
@@ -314,15 +308,16 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			LOG.error("", e);
 		} 
 		
+		message.setContent(newRequest);
 		
-		return newRequest;
-
 	}
 
-	private SipServletResponse processResponse(SipServletResponse dmzResponse) {
+	private void processResponse(SIPMutableMessage message) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
 		}
+		SipServletResponse dmzResponse=(SipServletResponse) message.getContent();
+		
 		SipURI toURI = (SipURI) dmzResponse.getTo().getURI();
 
 		B2buaHelper helper = dmzResponse.getRequest().getB2buaHelper();
@@ -355,12 +350,18 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		SipSession originalSession = helper.getLinkedSession(dmzResponse.getSession());
 		
 		if(linked!=null) {
+			message.setTargetLocalAddress(linked.getLocalAddr());
+			message.setTargetRemoteAddress(linked.getRemoteAddr());
+			
 			mzResponse = linked.createResponse(statusResponse, reasonResponse); 
+			
 			if (LOG.isTraceEnabled()) {
 				LOG.trace("Reusing linked session");
 			}
 		}
 		else {
+			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
+			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
 			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
 		}
 		
@@ -388,30 +389,19 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			
 		}
 
-		else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {
-			mzResponse.getSession().setAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR, dmzResponse.getRequest());
-			mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));
-			
+		else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {	
+			mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));	
 		}
 		
 		
-		return mzResponse;
+		mzResponse.getSession().setAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR, dmzResponse.getRequest());
+		//mzResponse.setHeader("Contact", "sip:"+dmzResponse.getRequest().getLocalAddr()+":"+dmzResponse.getRequest().getLocalPort());
+		message.setContent(mzResponse);
+		
 
 	}
 	
-	private SipServletMessage applyLazyRules(SipServletMessage message) throws ServletParseException {
-		if (LOG.isTraceEnabled()) {
-			LOG.trace("Applying Lazy Rules ...");
-		}
-		ListIterator<String> rules = message.getHeaders(LazyRule.LAZY_RULE);
-			while(rules.hasNext()) {
-				LazyRule rule=LazyRule.parse(rules.next());
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("Applying LazyRule " + rule.getValue());
-				}
-			}
-		return message;
-	}
+	
 
 	public String getName() {
 		return "B2BUA leg builder Processor";
@@ -421,24 +411,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		return this.hashCode();
 	}
 
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-
-		if (LOG.isTraceEnabled()) {
-			LOG.trace("-------" + message.getLocalAddr() + "->" + message.getRemoteAddr());
-			LOG.trace("-------Receiving message: \n" + message);
-		}
-
-		if (message instanceof SipServletRequest) {
-			message = processRequest((SipServletRequest) message);
-			
-		}
-		if (message instanceof SipServletResponse) {
-			message = processResponse((SipServletResponse) message);
-		}
-		
-		return message;
-	}
-
+	
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -453,7 +426,20 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m = (SIPMutableMessage) message;
-		m.setContent(doProcess(m.getContent()));
+		SipServletMessage sm=(SipServletMessage) message.getContent();
+		
+		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("-------" + sm.getLocalAddr() + "->" + sm.getRemoteAddr());
+			LOG.trace("-------Receiving message: \n" + sm);
+		}
+		if(sm instanceof SipServletRequest) {
+			processRequest(m);
+		}
+		if(sm instanceof SipServletResponse) {
+			processResponse(m);
+		}
+		
 	}
 
 	@Override

@@ -66,15 +66,7 @@
 		</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-	<servlet>
-		<servlet-name>Monitor</servlet-name>
-		<display-name>Monitor</display-name>
-		<description>SBC Monitor.</description>
-		<servlet-class>
-			org.restcomm.sbc.servlet.sip.SBCMonitorServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
+	
 	<servlet>
 		<servlet-name>Registrar</servlet-name>
 		<display-name>Registrar</display-name>
@@ -82,7 +74,7 @@
 		<servlet-class>
 			org.restcomm.sbc.servlet.sip.SBCRegistrarServlet
 		</servlet-class>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>OptionsManager</servlet-name>
@@ -91,7 +83,7 @@
 		<servlet-class>
 			org.restcomm.sbc.servlet.sip.SBCOptionsServlet
 		</servlet-class>
-		<load-on-startup>3</load-on-startup>
+		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>CallManager</servlet-name>
@@ -100,9 +92,17 @@
 		<servlet-class>
 			org.restcomm.sbc.servlet.sip.SBCCallServlet
 		</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>Monitor</servlet-name>
+		<display-name>Monitor</display-name>
+		<description>SBC Monitor.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCMonitorServlet
+		</servlet-class>
 		<load-on-startup>4</load-on-startup>
 	</servlet>
-
 	
 
 </sip-app>

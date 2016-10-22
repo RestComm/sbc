@@ -42,6 +42,7 @@ public class MessageUtil {
 	public static String B2BUA_PATCH_NAT ="X-SBC-Patch-NAT";
 	public static String B2BUA_ORIG_CONTACT_ADDR ="X-SBC-OriginalContact-Address";
 	public static String B2BUA_ORIG_REGISTER_ATTR ="X-SBC-OriginalRegister";
+	public static String MEDIA_MANAGER ="X-SBC-MediaManager";
 	
 	public static void tracer(SipServletMessage message) {
 		

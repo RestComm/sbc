@@ -29,6 +29,8 @@ import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
+import org.restcomm.chain.processor.Message;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
@@ -41,7 +43,7 @@ import org.restcomm.sbc.managers.ProtocolAdapterFactory;
  * @class   TCPProtocolAdapter.java
  *
  */
-public class TCPProtocolAdapter implements ProtocolAdapter {
+public class TCPProtocolAdapter extends ProtocolAdapter {
 	
 	private static transient Logger LOG = Logger.getLogger(TCPProtocolAdapter.class);
 	
@@ -53,34 +55,37 @@ public class TCPProtocolAdapter implements ProtocolAdapter {
 	}
 	
 
-	public SipServletMessage adapt(SipServletMessage message) throws NoRouteToHostException {
-		String sourceTransport=message.getInitialTransport();
+	public void adapt(Message message) throws NoRouteToHostException {
+		SIPMutableMessage m=(SIPMutableMessage) message;
+		SipServletMessage sm=m.getContent();
+		
+		String sourceTransport=sm.getInitialTransport();
 		if(sourceTransport==null) {
 			sourceTransport=ProtocolAdapterFactory.PROTOCOL_UDP;
 		}
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("o Contact "+message.getHeader("Contact"));
+			LOG.trace("o Contact "+sm.getHeader("Contact"));
 			LOG.trace("o Transport "+sourceTransport);
 			LOG.trace("o Message follows:\n"+message.toString());
 			LOG.trace(">> adapt() Adapting protocol [->TCP]");
 		}
 		
 		
-		String user = ((SipURI) message.getFrom().getURI()).getUser();
-		String host = ((SipURI) message.getFrom().getURI()).getHost();
-		int port    = ((SipURI) message.getFrom().getURI()).getPort();
+		String user = ((SipURI) sm.getFrom().getURI()).getUser();
+		String host = ((SipURI) sm.getFrom().getURI()).getHost();
+		int port    = ((SipURI) sm.getFrom().getURI()).getPort();
 		
 		SipURI sipUri = sipFactory.createSipURI(user, host);
 		sipUri.setTransportParam("tcp");
 		sipUri.setPort(port);
-		if(message instanceof SipServletRequest)
-			((SipServletRequest) message).setRequestURI(sipUri);
+		if(sm instanceof SipServletRequest)
+			((SipServletRequest) sm).setRequestURI(sipUri);
+		
+		m.setContent(sm);
 	
-		return message;
 
 	}
 	
-	@Override
 	public String getProtocol() {
 		return ProtocolAdapterFactory.PROTOCOL_TCP;
 	}

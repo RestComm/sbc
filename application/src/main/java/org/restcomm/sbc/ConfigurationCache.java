@@ -41,6 +41,8 @@ public class ConfigurationCache {
 	private static boolean regThrottleEnabled;
 	private static int regThrottleMZTTL;
 	private static int regThrottleUATTL;
+	private static int mediaStartPort;
+	private static int mediaEndPort;
 
 	private static transient Logger LOG = Logger.getLogger(ConfigurationCache.class);
 	
@@ -53,6 +55,8 @@ public class ConfigurationCache {
 		regThrottleEnabled=configuration.getBoolean ("registrar-throttle.enable");  
         regThrottleMZTTL=configuration.getInt		("registrar-throttle.force-mz-expiration");
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
+        mediaStartPort=configuration.getInt		("media-proxy.start-port");
+        mediaEndPort=configuration.getInt		("media-proxy.end-port");
         
 	}
 	
@@ -92,6 +96,17 @@ public class ConfigurationCache {
 	public static String getDomain() {
 		return domain;
 	}
-	
+
+
+	public static int getMediaStartPort() {
+		return mediaStartPort;
+	}
+
+
+	public static int getMediaEndPort() {
+		return mediaEndPort;
+	}
+
+
 
 }

@@ -28,6 +28,44 @@ package org.restcomm.chain.processor;
  */
 public interface Message {
 	
+	static final int SOURCE_DMZ = 0;
+	static final int SOURCE_MZ  = 1;
+	
+	/**
+	 * Message Flow direction.
+	 * @return direction
+	 */
+	int getDirection();
+	
+	/**
+	 * Get the IP to where
+	 * the Message initially came
+	 * @return String.
+	 */
+	String getSourceLocalAddress();
+	
+	/**
+	 * Get the IP from where
+	 * the Message initially came
+	 * @return String.
+	 */
+	String getSourceRemoteAddress();
+	
+	/**
+	 * Get the IP to where
+	 * the Message goes in SBC domain
+	 * @return String.
+	 */
+	String getTargetLocalAddress();
+	
+	/**
+	 * Get the IP to where
+	 * the Message goes to reach its
+	 * final destination.
+	 * @return String
+	 */
+	String getTargetRemoteAddress();
+	
 	
 	Object getContent() ;
 	
