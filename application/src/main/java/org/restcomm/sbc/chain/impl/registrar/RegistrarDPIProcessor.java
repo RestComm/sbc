@@ -31,7 +31,7 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.chain.impl.registrar.DPIRegistrarProcessor;
+import org.restcomm.sbc.chain.impl.registrar.RegistrarDPIProcessor;
 import org.restcomm.sbc.managers.RouteManager;
 
 
@@ -47,18 +47,18 @@ import org.restcomm.sbc.managers.RouteManager;
  * @class   PreRegistrarDPIProcessor.java
  *
  */
-public class DPIRegistrarProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
+public class RegistrarDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
 	
-	private static transient Logger LOG = Logger.getLogger(DPIRegistrarProcessor.class);
+	private static transient Logger LOG = Logger.getLogger(RegistrarDPIProcessor.class);
 	private String name="PRE-REGISTRAR DPI Processor";
 	
-	public DPIRegistrarProcessor(ProcessorChain chain) {
+	public RegistrarDPIProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain=chain;	
 		
 	}
 	
-	public DPIRegistrarProcessor(String name, ProcessorChain chain) {
+	public RegistrarDPIProcessor(String name, ProcessorChain chain) {
 		this(chain);
 		setName(name);
 	}
@@ -124,6 +124,9 @@ public class DPIRegistrarProcessor extends DefaultDPIProcessor implements Proces
 		SIPMutableMessage m  =(SIPMutableMessage) message;
 		
 		SipServletMessage sm = m.getContent();
+		
+		m.setSourceLocalAddress(sm.getLocalAddr());
+		m.setSourceRemoteAddress(sm.getRemoteAddr());
 		
 		
 		

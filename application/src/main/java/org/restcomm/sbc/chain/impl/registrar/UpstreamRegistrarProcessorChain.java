@@ -30,10 +30,11 @@ import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
-import org.restcomm.sbc.chain.impl.DPIUserAgentACLProcessor;
+import org.restcomm.sbc.chain.impl.UserAgentACLDPIProcessor;
 import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.sbc.chain.impl.SanityCheckProcessor;
 import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
@@ -52,22 +53,24 @@ public class UpstreamRegistrarProcessorChain extends DefaultSerialProcessorChain
 	private String name="Upstream REGISTRAR Processor Chain";
 
 	public UpstreamRegistrarProcessorChain() {
-		Processor c1 = new DPIRegistrarProcessor(this);
-		c1.addProcessorListener(this);
-		Processor c2 = new DPIUserAgentACLProcessor(this);
-		c2.addProcessorListener(this);
-		Processor c3 = new B2BUABuilderProcessor(this);
+		Processor c1 = new IncomingDPIProcessor(this);
+		c1.addProcessorListener(this);	
+		Processor c2 = new RegistrarDPIProcessor(this);
+		c2.addProcessorListener(this);	
+		Processor c3 = new UserAgentACLDPIProcessor(this);
 		c3.addProcessorListener(this);
-		Processor c4 = new SanityCheckProcessor(this);
-		c4.addProcessorListener(this);	
+		Processor c4 = new B2BUABuilderProcessor(this);
+		c4.addProcessorListener(this);
 		Processor c5 = new NATHelperProcessor(this);
 		c5.addProcessorListener(this);
-		Processor c6 = new RegistrarProcessor(this);
-		c6.addProcessorListener(this);
-		Processor c7 = new ProtocolAdaptProcessor(this);
+		Processor c6 = new SanityCheckProcessor(this);
+		c6.addProcessorListener(this);		
+		Processor c7 = new RegistrarProcessor(this);
 		c7.addProcessorListener(this);
-		Processor c8 = new DispatchDPIProcessor("Dispatcher",this);
+		Processor c8 = new ProtocolAdaptProcessor(this);
 		c8.addProcessorListener(this);
+		Processor c9 = new DispatchDPIProcessor("Dispatcher",this);
+		c9.addProcessorListener(this);
 		
 		
 		//set the chain of responsibility
@@ -80,6 +83,7 @@ public class UpstreamRegistrarProcessorChain extends DefaultSerialProcessorChain
 			link(c5, c6);
 			link(c6, c7);
 			link(c7, c8);
+			link(c8, c9);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);
