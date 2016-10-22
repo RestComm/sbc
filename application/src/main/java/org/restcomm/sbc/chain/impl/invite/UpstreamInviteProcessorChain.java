@@ -31,6 +31,7 @@ import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
 import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
@@ -53,16 +54,20 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	public UpstreamInviteProcessorChain() {
 		
 		// initialize the chain
-		Processor c1 = new InviteDPIProcessor(this);
+		Processor c1 = new IncomingDPIProcessor(this);
 		c1.addProcessorListener(this);
-		Processor c2 = new B2BUABuilderProcessor(this);
+		Processor c2 = new InviteDPIProcessor(this);
 		c2.addProcessorListener(this);
-		Processor c3 = new SanityCheckProcessor(this);
-		c3.addProcessorListener(this);	
-		Processor c4 = new ProtocolAdaptProcessor(this);
+		Processor c3 = new B2BUABuilderProcessor(this);
+		c3.addProcessorListener(this);
+		Processor c4 = new SanityCheckProcessor(this);
 		c4.addProcessorListener(this);
-		Processor c5 = new DispatchDPIProcessor("Dispatch", this);
+		Processor c5 = new InviteProcessor(this);
 		c5.addProcessorListener(this);
+		Processor c6 = new ProtocolAdaptProcessor(this);
+		c6.addProcessorListener(this);
+		Processor c7 = new DispatchDPIProcessor("Dispatch", this);
+		c7.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		
@@ -71,6 +76,8 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			link(c2, c3);
 			link(c3, c4);
 			link(c4, c5);
+			link(c5, c6);
+			link(c6, c7);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);
