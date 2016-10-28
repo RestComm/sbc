@@ -134,7 +134,64 @@ public class SdpUtils {
      * Returns audio/video port
      */
     @SuppressWarnings("unchecked")
-    public static String fix(String mediaType, final int port, String text)
+    public static boolean isSecure(String contentType, String mediaType, final byte[] data)
+            throws UnknownHostException, SdpException {
+        final String text = new String(data);
+        int port=-1;
+        if (contentType.equalsIgnoreCase("application/sdp")) {
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
+         // Handle the connections at the media description level.
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {
+            	final Media media=description.getMedia();
+            	
+            		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+            			if(media.getProtocol().equalsIgnoreCase("RTP/AVP")) {
+            				return false;
+            			}
+            			else {
+            				return true;
+            			}
+          
+            		}  		  	
+            }
+        }
+        else {
+        	String boundary = contentType.split(";")[1].split("=")[1];
+            String[] parts = text.split(boundary);
+            String sdpText = null;
+            for (String part : parts) {
+                if (part.contains("application/sdp")) {
+                    sdpText = part.replaceAll("Content.*", "").replaceAll("--", "").trim();
+                }
+            }
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(sdpText);
+           
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {
+            	final Media media=description.getMedia();
+            	
+            		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+            			if(media.getProtocol().equalsIgnoreCase("RTP/AVP")) {
+            				return false;
+            			}
+            			else {
+            				return true;
+            			}
+          
+            		}  		  	
+            }
+        	
+        }
+       
+        return false;
+    }
+    
+    /*
+     * Returns audio/video port
+     */
+    @SuppressWarnings("unchecked")
+    public static String fix(String mediaType, final int port, boolean secure, String text)
             throws UnknownHostException, SdpException {
         	
             final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
@@ -145,6 +202,10 @@ public class SdpUtils {
             	
             		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
             			media.setMediaPort(port);
+            			if(secure)
+            				media.setProtocol("RTP/SAVP");
+            			else
+            				media.setProtocol("RTP/AVP");
             		}
             		
             	

@@ -34,7 +34,7 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
 
 
@@ -68,12 +68,12 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
-		MediaManager audioManager = null;
+		MediaZone audioManager = null;
 
 		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		try {
-			audioManager=new MediaManager("audio", message.getSourceLocalAddress());
+			audioManager=new MediaZone("audio", message.getSourceLocalAddress());
 			if(LOG.isTraceEnabled()){
 		          LOG.trace("MEDIAMANAGER "+audioManager.toPrint());
 		    }
@@ -92,11 +92,11 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
 		if(response.getStatus()==SipServletResponse.SC_OK) {
-			MediaManager audioManager=(MediaManager) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			MediaZone audioManager=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
-			MediaManager peerAudioManager = null;
+			MediaZone peerAudioManager = null;
 			try {
-				peerAudioManager = new MediaManager("audio", message.getSourceLocalAddress(), audioManager.getPort());
+				peerAudioManager = new MediaZone("audio", message.getSourceLocalAddress(), audioManager.getPort());
 				if(LOG.isTraceEnabled()){
 			          LOG.trace("MEDIAMANAGER "+peerAudioManager.toPrint());
 			    }

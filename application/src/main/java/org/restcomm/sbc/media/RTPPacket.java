@@ -130,7 +130,7 @@ public class RTPPacket {
     
     public String toPrint() {
     	return
-    			"RTP Version "+version+" PayloadType "+payloadType;
+    			"RTP Version "+version+" PayloadType "+payloadType+" ["+data.length+"]";
     }
 
 }

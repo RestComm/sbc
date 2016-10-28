@@ -37,7 +37,7 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
-import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 
@@ -62,9 +62,6 @@ public class SBCCallServlet extends SipServlet {
 	
 	private DownstreamInviteProcessorChain dwChain;
 	private boolean callStablished=false;
-	private MediaManager source;
-	private MediaManager target;
-	
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
@@ -165,9 +162,9 @@ public class SBCCallServlet extends SipServlet {
 		upChain.process(new SIPMutableMessage(request));
 		
 		try {
-		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-		mediaManager.finalize();
-		mediaManager.getMediaManagerPeer().finalize();
+		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+		mediaZone.finalize();
+		
 		} catch(RuntimeException e) {
 			LOG.error(e);
 		}
@@ -188,11 +185,12 @@ public class SBCCallServlet extends SipServlet {
 			
 			
 		}
-		
-		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-		mediaManager.getMediaManagerPeer().start();
-		mediaManager.start();
-		
+		try {
+			MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+			mediaZone.start();
+		} catch(RuntimeException e) {
+			LOG.error(e);
+		}
 		callStablished=true;
 		
 
@@ -212,10 +210,12 @@ public class SBCCallServlet extends SipServlet {
 		
 		upChain.process(new SIPMutableMessage(request));
 		
-
-		MediaManager mediaManager=(MediaManager) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-		mediaManager.finalize();
-		mediaManager.getMediaManagerPeer().finalize();
+		try {
+		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+		mediaZone.finalize();
+		} catch (RuntimeException e) {
+			LOG.error(e);
+		}
 		
 	}
 

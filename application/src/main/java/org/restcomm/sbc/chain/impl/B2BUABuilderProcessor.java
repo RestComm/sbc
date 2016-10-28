@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipApplicationSession;
@@ -67,7 +66,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 
 	private static transient Logger LOG = Logger.getLogger(B2BUABuilderProcessor.class);
 
-	private RouteManager routeManager;
 	private LocationManager locationManager;
 	private SipFactory sipFactory;
 	private SipApplicationSession aSession;
@@ -76,7 +74,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	public B2BUABuilderProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain = chain;
-		routeManager = RouteManager.getRouteManager();
 		locationManager = LocationManager.getLocationManager();
 		this.sipFactory = ConfigurationCache.getSipFactory();
 		
@@ -146,6 +143,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			}
 			message.setTargetLocalAddress(connector.getHost());
 			message.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
+			message.setTargetProtocol(connector.getTransport().toString());
+			
 			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
 			// ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
@@ -164,6 +163,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				
 				message.setTargetLocalAddress(ConfigurationCache.getDomain());
 				message.setTargetRemoteAddress(location.getHost());
+				message.setTargetProtocol(location.getTransport().toUpperCase());
 
 			} catch (LocationNotFoundException e) {
 				SipServletResponse response =
@@ -318,7 +318,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		}
 		SipServletResponse dmzResponse=(SipServletResponse) message.getContent();
 		
-		SipURI toURI = (SipURI) dmzResponse.getTo().getURI();
+		//SipURI toURI = (SipURI) dmzResponse.getTo().getURI();
 
 		B2buaHelper helper = dmzResponse.getRequest().getB2buaHelper();
 		SipServletResponse mzResponse;
@@ -352,6 +352,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		if(linked!=null) {
 			message.setTargetLocalAddress(linked.getLocalAddr());
 			message.setTargetRemoteAddress(linked.getRemoteAddr());
+			message.setTargetProtocol(linked.getTransport().toUpperCase());
 			
 			mzResponse = linked.createResponse(statusResponse, reasonResponse); 
 			
@@ -362,6 +363,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		else {
 			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
 			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
+			message.setTargetProtocol(dmzResponse.getTransport().toUpperCase());
 			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
 		}
 		

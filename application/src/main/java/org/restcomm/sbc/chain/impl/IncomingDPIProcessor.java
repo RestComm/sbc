@@ -100,6 +100,7 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
+		m.setSourceProtocol(sm.getTransport().toUpperCase());
 		
 		processMessage(m);
 		
