@@ -112,6 +112,19 @@ public abstract class DefaultProcessor implements Processor {
 	     }
 	 }
 	
+	protected void fireUnlinkEvent(Processor processor) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==ProcessorListener.class) {             
+	             ((ProcessorListener)listeners[i+1]).onProcessorUnlink(processor);
+	         }
+	         
+	     }
+	 }
+	
 	protected void fireAbortEvent(Processor processor) {
 	     // Guaranteed to return a non-null array
 	     Object[] listeners = listenerList.getListenerList();
@@ -125,8 +138,6 @@ public abstract class DefaultProcessor implements Processor {
 	     }
 	 }
 	
-	
-	
 	public void process(MutableMessage message) throws ProcessorParsingException {
 		if(message==null) {
 			throw new ProcessorParsingException("null Messages not allowed");
@@ -135,6 +146,11 @@ public abstract class DefaultProcessor implements Processor {
 			LOG.debug(">> process() message ["+message+"]");
 		
 		if(!message.isLinked()&& !(this instanceof EndpointProcessor )) {
+			if(LOG.isDebugEnabled())
+				LOG.debug("UNLINK message ["+message+"] on chain "+chain.getName()+" on processor "+this);
+			fireUnlinkEvent((Processor) getCallback());
+		}
+		else if(message.isAborted()&& !(this instanceof EndpointProcessor )) {
 			if(LOG.isDebugEnabled())
 				LOG.debug("ABORT message ["+message+"] on chain "+chain.getName()+" on processor "+this);
 			fireAbortEvent((Processor) getCallback());

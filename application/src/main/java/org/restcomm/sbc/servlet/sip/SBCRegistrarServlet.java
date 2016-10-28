@@ -48,16 +48,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	private static final long serialVersionUID = 1L;	
 	private Configuration configuration;
 	private SipFactory sipFactory;	
-	private String routeMZTransport;
-	private int    routeMZPort;
-	private String mzIface;
-	private String mzIPAddress;
-	private String mzTransport;
-	private int mzPort;
-	private String dmzIface;
-	private String dmzIPAddress;
-	private String dmzTransport;
-	private int dmzPort;
+	
 	private String routeMZIPAddress;
 	
 	private UpstreamRegistrarProcessorChain upChain;
@@ -76,30 +67,19 @@ public class SBCRegistrarServlet extends SipServlet {
 		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
 		ConfigurationCache.build(sipFactory, configuration);
 		
-        mzIface    =ConfigurationCache.getMzIface();
-        mzIPAddress=ConfigurationCache.getMzIPAddress();
-        mzTransport=ConfigurationCache.getMzTransport();
-        mzPort     =ConfigurationCache.getMzPort();
-        
-        dmzIface    =ConfigurationCache.getDmzIface();
-        dmzIPAddress=ConfigurationCache.getDmzIPAddress();
-        dmzTransport=ConfigurationCache.getDmzTransport();
-        dmzPort     =ConfigurationCache.getDmzPort();
       
-        routeMZIPAddress=ConfigurationCache.getRouteMZIPAddress();
-		routeMZTransport=ConfigurationCache.getRouteMZTransport();
-		routeMZPort     =ConfigurationCache.getRouteMZPort();
+        routeMZIPAddress=ConfigurationCache.getTargetHost();
+		
 		
 		if(LOG.isDebugEnabled()){
-			LOG.debug("MZ :"+mzIface+", "+mzIPAddress+":"+mzPort+", "+mzTransport);
-			LOG.debug("DMZ:"+dmzIface+", "+dmzIPAddress+":"+dmzPort+", "+dmzTransport);
-			LOG.debug("Route MZ Target:"+routeMZIPAddress+":"+routeMZPort+", "+routeMZTransport);
+			LOG.debug("Route MZ Target:"+routeMZIPAddress);
 			LOG.debug("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
-			LOG.debug("MaxUATTL:"+ConfigurationCache.getRegThrottleMaxUATTL());
-			LOG.debug("MinRETTL:"+ConfigurationCache.getRegThrottleMinRegistartTTL());
+			LOG.debug("UATTL:"+ConfigurationCache.getRegThrottleUATTL());
+			LOG.debug("MZTTL:"+ConfigurationCache.getRegThrottleMZTTL());
 	    }
 		
 		upChain=new UpstreamRegistrarProcessorChain();
+		
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamRegistrarProcessorChain();
 		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
@@ -111,9 +91,8 @@ public class SBCRegistrarServlet extends SipServlet {
 	@Override
 	protected void doRegister(SipServletRequest sipServletRequest) throws ServletException, IOException {
 		
-		if(sipServletRequest.isInitial()) {
-		    upChain.process(new SIPMutableMessage(sipServletRequest));
-		}
+		 upChain.process(new SIPMutableMessage(sipServletRequest));
+		
 		
 	}
 	

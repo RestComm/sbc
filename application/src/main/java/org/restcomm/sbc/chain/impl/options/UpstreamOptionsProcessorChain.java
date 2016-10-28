@@ -29,12 +29,11 @@ import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
-import org.restcomm.chain.processor.impl.DispatchDPIProcessor;
+import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
 import org.restcomm.sbc.chain.impl.SanityCheckProcessor;
-import org.restcomm.sbc.chain.impl.TransportAdaptProcessor;
+
 
 
 /**
@@ -56,21 +55,15 @@ public class UpstreamOptionsProcessorChain extends DefaultSerialProcessorChain i
 		c1.addProcessorListener(this);
 		Processor c2 = new OptionsProcessor(this);
 		c2.addProcessorListener(this);
-		Processor c3 = new B2BUABuilderProcessor(this);
+		Processor c3 = new DispatchDPIProcessor("Dispatch", this);
 		c3.addProcessorListener(this);
-		// works with B2BUA Leg message
-		Processor c4 = new TransportAdaptProcessor(this);
-		c4.addProcessorListener(this);
-		Processor c5 = new DispatchDPIProcessor("Dispatch", this);
-		c5.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		
 		try {
 			link(c1, c2);
 			link(c2, c3);
-			link(c3, c4);
-			link(c4, c5);
+			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);
 		}
@@ -128,5 +121,10 @@ public class UpstreamOptionsProcessorChain extends DefaultSerialProcessorChain i
 			LOG.debug(">>onProcessorAbort() "+processor.getType()+"("+processor.getName()+")");
 	}
 	
-
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
 }

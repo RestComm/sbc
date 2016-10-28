@@ -7,11 +7,11 @@ MZ, Militarized Zone::
     Private secured zone of the network, target to be protected from alien attackers.
 
 DMZ, De-Militarized Zone::
-  Open network side, ussually the WAN side open Internet.
+  Open network side, usually the WAN side open Internet.
   
 Upstream::
-  From the Request perspective, the flow direction to the DMZ.
+  From the Request perspective, the flow direction to the MZ.
   
 Downstream::
-  From the Request perspective, the flow direction to the MZ.
+  From the Request perspective, the flow direction to the DMZ.
   

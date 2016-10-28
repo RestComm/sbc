@@ -17,65 +17,69 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  *******************************************************************************/
-
 package org.restcomm.sbc.chain.impl;
 
+import javax.servlet.sip.Address;
+import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
-
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
+import javax.servlet.sip.SipURI;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
-import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
+import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.managers.LazyRule;
+import org.restcomm.sbc.managers.MessageUtil;
+
 
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    27/5/2016 14:33:56
- * @class   DPIUserAgentACLProcessor.java
+ * @author ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date 13 sept. 2016 18:10:42
+ * @class NATHelperProcessor.java
  *
  */
-public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
+public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
-	private String name="Simple ACL UA Processor";
-	private static transient Logger LOG = Logger.getLogger(DPIUserAgentACLProcessor.class);
-
-	public DPIUserAgentACLProcessor(ProcessorChain processorChain) {
-			super(processorChain);
-	}
+	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
 	
-	public DPIUserAgentACLProcessor(String name, ProcessorChain processorChain) {
-			super(name, processorChain);
+	public IncomingDPIProcessor(ProcessorChain callback) {
+		super(callback);
+	}
+
+	public IncomingDPIProcessor(String name, ProcessorChain callback) {
+		super(name, callback);
 	}
 
 	public String getName() {
-		return name;
+		return "Incoming DPI Processor";
 	}
 
 	public int getId() {
 		return this.hashCode();
 	}
 
-	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> doProcess()");
-	    }
-		SipServletMessage m=(SipServletMessage) message.getContent();
-		
-		String userAgent=m.getHeader("User-Agent");
-		if (userAgent.contains("friendly")) {
-			message.unlink();
-			
-		}
-		return m;
-	}
-
 	@Override
 	public void setName(String name) {
-		this.name=name;
-		
+		this.name = name;
+
+	}
+
+
+	private void processMessage(SIPMutableMessage message) {
+
+		if (RouteManager.isFromDMZ(message.getContent())) {
+			message.setDirection(Message.SOURCE_DMZ);	
+		}
+		else {
+			message.setDirection(Message.SOURCE_MZ);
+		}	
+
 	}
 
 	@Override
@@ -83,14 +87,24 @@ public class DPIUserAgentACLProcessor extends DefaultDPIProcessor implements Pro
 		return this;
 	}
 
-	@Override
-	public void doProcess(Message message) throws ProcessorParsingException {
-		doProcess((SIPMutableMessage)message);
-	}
-	
+
 	@Override
 	public String getVersion() {
 		return "1.0.0";
+	}
+
+	@Override
+	public void doProcess(Message message) throws ProcessorParsingException {
+		SIPMutableMessage m = (SIPMutableMessage) message;
+		SipServletMessage sm=m.getContent();
+		
+		m.setSourceLocalAddress(sm.getLocalAddr());
+		m.setSourceRemoteAddress(sm.getRemoteAddr());
+		m.setSourceProtocol(sm.getTransport().toUpperCase());
+		
+		processMessage(m);
+		
+		
 	}
 
 }

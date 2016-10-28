@@ -69,6 +69,17 @@ CREATE TABLE "restcomm_routes" (
 	"target_connector_sid" VARCHAR(34) NOT NULL
 );
 
+CREATE TABLE "restcomm_statistics" (
+	"sid" VARCHAR(34) NOT NULL PRIMARY KEY,
+	"mem_usage" INT NOT NULL,
+	"cpu_usage" INT NOT NULL,
+	"live_call_count" INT NOT NULL,
+	"rejected_count" INT NOT NULL,
+	"threat_count" INT NOT NULL,
+	"call_rate" DOUBLE NOT NULL,
+	"date_created" datetime NOT NULL	
+);
+
 CREATE TABLE "restcomm_call_detail_records" (
 "sid" VARCHAR(34) NOT NULL PRIMARY KEY,
 "parent_call_sid" VARCHAR(34),

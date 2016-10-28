@@ -20,7 +20,6 @@
 package org.restcomm.chain.processor;
 
 
-
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    27/5/2016 13:34:57
@@ -29,18 +28,71 @@ package org.restcomm.chain.processor;
  */
 public interface Message {
 	
+	static final int SOURCE_DMZ = 0;
+	static final int SOURCE_MZ  = 1;
+	
+	/**
+	 * Message Flow direction.
+	 * @return direction
+	 */
+	int getDirection();
+	
+	/**
+	 * Get the IP to where
+	 * the Message initially came
+	 * @return String.
+	 */
+	String getSourceLocalAddress();
+	
+	/**
+	 * Get the IP from where
+	 * the Message initially came
+	 * @return String.
+	 */
+	String getSourceRemoteAddress();
+	
+	/**
+	 * Get the IP to where
+	 * the Message goes in SBC domain
+	 * @return String.
+	 */
+	String getTargetLocalAddress();
+	
+	/**
+	 * Get the IP to where
+	 * the Message goes to reach its
+	 * final destination.
+	 * @return String
+	 */
+	String getTargetRemoteAddress();
+	
+	
 	Object getContent() ;
 	
 	/**
 	 * unlinks itself from its processor container
-	 * disabling any further processing of the message. 
+	 * disabling any further processing of the message,
+	 * producing immediate dispatch. 
 	 */
 	
 	void unlink();
+	
+	/**
+	 * aborts delivery of the message
+	 * interrupting the process chain. 
+	 */
+	
+	void abort();
 	
 	/**
 	 * Gets link message state
 	 */
 	
 	boolean isLinked();
+	
+	/**
+	 * Gets aborted message state
+	 */
+	
+	boolean isAborted();
 }

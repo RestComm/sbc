@@ -66,37 +66,39 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	}
 	
 	
-	private SipServletResponse processResponse(SipServletResponse message) {
+	private void processResponse(Message message) {
+		SipServletResponse response=(SipServletResponse) message.getContent();
+		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processResponse()");
 	    }
 		ProtocolAdapter adapter = null;
 		try {
-			adapter = protocolAdapterFactory.getAdapter(message.getTransport());
-			return (SipServletResponse) adapter.adapt(message);
+			adapter = protocolAdapterFactory.getAdapter(response.getTransport());
+			adapter.adapt(message);
 		} catch (UnavailableProtocolAdapterException e) {
 			LOG.error("ERROR",e);
 		} catch (NoRouteToHostException e) {
 			LOG.error("ERROR",e);
 		}
-		return null;
+	
 	}
 
-	private SipServletRequest processRequest(SipServletRequest mzRequest) {
+	private void processRequest(Message message) {
+		SipServletRequest request=(SipServletRequest) message.getContent();
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processRequest()");
 	    }
 		ProtocolAdapter adapter = null;
 		try {
 			
-			adapter = protocolAdapterFactory.getAdapter(mzRequest.getTransport());
-			return (SipServletRequest) adapter.adapt(mzRequest);
+			adapter = protocolAdapterFactory.getAdapter(request.getTransport());
+			adapter.adapt(message);
 		} catch (UnavailableProtocolAdapterException e) {
 			LOG.error("ERROR",e);
 		} catch (NoRouteToHostException e) {
 			LOG.error("ERROR",e);
 		}
-		return null;
 			
 	}
 
@@ -110,23 +112,6 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	public int getId() {
 		return this.hashCode();
 	}
-
-
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> process() "+getName());
-	    }
-		
-		if(message instanceof SipServletRequest) {		
-			message=processRequest((SipServletRequest) message);
-		}
-		if(message instanceof SipServletResponse) {		
-			message=processResponse((SipServletResponse) message);
-		}
-		
-		return message;
-	}
-
 
 
 	@Override
@@ -144,8 +129,16 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setContent(doProcess(m.getContent()));
+		
+		SipServletMessage sm=(SipServletMessage) message.getContent();
+		
+		if(sm instanceof SipServletRequest) {		
+			processRequest(message);
+		}
+		if(sm instanceof SipServletResponse) {		
+			processResponse(message);
+		}
+		
 	}
 	
 	@Override

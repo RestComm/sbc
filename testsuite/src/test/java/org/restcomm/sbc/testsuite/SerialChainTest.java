@@ -227,6 +227,12 @@ private static transient Logger LOG = Logger.getLogger(SerialChainTest.class);
 		
 	}
 	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
 	public static void main(String argv[]) {
 		SerialChainTest test=new SerialChainTest();
 		test.processShouldTraverseChain();

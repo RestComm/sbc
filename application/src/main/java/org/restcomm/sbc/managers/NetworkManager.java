@@ -157,6 +157,9 @@ public class NetworkManager  {
 		        	point.setPrefixMask(inetAddress.getNetworkPrefixLength());
 		        	id++;
 		            eths.add(point);
+		            if(LOG.isTraceEnabled()) {
+		            	LOG.trace("Detected interface "+point.toPrint());
+		            }
 		        }
 		        group++;
 		        id=0;
@@ -179,11 +182,6 @@ public class NetworkManager  {
 			return writer.toString();
 	    }
 	    
-	    public static void main(String argv[]) {
-	    	for(NetworkPoint point:NetworkManager.getNetworkPoints()) {
-	    		out.println(point.toPrint());
-	    	}
-	    }
 	  
 
 }

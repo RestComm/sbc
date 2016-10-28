@@ -36,6 +36,8 @@ public class Location {
 	private int port;
 	private String transport;
 	private String userAgent;
+	private String callID;
+	private int cSeq;
 	
 	private DateTime expires;
 	
@@ -45,6 +47,7 @@ public class Location {
 		this.host=host;
 		this.port=(port<=0?5060:port);
 		this.transport=(transport==null?"UDP":transport.toUpperCase());
+		
 		
 	}
 	
@@ -76,7 +79,7 @@ public class Location {
 	}
 	
 	public String toString() {
-		return "<Location> user:"+user+"@"+domain+" expires on MZ "+getMiliSecondsToExpiration()+" ms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent;
+		return "<Location> user:"+user+"@"+domain+" expires on MZ "+getMiliSecondsToExpiration()+"\nms host:"+getHost()+":"+getPort()+" transport:"+getTransport()+" User-Agent:"+userAgent+" Call-ID "+callID+" CSeq "+cSeq;
 	}
 	
 	public String getHost() {
@@ -131,6 +134,8 @@ public class Location {
 		int result = 1;
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
+		result = prime * result + ((callID == null) ? 0 : callID.hashCode());
+		result = prime * result + cSeq ;
 		return result;
 
 	}
@@ -141,6 +146,30 @@ public class Location {
 
 	public void setDomain(String domain) {
 		this.domain = domain;
+	}
+
+
+
+	public String getCallID() {
+		return callID;
+	}
+
+
+
+	public void setCallID(String callID) {
+		this.callID = callID;
+	}
+
+
+
+	public int getcSeq() {
+		return cSeq;
+	}
+
+
+
+	public void setcSeq(int cSeq) {
+		this.cSeq = cSeq;
 	}
 
 }

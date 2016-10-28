@@ -11,8 +11,15 @@
 	</appender>
 
 	<root>
-		<priority value="DEBUG" />
+		<level value="TRACE" />
 		<appender-ref ref="Stdout" />		
 	</root>
+	
+	<Loggers>
+		<Logger name="org.restcomm.sbc.chain.impl" level="trace">
+  		<AppenderRef ref="Console"/>
+	</Logger>
+	</Loggers>
+
 	
 </log4j:configuration>

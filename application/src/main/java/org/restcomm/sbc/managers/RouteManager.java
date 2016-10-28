@@ -52,6 +52,7 @@ public class RouteManager {
 	
 	private static RouteManager routeManager;
 	private HashMap<String, Connector> dmzTable =null;
+	private HashMap<String, Connector> mzTable  =null;
 	
 	private static transient Logger LOG = Logger.getLogger(RouteManager.class);
 	
@@ -69,6 +70,7 @@ public class RouteManager {
 	
 	private void updateRoutingTable() {
 		dmzTable =new HashMap<String, Connector>();
+		mzTable  =new HashMap<String, Connector>();
 		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);		
         RoutesDao rdao = daos.getRoutesDao();
         ConnectorsDao cdao = daos.getConnectorsDao();
@@ -79,9 +81,11 @@ public class RouteManager {
         	Connector target=cdao.getConnector(dmzRoute.getTargetConnector());	
         	
         	dmzTable.put(NetworkManager.getIpAddress(source.getPoint())+":"+source.getTransport()+":"+source.getPort(), target);
+        	 mzTable.put(NetworkManager.getIpAddress(target.getPoint())+":"+target.getTransport()+":"+target.getPort(), source);
         	
         	if(LOG.isInfoEnabled()) {
         		LOG.info("DMZ Route add "+source.toPrint()+" => "+target.toPrint());
+        		LOG.info(" MZ Route add "+target.toPrint()+" => "+source.toPrint());
         		
         	}
         }
@@ -107,6 +111,12 @@ public class RouteManager {
 		SipURI contactUri = sipFactory.createSipURI(user, address.getHostString());
 		
 		contactUri.setPort(address.getPort());
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("from-Outbound-Intf  "+address.toString());
+    		LOG.trace("getContactAddress() "+contactUri.toString());		
+    	}
+		
 		return contactUri;
 	}
 	
@@ -130,6 +140,56 @@ public class RouteManager {
 		}
 		return connector;
 	}
+	
+	public Connector getRouteToMZ(SipServletMessage sourceMessage) throws NoRouteToHostException {
+		String sourceHost=sourceMessage.getLocalAddr();
+		String sourceTransport=sourceMessage.getTransport();
+		int sourcePort=sourceMessage.getLocalPort();
+		if(sourceTransport==null) {
+			// implicit transport
+			sourceTransport="UDP";
+		}
+		if(sourcePort<0) {
+			// implicit port
+			sourcePort=5060;
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("oo Getting MZ Connector for host="+sourceHost+" transport="+sourceTransport+" port="+sourcePort);
+		}
+		Connector connector=dmzTable.get(sourceHost+":"+sourceTransport.toUpperCase()+":"+sourcePort);
+		if(connector==null)
+			throw new NoRouteToHostException("No source Connector for "+sourceHost+":"+sourceTransport+":"+sourcePort);
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("ooo "+connector.toPrint());
+		}
+		return connector;
+	}
+	
+	public Connector getRouteToDMZ(SipServletMessage sourceMessage) throws NoRouteToHostException {
+		String sourceHost=sourceMessage.getLocalAddr();
+		String sourceTransport=sourceMessage.getTransport();
+		int sourcePort=sourceMessage.getLocalPort();
+		if(sourceTransport==null) {
+			// implicit transport
+			sourceTransport="UDP";
+		}
+		if(sourcePort<0) {
+			// implicit port
+			sourcePort=5060;
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("oo Getting DMZ Connector for host="+sourceHost+" transport="+sourceTransport+" port="+sourcePort);
+		}
+		Connector connector=mzTable.get(sourceHost+":"+sourceTransport.toUpperCase()+":"+sourcePort);
+		if(connector==null)
+			throw new NoRouteToHostException("No target Connector for "+sourceHost+":"+sourceTransport+":"+sourcePort);
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("ooo "+connector.toPrint());
+		}
+		return connector;
+	}
+	
+	
 	/*
 	public String getTargetTransport(SipServletMessage sourceMessage) throws NoRouteToHostException, LocationNotFoundException {
 		String user=sourceMessage.getHeader("To");
@@ -191,7 +251,8 @@ public class RouteManager {
 	*/
 	
 	
-	public static boolean isFromDMZ(SipServletMessage message) {	
+	public static boolean isFromDMZ(SipServletMessage message) {
+		
 		String host =message.getLocalAddr();
 		int port =message.getLocalPort();
 		String transport=message.getTransport();
@@ -203,5 +264,7 @@ public class RouteManager {
 		return NetworkManager.getTag(host)==Tag.DMZ?true:false;	
 		
 	}
+	
+	
 
 }

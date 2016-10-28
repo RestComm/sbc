@@ -18,12 +18,21 @@
 		<servlet-mapping>
 			<servlet-name>CallManager</servlet-name>
 			<pattern>
+				<or>
 					<equal>
 						<var>request.method</var>
 						<value>INVITE</value>
 					</equal>
+				</or>
+				<or>
+					<equal>
+						<var>request.method</var>
+						<value>INFO</value>
+					</equal>
+				</or>
 			</pattern>
 		</servlet-mapping>
+		 
 		<servlet-mapping>
 			<servlet-name>OptionsManager</servlet-name>
 			<pattern>
@@ -33,6 +42,7 @@
 					</equal>	
 			</pattern>
 		</servlet-mapping>
+		
 		<servlet-mapping>
 			<servlet-name>Registrar</servlet-name>
 			<pattern>
@@ -56,6 +66,7 @@
 		</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
+	
 	<servlet>
 		<servlet-name>Registrar</servlet-name>
 		<display-name>Registrar</display-name>
@@ -83,7 +94,15 @@
 		</servlet-class>
 		<load-on-startup>3</load-on-startup>
 	</servlet>
-
+	<servlet>
+		<servlet-name>Monitor</servlet-name>
+		<display-name>Monitor</display-name>
+		<description>SBC Monitor.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCMonitorServlet
+		</servlet-class>
+		<load-on-startup>4</load-on-startup>
+	</servlet>
 	
 
 </sip-app>

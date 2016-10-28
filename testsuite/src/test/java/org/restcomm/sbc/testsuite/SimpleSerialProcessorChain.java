@@ -101,6 +101,13 @@ public class SimpleSerialProcessorChain extends DefaultSerialProcessorChain impl
 		
 	}
 	
+	@Override
+	public void onProcessorUnlink(Processor processor) {
+		if(LOG.isDebugEnabled())
+			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
+		
+	}
+	
 	public static void main(String argv[]) throws ProcessorParsingException {
 		new SimpleSerialProcessorChain().process(new StringBufferMessage("Mary has a little lamb"));
 		

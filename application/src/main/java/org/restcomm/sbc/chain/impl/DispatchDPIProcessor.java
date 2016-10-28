@@ -22,8 +22,9 @@ package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 
+import javax.servlet.sip.Rel100Exception;
 import javax.servlet.sip.SipServletMessage;
-
+import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -63,9 +64,22 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
 		SipServletMessage m=(SipServletMessage) message.getContent();
 		if(LOG.isTraceEnabled()) {	
-			LOG.trace("Dispatching message: \n"+m);
+			LOG.trace("-------"+m.getLocalAddr()+"->"+m.getTo().getURI().toString());
+			LOG.trace("-------Dispatching message: \n"+m);
 		}
 		try {
+			if(m instanceof SipServletResponse) {
+				SipServletResponse r=(SipServletResponse) m;
+				if(r.getStatus()>100&&r.getStatus()<200) {
+					try {
+						r.sendReliably();
+						return r;
+					} catch (Rel100Exception e) {
+						LOG.error("rel100 not supported!");
+					}
+				}
+				
+			}
 			m.send();
 		} catch (IOException e) {
 			LOG.error(e.getMessage());

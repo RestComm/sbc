@@ -19,9 +19,23 @@
  *******************************************************************************/
 
 package org.restcomm.sbc.adapter;
+
+import java.io.IOException;
 import java.net.NoRouteToHostException;
+import javax.sdp.SdpException;
+import javax.sdp.SdpParseException;
 
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
+
+import org.apache.log4j.Logger;
+import org.restcomm.chain.processor.Message;
+import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.managers.MessageUtil;
+import org.restcomm.sbc.managers.SdpUtils;
+
 
 
 
@@ -31,7 +45,8 @@ import javax.servlet.sip.SipServletMessage;
  * @class   ProtocolAdapter.java
  *
  */
-public interface ProtocolAdapter {
+public abstract class ProtocolAdapter {
+	private static transient Logger LOG = Logger.getLogger(ProtocolAdapter.class);
 	/**
 	 * TransportAdapter must be implemented for those transport
 	 * specialized convertors to forward messages between them-
@@ -42,9 +57,75 @@ public interface ProtocolAdapter {
 	 * @param message
 	 * @return adapted message to target transport
 	 */
-	SipServletMessage adapt(SipServletMessage message) throws NoRouteToHostException;
+	public abstract void adapt(Message message) throws NoRouteToHostException;
 	
-	String getProtocol();
+	public abstract String getProtocol();
+	
+	public void adaptMedia(Message message) {
+				SIPMutableMessage m=(SIPMutableMessage) message;
+				SipServletMessage sm=m.getContent();
+				MediaManager audioManager;
+				int audioPort;
+				
+				if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
+					try {
+						
+						if(sm instanceof SipServletResponse) {
+							SipServletResponse smr=(SipServletResponse) sm;
+							audioManager=(MediaManager) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+							audioPort=audioManager.getMediaManagerPeer().getPort();
+							
+						}
+						else {
+							SipServletRequest smr=(SipServletRequest) sm;
+							SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+							audioManager=(MediaManager) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+							audioPort=audioManager.getPort();
+							
+						}
+						
+						String host=message.getTargetLocalAddress();
+						
+						
+						String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(),
+								host);
+						sdpContent = SdpUtils.fix("audio", audioPort, sdpContent);
+						sdpContent = SdpUtils.endWithNewLine(sdpContent);
+						
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("<=> "+m.getDirection());
+							LOG.debug("SLA "+m.getSourceLocalAddress());
+							LOG.debug("SRA "+m.getSourceRemoteAddress());
+							LOG.debug("TLA "+m.getTargetLocalAddress());
+							LOG.debug("TRA "+m.getTargetRemoteAddress());
+							
+							LOG.debug("Audio port " + audioManager.getPort());
+							if(audioManager.getMediaManagerPeer()!=null)
+								LOG.debug("Audio peer port " + audioManager.getMediaManagerPeer().getPort());
+							LOG.debug("patched Content:\n" + sdpContent);
+						}
+						
+						sm.setContent(sdpContent, "application/sdp");
+						
+
+					} catch (IOException e) {
+						LOG.error("No SDP content!", e);
+						return;
+					} catch (SdpParseException e) {
+						LOG.error("Bad SDP", e);
+						return;
+					} catch (SdpException e) {
+						LOG.error("Bad SDP treatment", e);
+						return;
+					} catch (RuntimeException e) {
+						LOG.error("State SDP treatment", e);
+						return;
+					} 
+
+				}
+			
+		
+	}
 	
 
 }

@@ -126,6 +126,10 @@ public class Connector {
 		return point;
 	}
 	
+	public String getHost() {
+		return NetworkManager.getIpAddress(point);
+	}
+	
 	public Sid getAccountSid() {
 		return accountSid;
 	}
@@ -195,6 +199,8 @@ public class Connector {
 		public void setSid(Sid sid) {
 			this.sid = sid;
 		}
+		
+		
 		
 		
 	}

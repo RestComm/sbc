@@ -45,5 +45,7 @@ public interface DaoManager extends Configurable, LifeCycle {
 	ConnectorsDao getConnectorsDao();
 	
 	RoutesDao getRoutesDao();
+	
+	StatisticsDao getStatisticsDao();
     
 }

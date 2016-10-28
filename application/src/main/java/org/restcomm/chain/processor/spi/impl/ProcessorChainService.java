@@ -32,12 +32,17 @@
 package org.restcomm.chain.processor.spi.impl;
 
 import java.util.Iterator;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import org.restcomm.chain.ProcessorChain;
 
 
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    28 sept. 2016 18:00:44
+ * @class   ProcessorChainService.java
+ *
+ */
 public class ProcessorChainService {
 
     private static ProcessorChainService service;

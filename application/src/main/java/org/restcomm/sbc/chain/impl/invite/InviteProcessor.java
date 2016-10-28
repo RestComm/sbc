@@ -21,8 +21,12 @@
 package org.restcomm.sbc.chain.impl.invite;
 
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import javax.servlet.sip.SipServletMessage;
-
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -30,20 +34,26 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.media.MediaZone;
+import org.restcomm.sbc.managers.MessageUtil;
+
+
+
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    16/6/2016 14:36:50
+ * @date    15 oct. 2016 9:34:59
  * @class   InviteProcessor.java
  *
  */
 public class InviteProcessor extends DefaultProcessor implements ProcessorCallBack {
-	
+	/**
+	 * 		
+	 */
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
-
 	
 	public InviteProcessor(ProcessorChain chain) {
 		super(chain);
@@ -55,14 +65,88 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		setName(name);
 	}
 	
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> doProcess()");
-	    }
+
+	private void processInviteRequest(SIPMutableMessage message) {
+		SipServletRequest request=(SipServletRequest) message.getContent();
+		MediaZone audioManager = null;
+
+		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
-		return message;
+		try {
+			audioManager=new MediaZone("audio", message.getSourceLocalAddress());
+			if(LOG.isTraceEnabled()){
+		          LOG.trace("MEDIAMANAGER "+audioManager.toPrint());
+		    }
+			
+		} catch (IOException e1) {
+			LOG.warn("Unavailable media port "+e1.getMessage());
+		}
+	
+		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
+		
+		message.setContent(request);	
 	}
 	
+	private void processInviteResponse(SIPMutableMessage message) {
+		
+		SipServletResponse response=(SipServletResponse) message.getContent();
+		
+		if(response.getStatus()==SipServletResponse.SC_OK) {
+			MediaZone audioManager=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			
+			MediaZone peerAudioManager = null;
+			try {
+				peerAudioManager = new MediaZone("audio", message.getSourceLocalAddress(), audioManager.getPort());
+				if(LOG.isTraceEnabled()){
+			          LOG.trace("MEDIAMANAGER "+peerAudioManager.toPrint());
+			    }
+				
+				peerAudioManager.attach(audioManager);
+			} catch (UnknownHostException | SocketException e) {
+				LOG.error(message.getSourceLocalAddress()+":"+audioManager.getPort(),e);
+			}
+			
+			
+			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
+			
+			message.setContent(response);	
+		}
+		
+	}
+	
+	private void processByeRequest(SIPMutableMessage message)  {
+		
+		
+	}
+	
+	private void processAckRequest(SIPMutableMessage message)  {
+		
+	}
+	
+	private void processInfoRequest(SIPMutableMessage message)  {
+		
+	}
+	
+	private void processCancelRequest(SIPMutableMessage message)  {	
+		
+		
+	}
+	
+	private void processByeResponse(SIPMutableMessage message)  {
+		
+	}
+	
+	private void processInfoResponse(SIPMutableMessage message)  {
+		
+		
+	}
+	
+	
+	private void processCancelResponse(SIPMutableMessage message)  {	
+		
+	}
+
+
 	public String getName() {
 		return name;
 	}
@@ -88,8 +172,47 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
-		doProcess(m.getContent());
+		SIPMutableMessage m  =(SIPMutableMessage) message;
+		
+		SipServletMessage sm = m.getContent();
+		
+		if(LOG.isTraceEnabled()){
+	          LOG.trace(">> doProcess()");
+	    }
+		
+		if(sm instanceof SipServletRequest) {
+			if(sm.getMethod().equals("INVITE"))
+				processInviteRequest(m);
+			else if(sm.getMethod().equals("BYE"))
+				processByeRequest(m);
+			else if(sm.getMethod().equals("ACK"))
+				processAckRequest(m);
+			else if(sm.getMethod().equals("CANCEL"))
+				processCancelRequest(m);
+			else if(sm.getMethod().equals("INFO"))
+				processInfoRequest(m);
+			else {
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Request METHOD "+sm.getMethod()+" not supported!");
+				}
+			}
+		}
+		if(sm instanceof SipServletResponse) {
+			if(sm.getMethod().equals("INVITE"))
+				processInviteResponse(m);
+			else if(sm.getMethod().equals("BYE"))
+				processByeResponse(m);
+			else if(sm.getMethod().equals("CANCEL"))
+				processCancelResponse(m);
+			else if(sm.getMethod().equals("INFO"))
+				processInfoResponse(m);
+			else {
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Response METHOD "+sm.getMethod()+" not supported!");
+				}
+			}
+		}
+		
 	}
 	
 	@Override

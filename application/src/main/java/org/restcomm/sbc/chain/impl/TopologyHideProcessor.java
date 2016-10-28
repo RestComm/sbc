@@ -19,14 +19,9 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-import java.net.NoRouteToHostException;
-
-import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-import javax.servlet.sip.SipURI;
-
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -34,21 +29,18 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.adapter.ProtocolAdapter;
-import org.restcomm.sbc.adapter.UnavailableProtocolAdapterException;
-import org.restcomm.sbc.managers.MessageUtil;
-import org.restcomm.chain.processor.Processor;
-/**
- * 
- * @author  Oscar Andres Carriles <ocarriles@eolos.la>
- * @date    25/4/2016 9:54:10
- * @class   SipMessageSanityCheckProcessor.java
- * @project Servlet2.5SBC
- *
- */
+
+
 /**
  * Specialized Message Processor responsible to hide topology
  * MZ Data. 
+ *
+ */
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    28 sept. 2016 17:58:44
+ * @class   TopologyHideProcessor.java
  *
  */
 public class TopologyHideProcessor extends DefaultProcessor
@@ -84,12 +76,13 @@ public class TopologyHideProcessor extends DefaultProcessor
 	}
 
 	private SipServletResponse processResponse(SipServletResponse message) {
-		String oContact=message.getRequest().getHeader(MessageUtil.B2BUA_ORIG_CONTACT_ADDR);
+		
+		//SipServletRequest oRequest=(SipServletRequest) message.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("o          Contact "+message.getHeader("Contact"));
-			LOG.trace("o Orig Req Contact "+oContact);
-			LOG.trace("o Message follows:\n"+message.toString());
+			//LOG.trace("o          Contact "+message.getHeader("Contact"));
+			//LOG.trace("o Orig Req Contact "+oRequest.getHeader("Contact"));
+		//	LOG.trace("o Message follows:\n"+message.toString());
 			
 		}
 		/*
@@ -98,14 +91,20 @@ public class TopologyHideProcessor extends DefaultProcessor
 		 */
 		
 		
-		message.setHeader("Contact", oContact);
+		//message.setHeader("Contact", oContact);
 		
 		return message;
 	}
 
 	private SipServletRequest processRequest(SipServletRequest mzRequest) {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> processRequest()");
+		
+		//SipServletRequest oRequest=(SipServletRequest) mzRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		
+	    if(LOG.isTraceEnabled()) {
+	  			LOG.trace("o          Contact "+mzRequest.getHeader("Contact"));
+	  		//	LOG.trace("o Orig Req Contact "+oRequest.getHeader("Contact"));
+	  		//	LOG.trace("o Message follows:\n"+message.toString());
+	  		
 	    }
 		return mzRequest;
 			

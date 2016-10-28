@@ -32,6 +32,7 @@
 				<permission>RestComm:Create,Delete,Read:Faxes</permission>
 				<permission>RestComm:*:Connectors</permission>
 				<permission>RestComm:*:Routes</permission>
+				<permission>RestComm:*:Statistics</permission>
 				<permission>RestComm:Read:Notifications</permission>
 				<permission>RestComm:*:EmailMessages</permission>
 				<permission>RestComm:*:Usage</permission>
@@ -99,6 +100,11 @@
                 <force-mz-expiration>800</force-mz-expiration>
                 <force-ua-expiration>30</force-ua-expiration>
         </registrar-throttle>
+        
+        <media-proxy>
+                <start-port>10000</start-port>
+                <end-port>20000</end-port>
+        </media-proxy>
        
         <smtp-notify>
                 <host></host>

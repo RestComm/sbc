@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author ocarriles@eolos.la (Oscar Carriles)
+-->
+
+<mapper namespace="org.restcomm.sbc.dao.StatisticsDao">
+  <insert id="addEntry" parameterType="map">
+    INSERT INTO restcomm_statistics (sid, mem_usage, cpu_usage, live_call_count, rejected_count, threat_count, call_rate, date_created )
+    VALUES(#{sid}, #{mem_usage}, #{cpu_usage}, #{live_call_count}, #{rejected_count}, #{threat_count}, #{call_rate}, #{date_created});
+  </insert>
+   
+  <select id="getEntry" parameterType="map" resultType="hashmap">
+    SELECT * FROM restcomm_statistics WHERE sid=#{sid};
+  </select>
+  
+  <select id="getEntries" parameterType="string" resultType="hashmap">
+    SELECT * FROM restcomm_statistics;
+  </select>
+  
+  <delete id="removeEntry" parameterType="map">
+    DELETE FROM restcomm_statistics WHERE sid=#{sid};
+  </delete>
+    
+  
+</mapper>

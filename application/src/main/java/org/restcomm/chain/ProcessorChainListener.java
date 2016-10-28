@@ -32,6 +32,7 @@ public interface ProcessorChainListener extends EventListener {
 	
 	void onProcessorChainBegin (ProcessorChain chain);
 	void onProcessorChainEnd   (ProcessorChain chain);
-	void onProcessorChainInterrupted(ProcessorChain chain);		
+	void onProcessorChainUnlinked(ProcessorChain chain);
+	void onProcessorChainAborted(ProcessorChain chain);
 
 }

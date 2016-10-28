@@ -32,7 +32,7 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
 import org.restcomm.sbc.dao.BlackListDao;
-import org.restcomm.sbc.notification.impl.Monitor;
+import org.restcomm.sbc.servlet.sip.SBCMonitorServlet;
 import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.BanListFilter;
 import org.restcomm.sbc.bo.Sid;
@@ -156,7 +156,7 @@ private final static String namespace = "org.restcomm.sbc.dao.BlackListDao.";
         final String ipAddress = readString(map.get("ip_address"));
         final Sid entrySid = readSid(map.get("account_sid"));
         final BanList.Reason reason = readBanListReason(map.get("reason"));
-        final Monitor.Action action = readMonitorAction(map.get("monitor_action"));
+        final SBCMonitorServlet.Action action = readMonitorAction(map.get("monitor_action"));
         return new BanList(dateCreated, dateExpires, ipAddress, entrySid, reason, action);
     }
    

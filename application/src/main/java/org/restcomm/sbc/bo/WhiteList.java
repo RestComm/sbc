@@ -1,7 +1,8 @@
 package org.restcomm.sbc.bo;
 
 import org.joda.time.DateTime;
-import org.restcomm.sbc.notification.impl.Monitor.Action;
+import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
+
 
 
 

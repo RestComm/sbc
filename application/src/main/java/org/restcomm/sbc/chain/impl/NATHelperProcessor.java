@@ -19,15 +19,12 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-
-
 import javax.servlet.sip.Address;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipURI;
-
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -35,117 +32,146 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.managers.LazyRule;
+import org.restcomm.sbc.managers.MessageUtil;
 
- /**
- * Specialized Message Processor responsible to hide topology
- * MZ Data. 
- *
- */
+
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    13 sept. 2016 18:10:42
- * @class   NATHelperProcessor.java
+ * @author ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date 13 sept. 2016 18:10:42
+ * @class NATHelperProcessor.java
  *
  */
-public class NATHelperProcessor extends DefaultProcessor
-	implements ProcessorCallBack {
-
+public class NATHelperProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
-	private String name;
-	private Address contactAddress;
+
+	private Address contactAddress=null;
 	
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
 	}
-	public NATHelperProcessor(String name,ProcessorChain callback) {
+
+	public NATHelperProcessor(String name, ProcessorChain callback) {
 		super(name, callback);
 	}
-	
-	
+
 	public String getName() {
 		return "NAT Helper Processor";
 	}
-
-
 
 	public int getId() {
 		return this.hashCode();
 	}
 
-
 	@Override
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
+
+	}
+
+	private void processResponse(SIPMutableMessage message) {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processResponse()");
+		}
+	}
+
+	private void processRequest(SIPMutableMessage message) {
 		
-	}
+		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
+		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processRequest()");
+			LOG.trace(">> message: \n" + dmzRequest.toString());
+		}
+		if(!dmzRequest.isInitial()) {
+			if(LOG.isTraceEnabled()){ 
+				LOG.trace("No initial request, NAT does not apply.");
+			} // Nothing
+			message.setContent(dmzRequest);
+			return;
+		}
 
-	private SipServletResponse processResponse(SipServletResponse message) {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> processResponse()");
-	    }
-	
-		return message;
-	}
-
-	private SipServletRequest processRequest(SipServletRequest dmzRequest) {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> processRequest()");
-	    }
+		if (message.getDirection()==Message.SOURCE_MZ) {
+			if(LOG.isTraceEnabled()){ 
+				LOG.trace("-----> MZ");
+			} // Nothing
+			message.setContent(dmzRequest);
+			return;
+		}
 		
 		try {
 			contactAddress = dmzRequest.getAddressHeader("Contact");
-			
+			if(LOG.isTraceEnabled()){ 
+				LOG.trace("Contact "+contactAddress.toString());
+			} 
 		} catch (ServletParseException e) {
 			LOG.error("Cannot get Contact Address!");
+		} catch (IllegalStateException e) {
+			LOG.error("",e);
+			message.setContent(dmzRequest);
+			return;
 			
 		}
-		/*
-		 * Replace Contact address from IP/Port the message
-		 * is coming from
-		 */
 		SipURI uri = (SipURI) contactAddress.getURI();
-		uri.setHost(dmzRequest.getRemoteAddr());
-		uri.setPort(dmzRequest.getRemotePort());
-		contactAddress.setURI(uri);
-		dmzRequest.setAddressHeader("Contact", contactAddress);
-		
-		return dmzRequest;
-			
-	}
 
+		
+		if(uri.getHost().equals(dmzRequest.getRemoteAddr())) {
+			if(LOG.isTraceEnabled()){ 
+				LOG.trace(">> ByPassing ...");
+			} // Nothing
+			message.setContent(dmzRequest);
+			return;
+		 
+		}
+	
+		/*
+		 * Replace Contact address from IP/Port the message is coming from
+		 */
+
+		try {
+			uri.setHost(message.getSourceLocalAddress());
+			uri.setPort(dmzRequest.getRemotePort());
+			
+		} catch (IllegalStateException e) {
+			LOG.error("",e);
+			message.setContent(dmzRequest);
+			return;
+			
+		}
+		dmzRequest.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(uri));
+		message.setContent(dmzRequest);
+		return;
+
+	}
 
 	@Override
 	public ProcessorCallBack getCallback() {
 		return this;
 	}
-	public SipServletMessage doProcess(SipServletMessage message) throws ProcessorParsingException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> process() "+getName());
-	    }
-		
-		if(message instanceof SipServletRequest) {		
-			message=processRequest((SipServletRequest) message);
-		}
-		if(message instanceof SipServletResponse) {		
-			message=processResponse((SipServletResponse) message);
-		}
-		
-		return message;
-	}
-	
-	
+
+
 	@Override
 	public String getVersion() {
 		return "1.0.0";
 	}
-	
+
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
-		m.setContent(doProcess(m.getContent()));
+		SIPMutableMessage m = (SIPMutableMessage) message;
+		SipServletMessage sm=m.getContent();
+		
+		
+		if( sm instanceof SipServletRequest) {
+			processRequest(m);
+		}
+		if (message instanceof SipServletResponse) {
+			processResponse(m);
+		}
+		
 	}
 
-	
 }

@@ -1,74 +1,93 @@
-/*******************************************************************************
- * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
- * by the @authors tag.
- *
- * This program is free software: you can redistribute it and/or modify
- * under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- *
- *******************************************************************************/
-package org.restcomm.sbc.notification.impl;
+package org.restcomm.sbc.servlet.sip;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletContext;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ReflectionException;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.sip.SipApplicationSession;
+import javax.servlet.sip.SipFactory;
+import javax.servlet.sip.SipServlet;
 import javax.swing.event.EventListenerList;
-import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.mobicents.servlet.sip.core.SipManager;
+import org.mobicents.servlet.sip.message.MobicentsSipApplicationSessionFacade;
 import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.Statistics;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.BlackListDao;
 import org.restcomm.sbc.dao.DaoManager;
+import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
+import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.ScriptDelegationService;
 import org.restcomm.sbc.notification.AlertListener;
 import org.restcomm.sbc.notification.NotificationListener;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
+import org.restcomm.sbc.notification.impl.SuspectActivityCache;
 
 
-
-/**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    4/6/2016 13:11:49
- * @class   Monitor.java
- *
- */
-public class Monitor implements Runnable {
-	@Context
-	protected ServletContext context;
+public class SBCMonitorServlet extends SipServlet {
 	
-	private static Monitor monitor;
+	private static SBCMonitorServlet monitor;
+
+	private static transient Logger LOG = Logger.getLogger(SBCMonitorServlet.class);
+	private static final long serialVersionUID = -9170263176960604645L;
+	private SipFactory sipFactory;
+	private SipManager sipManager;	
 	
-	private static transient Logger LOG = Logger.getLogger(Monitor.class);	
 	private EventListenerList listenerList = new EventListenerList();
 	
-	private int CACHE_MAX_ITEMS      = 1024;
-	private int CACHE_ITEM_TTL 		 = 60; 	// segs
+	private final int CACHE_MAX_ITEMS      	= 1024;
+	private final int CACHE_ITEM_TTL 		= 60; 	// segs
+	private final int LOOP_INTERVAL			= 60000;
+	
 	
 	private SuspectActivityCache<String, SuspectActivityElectable> cache;
 	private DaoManager daoManager;
+	private JMXManager jmxManager;
 	
-	private Monitor() {
-		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
-		daoManager = (DaoManager) context.getAttribute(DaoManager.class.getName());     
+	
+	@Override
+	public void init(ServletConfig servletConfig) throws ServletException {
+		super.init(servletConfig);
+		LOG.info("Monitor sip servlet has been started");
 		
+		if(LOG.isTraceEnabled()){
+	          LOG.trace(">> init()");
+	    }
+		
+		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
+		
+		
+		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
+		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
+		try {
+			jmxManager=JMXManager.getInstance();
+		} catch (MalformedObjectNameException | InstanceNotFoundException | IntrospectionException | ReflectionException
+				| IOException e) {
+			LOG.error("JMX Error", e);
+		}
+		
+		monitor=this;
+		execute();
 	}
 	
-	public static Monitor getInstance() {
-		if(monitor==null) {
-			monitor=new Monitor();
-		}
+	public static SBCMonitorServlet getMonitor() {
 		return monitor;
+		
 	}
 	
 	public void addNotificationListener(NotificationListener listener) {
@@ -177,22 +196,72 @@ public class Monitor implements Runnable {
 		}
 		
 	}
+	
+	private void writeStats() {
+		StatisticsDao statsDao = daoManager.getStatisticsDao();
+		
+		Statistics record=new Statistics(
+				
+				Sid.generate(Sid.Type.RANDOM),
+				jmxManager.getMemoryUsage(),
+				jmxManager.getCPULoadAverage(),
+				getLiveCallCount(),
+				getCallRatePerSecond(),
+				getCallRejectedCount(),
+				0,
+				DateTime.now()
+				);
+		statsDao.addRecord(record);
+		
+	}
+	public int getLiveCallCount() {	 
+	     return sipManager.getActiveSipApplicationSessions();        
+	}
+	
+	public double getCallRatePerSecond() {	 
+	     return sipManager.getNumberOfSipApplicationSessionCreationPerSecond();        
+	}
+	
+	public int getCallRejectedCount() {	 
+	     return sipManager.getRejectedSipApplicationSessions();        
+	}
+	
+	private void execute() {
+		
+		ScheduledExecutorService scheduledExecutorService =
+		        Executors.newScheduledThreadPool(5);
 
-	@Override
-	public void run() {
-		// Traverses SupectActivityCache in a regular basis
-		while(true) {
-			try {
-				applyBanningRules();
-				Thread.sleep(15000);
-			} catch (InterruptedException e) {
-				LOG.error("Thread interrupt",e);
+		ScheduledFuture scheduledFuture =
+		    scheduledExecutorService.scheduleWithFixedDelay(new Task() {
+		        public Object call() throws Exception {
+		        	if(LOG.isInfoEnabled()) {
+						LOG.info("Monitor Thread tick pass");
+					}
+		            return "Called!";
+		        }
+		    },
+		    60L,
+		    60L,
+		    TimeUnit.SECONDS);
+
+	}
+
+	
+	class Task implements Runnable {
+		
+		@Override
+		public void run() {
+			SipApplicationSession aSession = sipFactory.createApplicationSession();
+			sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
+			if(LOG.isInfoEnabled()) {
+				LOG.info("Monitor Thread tick pass");
 			}
+			applyBanningRules();
+			writeStats();
 			
 		}
 		
 	}
-	
 	public enum Action {
         APPLY("Apply"),
 		REMOVE("Remove"),
@@ -219,5 +288,6 @@ public class Monitor implements Runnable {
             return text;
         }
     };
+
 
 }

@@ -41,7 +41,8 @@ import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
 import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.NetworkManager;
-import org.restcomm.sbc.managers.rmi.JMXServer;
+
+
 
 import com.typesafe.config.ConfigFactory;
 
@@ -54,6 +55,7 @@ public final class Bootstrapper extends SipServlet {
     
     public Bootstrapper() {
         super();
+        Thread.setDefaultUncaughtExceptionHandler(new MyExceptionHandler());
     }
 
     @Override
@@ -74,6 +76,7 @@ public final class Bootstrapper extends SipServlet {
     @Override
     public void init(final ServletConfig config) throws ServletException {
         final ServletContext context = config.getServletContext();
+        
         final String path = context.getRealPath("WEB-INF/conf/sbc.xml");
         // Initialize the configuration interpolator.
         final ConfigurationStringLookup strings = new ConfigurationStringLookup();
@@ -121,11 +124,12 @@ public final class Bootstrapper extends SipServlet {
 		}
        
         Version.printVersion();
+       
         
         
     }
     
-    
+   
     private void bindConnectors(DaoManager storage) throws Exception {
     	JMXManager jmxManager=null;
     	boolean status;
@@ -152,12 +156,6 @@ public final class Bootstrapper extends SipServlet {
     	
     }
     
-    private void launchJMXServer() throws Exception {
-    	// fire up JMX
-	    final JMXServer jmxServer = new JMXServer();
-	    jmxServer.start(); 
-	    LOG.info("JMXServer started");
-    }
 
     private DaoManager storage(final Configuration configuration, final ClassLoader loader) throws ObjectInstantiationException {
         final String classpath = configuration.getString("dao-manager[@class]");
@@ -171,5 +169,15 @@ public final class Bootstrapper extends SipServlet {
 
     private String uri(final ServletConfig config) {
         return config.getServletContext().getContextPath();
+    }
+    
+    class MyExceptionHandler implements java.lang.Thread.UncaughtExceptionHandler {
+
+		@Override
+		public void uncaughtException(Thread t, Throwable e) {
+			LOG.error(t.getName(), e);
+			
+		}
+    	
     }
 }
