@@ -147,6 +147,18 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String getTargetProtocol() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSourceProtocol() {
+		// TODO Auto-generated method stub
+		return null;
+	}
    
 	
 }
