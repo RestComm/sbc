@@ -32,7 +32,7 @@ import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.SdpUtils;
 
@@ -64,7 +64,7 @@ public abstract class ProtocolAdapter {
 	public void adaptMedia(Message message) {
 				SIPMutableMessage m=(SIPMutableMessage) message;
 				SipServletMessage sm=m.getContent();
-				MediaManager audioManager;
+				MediaZone audioManager;
 				int audioPort;
 				
 				if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
@@ -72,14 +72,14 @@ public abstract class ProtocolAdapter {
 						
 						if(sm instanceof SipServletResponse) {
 							SipServletResponse smr=(SipServletResponse) sm;
-							audioManager=(MediaManager) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-							audioPort=audioManager.getMediaManagerPeer().getPort();
+							audioManager=(MediaZone) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+							audioPort=audioManager.getMediaZonePeer().getPort();
 							
 						}
 						else {
 							SipServletRequest smr=(SipServletRequest) sm;
 							SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
-							audioManager=(MediaManager) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+							audioManager=(MediaZone) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 							audioPort=audioManager.getPort();
 							
 						}
@@ -100,8 +100,8 @@ public abstract class ProtocolAdapter {
 							LOG.debug("TRA "+m.getTargetRemoteAddress());
 							
 							LOG.debug("Audio port " + audioManager.getPort());
-							if(audioManager.getMediaManagerPeer()!=null)
-								LOG.debug("Audio peer port " + audioManager.getMediaManagerPeer().getPort());
+							if(audioManager.getMediaZonePeer()!=null)
+								LOG.debug("Audio peer port " + audioManager.getMediaZonePeer().getPort());
 							LOG.debug("patched Content:\n" + sdpContent);
 						}
 						

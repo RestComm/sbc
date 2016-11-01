@@ -37,13 +37,13 @@ import org.restcomm.sbc.ConfigurationCache;
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    30 sept. 2016 19:46:58
- * @class   MediaManager.java
+ * @class   MediaZone.java
  *
  */
-public class MediaManager  {
+public class MediaZone  {
 	
 	private static final int BUFFER=256;
-	private static transient Logger LOG = Logger.getLogger(MediaManager.class);
+	private static transient Logger LOG = Logger.getLogger(MediaZone.class);
 	
 	private static final int startPort	=ConfigurationCache.getMediaStartPort();
 	private static final int endPort	=ConfigurationCache.getMediaEndPort();
@@ -57,21 +57,21 @@ public class MediaManager  {
 	
 	private boolean running;
 	
-	private MediaManager mediaManagerPeer;
+	private MediaZone mediaZonePeer;
 	private ExecutorService executorService;
 	
 	private DatagramSocket socket;
 	
 	private int port;
 	
-	public MediaManager(String name, String host) throws UnknownHostException {
+	public MediaZone(String name, String host) throws UnknownHostException {
 		this.host=host;
 		this.name=name;
 		socket=getAvailableSocket(host);	
 		
 	}
 	/** Constructor to attach to symetric port */
-	public MediaManager(String name, String host, int port) throws UnknownHostException, SocketException {
+	public MediaZone(String name, String host, int port) throws UnknownHostException, SocketException {
 		this.host=host;
 		this.name=name;
 		InetSocketAddress address = new InetSocketAddress(host, port);
@@ -113,18 +113,18 @@ public class MediaManager  {
 		String value;
 		
 				value="("+this.hashCode()+")"+name+" "+host+" mp:"+port;
-				if(mediaManagerPeer!=null)
-					value+="["+mediaManagerPeer.name+" "+mediaManagerPeer.host+" mp:"+mediaManagerPeer.port+"]";
+				if(mediaZonePeer!=null)
+					value+="["+mediaZonePeer.name+" "+mediaZonePeer.host+" mp:"+mediaZonePeer.port+"]";
 		return value;
 	}
 	
 	public void send(DatagramPacket dgram) throws IOException {
-		if(mediaManagerPeer.getRemotePort()==0) {
+		if(mediaZonePeer.getRemotePort()==0) {
 			// still no reception at the other part
 			return;
 		}
-		dgram.setAddress(mediaManagerPeer.getRemoteAddress());
-		dgram.setPort(mediaManagerPeer.getRemotePort());
+		dgram.setAddress(mediaZonePeer.getRemoteAddress());
+		dgram.setPort(mediaZonePeer.getRemotePort());
 		
 		if(logCounter<10){
 			if(LOG.isTraceEnabled()) {
@@ -133,7 +133,7 @@ public class MediaManager  {
 			}
 		}
 			
-		mediaManagerPeer.socket.send(dgram);
+		mediaZonePeer.socket.send(dgram);
 		
 	}
 	
@@ -160,9 +160,9 @@ public class MediaManager  {
 		
 	}
 	
-	public void attach(MediaManager mediaManager) {
-		this.mediaManagerPeer=mediaManager;
-		mediaManagerPeer.setMediaManagerPeer(this);
+	public void attach(MediaZone mediaZone) {
+		this.mediaZonePeer=mediaZone;
+		mediaZonePeer.setMediaZonePeer(this);
 		
 	}
 	
@@ -173,7 +173,7 @@ public class MediaManager  {
 				try {
 					send(receive());	
 				} catch (IOException e) {
-					LOG.error("("+MediaManager.this.hashCode()+")"+e.getMessage());
+					LOG.error("("+MediaZone.this.hashCode()+")"+e.getMessage());
 					break;
 				}		
 			}	
@@ -184,12 +184,12 @@ public class MediaManager  {
 		return name;
 	}
 
-	public MediaManager getMediaManagerPeer() {
-		return mediaManagerPeer;
+	public MediaZone getMediaZonePeer() {
+		return mediaZonePeer;
 	}
 
-	private void setMediaManagerPeer(MediaManager mediaManagerPeer) {
-		this.mediaManagerPeer = mediaManagerPeer;
+	private void setMediaZonePeer(MediaZone mediaZonePeer) {
+		this.mediaZonePeer = mediaZonePeer;
 	}
 	
 	private DatagramSocket getAvailableSocket(String host) throws UnknownHostException {
