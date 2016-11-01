@@ -68,10 +68,18 @@ public class MD5Digest {
         }
         return "";
     }
+	
+	public static String getHashResponse(String user, String password, String realm, String uri, String nonce) {
+		String ha1 = MD5Digest.getMD5Digest(user+":"+realm+":"+password);
+		String ha2 = MD5Digest.getMD5Digest("REGISTER:"+uri);
+		String ha3 = MD5Digest.getMD5Digest(ha1+":"+nonce+":"+ha2);
+		return ha3;
+		
+	}
 	public static void main(String argv[]){
-		String ha1 = MD5Digest.getMD5Digest("003:telecom:Ja10881137");
-		String ha2 = MD5Digest.getMD5Digest("REGISTER:sip:192.168.88.3");
-		String ha3 = MD5Digest.getMD5Digest(ha1+":3ccc1ef1:"+ha2);
+		String ha1 = MD5Digest.getMD5Digest("12:telecom:1234");
+		String ha2 = MD5Digest.getMD5Digest("REGISTER:sip:10.0.0.10");
+		String ha3 = MD5Digest.getMD5Digest(ha1+":0f3cd80f:"+ha2);
 		System.err.println("ha1=user:realm:password->"+ha1);
 		System.err.println("ha2=req_method:req_uri-->"+ha2);
 		System.err.println("ha3=ha1:nonce:ha2------->"+ha3);

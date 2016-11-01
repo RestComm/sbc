@@ -2,10 +2,9 @@ package org.restcomm.sbc.servlet.sip;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
+
 import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
@@ -52,9 +51,10 @@ public class SBCMonitorServlet extends SipServlet {
 	
 	private final int CACHE_MAX_ITEMS      	= 1024;
 	private final int CACHE_ITEM_TTL 		= 60; 	// segs
-	private final int LOOP_INTERVAL			= 60000;
+	private final long LOOP_INTERVAL			= 60L;
 	
 	
+	@SuppressWarnings("unused")
 	private SuspectActivityCache<String, SuspectActivityElectable> cache;
 	private DaoManager daoManager;
 	private JMXManager jmxManager;
@@ -231,17 +231,18 @@ public class SBCMonitorServlet extends SipServlet {
 		ScheduledExecutorService scheduledExecutorService =
 		        Executors.newScheduledThreadPool(5);
 
-		ScheduledFuture scheduledFuture =
+		
 		    scheduledExecutorService.scheduleWithFixedDelay(new Task() {
-		        public Object call() throws Exception {
+		        @SuppressWarnings("unused")
+				public Object call() throws Exception {
 		        	if(LOG.isInfoEnabled()) {
 						LOG.info("Monitor Thread tick pass");
 					}
 		            return "Called!";
 		        }
 		    },
-		    60L,
-		    60L,
+		    LOOP_INTERVAL,
+		    LOOP_INTERVAL,
 		    TimeUnit.SECONDS);
 
 	}

@@ -91,20 +91,37 @@ public class MediaZone  {
 	}
 
 	public void start() throws UnknownHostException {
-		LOG.info("Starting mediaProxy "+this.toPrint());
-		running=true;
+		if(isRunning()) {
+			throw new IllegalStateException("Media Proxy is just running!");
+		}
+		setRunning(true);
+		
+		LOG.info("Starting mediaZone "+this.toPrint());
 		executorService = Executors.newSingleThreadExecutor();
 		executorService.execute(new Proxy());
 		
+		if(!mediaZonePeer.isRunning())
+			mediaZonePeer.start();	
 		
 	}
 	
-	public void finalize() {
-		running=false;
+	public void finalize() {	
+		
+		setRunning(false);
+		
+		LOG.info("Finalizing mediaZone "+this.toPrint());
+		
+		if(mediaZonePeer.isRunning())
+			mediaZonePeer.finalize();
+		
+		if(socket!=null&&!socket.isClosed())
+        	socket.close();
+		
+		executorService.shutdown();
+		
+		
         
-        if(!socket.isClosed())
-              socket.close();
-        executorService.shutdown();
+		
              
     }
 	
@@ -112,9 +129,9 @@ public class MediaZone  {
 	public String toPrint() {
 		String value;
 		
-				value="("+this.hashCode()+")"+name+" "+host+" mp:"+port;
-				if(mediaZonePeer!=null)
-					value+="["+mediaZonePeer.name+" "+mediaZonePeer.host+" mp:"+mediaZonePeer.port+"]";
+		value="("+this.hashCode()+")"+name+" "+host+" mp:"+port;
+		if(mediaZonePeer!=null)
+				value+="["+mediaZonePeer.name+" "+mediaZonePeer.host+" mp:"+mediaZonePeer.port+"]";
 		return value;
 	}
 	
@@ -147,12 +164,11 @@ public class MediaZone  {
 		setRemoteAddress(dgram.getAddress());
 		setRemotePort(dgram.getPort());
 		
-		RTPParser parser = new RTPParser();
+		RtpPacket rtp=new RtpPacket(dgram.getData(),0,dgram.getLength());
 		
-		RTPPacket rtp=parser.decode(dgram.getData());
 		if(logCounter<10){
 			if(LOG.isTraceEnabled()) {
-				LOG.trace("<---["+rtp.toPrint()+"]("+this.hashCode()+") MM on "+host+":"+port+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
+				LOG.trace("<---["+rtp.toString()+"]("+this.hashCode()+") MM on "+host+":"+port+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
 			}
 			logCounter++;
 		}
@@ -169,11 +185,11 @@ public class MediaZone  {
 	class Proxy implements Runnable {
 		@Override
 		public void run() {
-			while(running)	{
+			while(isRunning())	{
 				try {
 					send(receive());	
 				} catch (IOException e) {
-					LOG.error("("+MediaZone.this.hashCode()+")"+e.getMessage());
+					LOG.error("("+MediaZone.this.hashCode()+") "+e.getMessage());
 					break;
 				}		
 			}	
@@ -223,6 +239,13 @@ public class MediaZone  {
 	}
 	public InetAddress getRemoteAddress() {
 		return remoteAddress;
+	}
+	public boolean isRunning() {
+		return running;
+	}
+	
+	private synchronized void setRunning(boolean running) {
+		this.running=running;
 	}
 	
 
