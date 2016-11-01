@@ -13,6 +13,8 @@ public class SIPMutableMessage implements  MutableMessage {
 	private String targetLocalAddress;
 	private String sourceRemoteAddress;
 	private String targetRemoteAddress;
+	private String sourceProtocol;
+	private String targetProtocol;
 	private int direction;
 	
 	
@@ -100,6 +102,22 @@ public class SIPMutableMessage implements  MutableMessage {
 
 	public void setTargetRemoteAddress(String targetRemoteAddress) {
 		this.targetRemoteAddress = targetRemoteAddress;
+	}
+
+	public String getSourceProtocol() {
+		return sourceProtocol;
+	}
+
+	public void setSourceProtocol(String sourceProtocol) {
+		this.sourceProtocol = sourceProtocol;
+	}
+
+	public String getTargetProtocol() {
+		return targetProtocol;
+	}
+
+	public void setTargetProtocol(String targetProtocol) {
+		this.targetProtocol = targetProtocol;
 	}
 
 	
