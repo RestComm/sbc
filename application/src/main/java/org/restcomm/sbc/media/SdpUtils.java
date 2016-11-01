@@ -1,4 +1,4 @@
-package org.restcomm.sbc.managers;
+package org.restcomm.sbc.media;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Vector;
@@ -38,20 +38,26 @@ public class SdpUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static String patch(final String contentType, final byte[] data, final String externalIp)
+    public static String patch(final String contentType, final byte[] data, final MediaMetadata metadata)
             throws UnknownHostException, SdpException {
         final String text = new String(data);
         String patchedSdp = null;
         if (contentType.equalsIgnoreCase("application/sdp")) {
             final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
             // Handle the connection at the session level.
-            fix(sdp.getConnection(), externalIp);
+            fix(sdp.getConnection(), metadata.getIp());
             // https://github.com/Mobicents/RestComm/issues/149
-            fix(sdp.getOrigin(), externalIp);
+            fix(sdp.getOrigin(), metadata.getIp());
             // Handle the connections at the media description level.
             final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
             for (final MediaDescription description : descriptions) {
-                fix(description.getConnection(), externalIp);
+            	final Media media=description.getMedia();
+                fix(description.getConnection(), metadata.getIp());
+                int port = metadata.getPort(media.getMediaType());
+    			if(port>0)
+    				media.setMediaPort(port);
+    			
+    			media.setProtocol(metadata.getProtocol());
             }
             // some fingreprint data arrives here
             // patch here in honour of topology-hiding processor
@@ -67,13 +73,21 @@ public class SdpUtils {
                 }
             }
             final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(sdpText);
-            fix(sdp.getConnection(), externalIp);
+            fix(sdp.getConnection(), metadata.getIp());
             // https://github.com/Mobicents/RestComm/issues/149
-            fix(sdp.getOrigin(), externalIp);
+            fix(sdp.getOrigin(), metadata.getIp());
             // Handle the connections at the media description level.
             final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
             for (final MediaDescription description : descriptions) {
-                fix(description.getConnection(), externalIp);
+            	final Media media=description.getMedia();
+                fix(description.getConnection(), metadata.getIp());
+                int port = metadata.getPort(media.getMediaType());
+        			if(port>0)
+        				media.setMediaPort(port);
+        			
+        			media.setProtocol(metadata.getProtocol());
+        		
+        		
             }
             patchedSdp = sdp.toString();
         }
@@ -206,6 +220,29 @@ public class SdpUtils {
             				media.setProtocol("RTP/SAVP");
             			else
             				media.setProtocol("RTP/AVP");
+            		}
+            		
+            	
+            }
+        
+        return sdp.toString();
+    }
+    /*
+     * Returns audio/video port
+     */
+    @SuppressWarnings("unchecked")
+    public static String fix(String mediaType, final int port, String text)
+            throws UnknownHostException, SdpException {
+        	
+            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
+         // Handle the connections at the media description level.
+            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
+            for (final MediaDescription description : descriptions) {
+            	final Media media=description.getMedia();
+            	
+            		if(media.getMediaType().equalsIgnoreCase(mediaType)) {
+            			media.setMediaPort(port);
+            			
             		}
             		
             	

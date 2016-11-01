@@ -32,9 +32,10 @@ import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.media.MediaManager;
+import org.restcomm.sbc.media.MediaMetadata;
+import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
-import org.restcomm.sbc.managers.SdpUtils;
+import org.restcomm.sbc.media.SdpUtils;
 
 
 
@@ -64,7 +65,7 @@ public abstract class ProtocolAdapter {
 	public void adaptMedia(Message message) {
 				SIPMutableMessage m=(SIPMutableMessage) message;
 				SipServletMessage sm=m.getContent();
-				MediaManager audioManager;
+				MediaZone audioZone;
 				int audioPort;
 				
 				if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
@@ -72,36 +73,46 @@ public abstract class ProtocolAdapter {
 						
 						if(sm instanceof SipServletResponse) {
 							SipServletResponse smr=(SipServletResponse) sm;
-							audioManager=(MediaManager) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-							audioPort=audioManager.getMediaManagerPeer().getPort();
+							audioZone=(MediaZone) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+							audioPort=audioZone.getMediaZonePeer().getPort();
 							
 						}
 						else {
 							SipServletRequest smr=(SipServletRequest) sm;
 							SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
-							audioManager=(MediaManager) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-							audioPort=audioManager.getPort();
+							audioZone=(MediaZone) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+							audioPort=audioZone.getPort();
 							
 						}
 						
 						String host=message.getTargetLocalAddress();
 						
+						MediaMetadata metadata=new MediaMetadata();
+						metadata=MediaMetadata.build(new String(sm.getRawContent()));
 						
-						String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(),
-								host);
-						sdpContent = SdpUtils.fix("audio", audioPort, sdpContent);
-						sdpContent = SdpUtils.endWithNewLine(sdpContent);
+						metadata.setPort("audio", audioPort);
+						metadata.setIp(host);
+						
+						String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(), metadata);
+						
+						//String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(),	host);
+						
+						//sdpContent = SdpUtils.fix("audio", audioPort, sdpContent);
+						//sdpContent = SdpUtils.endWithNewLine(sdpContent);
 						
 						if (LOG.isDebugEnabled()) {
-							LOG.debug("<=> "+m.getDirection());
+							LOG.debug(metadata);
+							LOG.debug("<=> "+(m.getDirection()==Message.SOURCE_DMZ?"from-DMZ":"from-MZ"));
 							LOG.debug("SLA "+m.getSourceLocalAddress());
 							LOG.debug("SRA "+m.getSourceRemoteAddress());
 							LOG.debug("TLA "+m.getTargetLocalAddress());
 							LOG.debug("TRA "+m.getTargetRemoteAddress());
+							LOG.debug("SPR "+m.getSourceProtocol());
+							LOG.debug("TPR "+m.getTargetProtocol());
 							
-							LOG.debug("Audio port " + audioManager.getPort());
-							if(audioManager.getMediaManagerPeer()!=null)
-								LOG.debug("Audio peer port " + audioManager.getMediaManagerPeer().getPort());
+							LOG.debug("Audio port " + audioZone.getPort());
+							if(audioZone.getMediaZonePeer()!=null)
+								LOG.debug("Audio peer port " + audioZone.getMediaZonePeer().getPort());
 							LOG.debug("patched Content:\n" + sdpContent);
 						}
 						

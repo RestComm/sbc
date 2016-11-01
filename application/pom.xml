@@ -191,22 +191,80 @@
 				<groupId>com.typesafe.akka</groupId>
 				<artifactId>akka-slf4j_2.10</artifactId>
 			</dependency>
+			
+			<dependency>
+			    <groupId>org.bouncycastle</groupId>
+			    <artifactId>bcprov-jdk15on</artifactId>
+			</dependency>
+			
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-
+      			<groupId>org.apache.maven.plugins</groupId>
+      			<artifactId>maven-compiler-plugin</artifactId>
+    		</plugin>
+			<plugin>
   				<version>2.6</version>
-
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-		</plugins>
-	</build>
-
+			
+			 <!-- Plugin to execute command  "npm install" and "npm run build" inside /angular directory -->
+		    <plugin>
+		      <groupId>com.github.eirslett</groupId>
+		      <artifactId>frontend-maven-plugin</artifactId>
+		      <version>1.0</version>
+		      <configuration>
+		        <workingDirectory>src/main/webapp/angular</workingDirectory>
+		        <installDirectory>temp</installDirectory>
+		      </configuration>
+		      <executions>
+		
+		        <!-- It will execute command "npm build" inside "/angular" directory to clean and create "/dist" directory-->
+		        <execution>
+		          <id>npm build</id>
+		          <goals>
+		            <goal>npm</goal>
+		          </goals>
+		          <configuration>
+		            <arguments>run build</arguments>
+		          </configuration>
+		        </execution>
+		      </executions>
+		    </plugin>
+		
+		    <!-- Plugin to copy the content of /angular/dist/ directory to output directory (ie/ /target/transactionManager-1.0/) -->
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-resources-plugin</artifactId>
+		      <version>2.4.2</version>
+		      <executions>
+		        <execution>
+		          <id>default-copy-resources</id>
+		          <phase>process-resources</phase>
+		          <goals>
+		            <goal>copy-resources</goal>
+		          </goals>
+		          <configuration>
+		            <overwrite>true</overwrite>
+		            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
+		            <resources>
+		              <resource>
+		                <directory>${project.basedir}/angular/dist</directory>
+		              </resource>
+		            </resources>
+		          </configuration>
+		        </execution>
+		      </executions>
+		    </plugin>
+				</plugins>
+			</build>
+	
+ 
 	<profiles>
 		<profile>
 			<id>deploy-jboss</id>

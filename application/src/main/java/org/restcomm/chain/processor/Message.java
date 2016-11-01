@@ -66,6 +66,18 @@ public interface Message {
 	 */
 	String getTargetRemoteAddress();
 	
+	/**
+	 * Get the target Protocol
+	 * @return String
+	 */
+	String getTargetProtocol();
+	
+	/**
+	 * Get the source Protocol
+	 * @return String
+	 */
+	String getSourceProtocol();
+	
 	
 	Object getContent() ;
 	

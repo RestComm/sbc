@@ -51,4 +51,53 @@ public class StringBufferMessage implements MutableMessage {
 		return aborted;
 	}
 
+
+	@Override
+	public int getDirection() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public String getSourceLocalAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getSourceRemoteAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getTargetLocalAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getTargetRemoteAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getTargetProtocol() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getSourceProtocol() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
