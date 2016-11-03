@@ -6,6 +6,8 @@
 Connectors represents SIP services. Connectors are bound/unbound all over tagged Network Points.
 
 .Connectors example, one NetworkPoint, multiple Connectors
+
+
 [ditaa,connectors,png]
 --
 

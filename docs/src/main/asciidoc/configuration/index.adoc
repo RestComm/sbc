@@ -1,0 +1,22 @@
+= Restcomm SBC Configuration
+
+If you don't use the hosted version of Restcomm, then you will need to install Restcomm in a local environment. The various guides below will guide you on how to do that and install, configure and start Restcomm to fit your local environment
+
+
+== Binary Installation and Start
+
+* <<SBC - Installing from GitHub.adoc#restcomm-github-install,Installing SBC from GitHub>>
+* <<Running SBC Binary on a Linux Server.adoc#restcomm-linux,Running SBC Binary on a Linux Server>>
+* <<Starting SBC.adoc#start-sbc,Starting SBC>>
+
+== Database Configuration
+
+* <<How to get started with Restcomm-SBC and Mysql.adoc#restcomm-sbc-mysql,How to get started with Restcomm-SBC and Mysql>>
+* <<SBC - How to Reset Admin Password.adoc#admin-pwd,How to Reset Admin Password>>
+
+== Advanced Configuration Resources
+
+
+== Contributor Resources
+
+* <<How to build Restcomm-SBC from source.adoc#build-from-source,How to build Restcomm-SBC from source>>
