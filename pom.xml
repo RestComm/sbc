@@ -405,7 +405,7 @@
 
 	<modules>
 		<module>application</module>
-		<module>testsuite</module>
+		<!--module>testsuite</module-->
 	</modules>
 
 	<build>

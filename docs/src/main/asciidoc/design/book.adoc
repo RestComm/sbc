@@ -20,54 +20,54 @@ Organize your book chapter by chapter
 
 :leveloffset: 1
 
-include::preface.adoc[]
+include::design/preface.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::glossary.adoc[]
+include::design/glossary.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-01.adoc[]
+include::design/chapter-01.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-02.adoc[]
+include::design/chapter-02.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-03.adoc[]
+include::design/chapter-03.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-04.adoc[]
+include::design/chapter-04.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-05.adoc[]
+include::design/chapter-05.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::chapter-06.adoc[]
+include::design/chapter-06.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::colophon.adoc[]
+include::design/colophon.adoc[]
 
 :leveloffset: 0
