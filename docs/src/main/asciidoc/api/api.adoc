@@ -1,0 +1,88 @@
+= SBC, REST API
+Oscar Andrés Carriles <ocarriles@eolos.la>
+:doctype: book
+:encoding: utf-8
+:lang: en
+:toc: left
+:toclevels: 2
+:numbered: yes
+
+
+
+:leveloffset: 1
+
+include::design/preface.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/glossary.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-01.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-02.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-03.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-04.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-05.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/chapter-06.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::design/colophon.adoc[]
+
+:leveloffset: 0
+
+= Restcomm SBC Rest API
+
+
+The Restcomm SBC REST API allows you to query meta-data about your account, phone numbers, calls, text messages, and recordings. You can also do some communications control like initiate outbound calls and send text messages.
+
+== Base URL
+
+All URLs referenced in the documentation have the following base:
+
+https://cloud.eolos.la/2012-04-24
+
+The Restcomm SBC REST API is served over HTTPS. To ensure data privacy, unencrypted HTTP is not supported.
+
+Click on a link to read the API documentation for accessing or modifying each resource:
+
+* <<account-api.adoc#account,Restcomm SBC API – Account>>
+* <<calls-api.adoc#calls,Restcomm SBC API – Calls>>
+* <<monitoring-service.adoc#monitoring, Restcomm SBC API - Supervisor/Monitoring Service>>
+* <<locations-api.adoc#locationapi, Restcomm SBC API - Location>>
+* <<banlists-api.adoc#banlistsapi, Restcomm SBC API - Ban List>>
+* <<connectors-api.adoc#connectorsapi, Restcomm SBC API - Connector>>
+* <<net-points-api.adoc#netpointsapi, Restcomm SBC API - NetworkPoint>>
+* <<routes-api.adoc#routesapi, Restcomm SBC API - Route>>
