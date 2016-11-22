@@ -4,7 +4,7 @@ package org.restcomm.chain.processor.impl;
 import javax.servlet.sip.SipServletMessage;
 
 import org.restcomm.chain.processor.impl.MutableMessage;
-
+import org.restcomm.chain.processor.Message;
 
 public class SIPMutableMessage implements  MutableMessage {
 	
@@ -13,9 +13,12 @@ public class SIPMutableMessage implements  MutableMessage {
 	private String targetLocalAddress;
 	private String sourceRemoteAddress;
 	private String targetRemoteAddress;
-	private String sourceProtocol;
-	private String targetProtocol;
+	private String sourceTransport;
+	private String targetTransport;
+	
 	private int direction;
+	private int target;
+	private Object metadata;
 	
 	
 	private boolean linked=true;
@@ -104,21 +107,51 @@ public class SIPMutableMessage implements  MutableMessage {
 		this.targetRemoteAddress = targetRemoteAddress;
 	}
 
-	public String getSourceProtocol() {
-		return sourceProtocol;
+	@Override
+	public Object getMetadata() {
+		return metadata;
 	}
-
-	public void setSourceProtocol(String sourceProtocol) {
-		this.sourceProtocol = sourceProtocol;
-	}
-
-	public String getTargetProtocol() {
-		return targetProtocol;
-	}
-
-	public void setTargetProtocol(String targetProtocol) {
-		this.targetProtocol = targetProtocol;
-	}
-
 	
+	
+	public void setMetadata(Object metadata) {
+		this.metadata=metadata;
+	}
+
+	public int getTarget() {
+		return target;
+	}
+
+	public void setTarget(int target) {
+		this.target = target;
+	}
+	
+	public String toString() {
+		return
+				this.getClass().getSimpleName()+"\n{"+
+				" "+(direction==Message.SOURCE_DMZ?" source=DMZ":" source=MZ")+
+				" target="+Message.TARGET[target]+"\n"+
+				" source transport="+sourceTransport+
+				" target transport="+targetTransport+"\n"+
+				" source local address="+sourceLocalAddress+
+				" target local address="+targetLocalAddress+"\n"+
+				" source remote address="+sourceRemoteAddress+
+				" target remote address="+targetRemoteAddress+"\n}";							
+	}
+
+	public String getSourceTransport() {
+		return sourceTransport;
+	}
+
+	public void setSourceTransport(String sourceTransport) {
+		this.sourceTransport = sourceTransport;
+	}
+
+	public String getTargetTransport() {
+		return targetTransport;
+	}
+
+	public void setTargetTransport(String targetTransport) {
+		this.targetTransport = targetTransport;
+	}
+
 }

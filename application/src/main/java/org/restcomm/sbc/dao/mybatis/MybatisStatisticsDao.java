@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
@@ -47,8 +46,7 @@ import org.restcomm.sbc.bo.Statistics;
 public final class MybatisStatisticsDao implements StatisticsDao {  
 private final static String namespace = "org.restcomm.sbc.dao.StatisticsDao.";
     private final SqlSessionFactory sessions;
-    private static transient Logger LOG = Logger.getLogger(MybatisStatisticsDao.class);
-	
+   
     public MybatisStatisticsDao(final SqlSessionFactory sessions) {
         super();
         this.sessions = sessions;

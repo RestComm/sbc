@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
@@ -45,8 +44,7 @@ import org.restcomm.sbc.bo.Sid;
 public final class MybatisRoutesDao implements RoutesDao {  
 private final static String namespace = "org.restcomm.sbc.dao.RoutesDao.";
     private final SqlSessionFactory sessions;
-    private static transient Logger LOG = Logger.getLogger(MybatisRoutesDao.class);
-	
+   
     public MybatisRoutesDao(final SqlSessionFactory sessions) {
         super();
         this.sessions = sessions;

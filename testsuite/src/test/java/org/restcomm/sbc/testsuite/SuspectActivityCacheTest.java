@@ -25,7 +25,6 @@ import org.restcomm.sbc.notification.SuspectActivityElectable;
 import org.restcomm.sbc.notification.impl.SuspectActivity;
 import org.restcomm.sbc.notification.impl.SuspectActivityCache;
 
-import static org.junit.Assert.*; 
  
 /**
  * @author Crunchify.com
@@ -34,17 +33,7 @@ import static org.junit.Assert.*;
 public class SuspectActivityCacheTest {
 	private static transient Logger LOG = Logger.getLogger(SuspectActivityCacheTest.class);
 	
-    public static void main(String[] args) throws InterruptedException {
- 
-        SuspectActivityCacheTest suspectActivityCache = new SuspectActivityCacheTest();
- 
-        LOG.info("\n\n==========Test1: suspectActivityTestAddRemoveObjects ==========");
-        suspectActivityCache.suspectActivityShouldAddRemoveObjects();
-        LOG.info("\n\n==========Test2: suspectActivityTestExpiredCacheObjects ==========");
-        suspectActivityCache.suspectActivityShouldHaveExpiredCacheObjects();
-        LOG.info("\n\n==========Test3: suspectActivityTestObjectsCleanupTime ==========");
-        suspectActivityCache.suspectActivityShouldCleanupObjects();
-    }
+    
     @Test
     public void suspectActivityShouldAddRemoveObjects() {
  

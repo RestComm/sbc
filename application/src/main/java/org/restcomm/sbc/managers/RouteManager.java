@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.sip.Address;
+import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipURI;
-
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Connector;
@@ -52,7 +52,6 @@ public class RouteManager {
 	
 	private static RouteManager routeManager;
 	private HashMap<String, Connector> dmzTable =null;
-	private HashMap<String, Connector> mzTable  =null;
 	
 	private static transient Logger LOG = Logger.getLogger(RouteManager.class);
 	
@@ -70,7 +69,6 @@ public class RouteManager {
 	
 	private void updateRoutingTable() {
 		dmzTable =new HashMap<String, Connector>();
-		mzTable  =new HashMap<String, Connector>();
 		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);		
         RoutesDao rdao = daos.getRoutesDao();
         ConnectorsDao cdao = daos.getConnectorsDao();
@@ -81,22 +79,27 @@ public class RouteManager {
         	Connector target=cdao.getConnector(dmzRoute.getTargetConnector());	
         	
         	dmzTable.put(NetworkManager.getIpAddress(source.getPoint())+":"+source.getTransport()+":"+source.getPort(), target);
-        	 mzTable.put(NetworkManager.getIpAddress(target.getPoint())+":"+target.getTransport()+":"+target.getPort(), source);
         	
         	if(LOG.isInfoEnabled()) {
         		LOG.info("DMZ Route add "+source.toPrint()+" => "+target.toPrint());
-        		LOG.info(" MZ Route add "+target.toPrint()+" => "+source.toPrint());
         		
         	}
         }
    
 	}
 	
-	public Address getRegistrationContactAddress(SipServletRequest request) throws NoRouteToHostException {
+	public Address getRegistrationContactAddress(SipServletRequest request) throws NoRouteToHostException, ServletParseException {
 		
-		SipURI uri=(SipURI) request.getFrom().getURI();
+		SipURI uri =(SipURI) request.getFrom().getURI();
+		
+		
 		SipFactory sipFactory = ConfigurationCache.getSipFactory();
 		Connector connector=null;
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Building Route to MZ for: "+uri.getHost()+":"+uri.getPort()+";transport="+uri.getTransportParam()+"|"+request.getTransport()+"|"+request.getInitialTransport());
+		}
+		
 		connector = getRouteToMZ(uri.getHost(), uri.getPort(), uri.getTransportParam());
 		
 		SipURI contactUri = sipFactory.createSipURI(uri.getUser(), NetworkManager.getIpAddress(connector.getPoint()));
@@ -165,6 +168,8 @@ public class RouteManager {
 		return connector;
 	}
 	
+	/*
+	
 	public Connector getRouteToDMZ(SipServletMessage sourceMessage) throws NoRouteToHostException {
 		String sourceHost=sourceMessage.getLocalAddr();
 		String sourceTransport=sourceMessage.getTransport();
@@ -188,7 +193,7 @@ public class RouteManager {
 		}
 		return connector;
 	}
-	
+	*/
 	
 	/*
 	public String getTargetTransport(SipServletMessage sourceMessage) throws NoRouteToHostException, LocationNotFoundException {

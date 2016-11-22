@@ -39,10 +39,9 @@ import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
-import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.NetworkManager;
-
-
+import org.restcomm.sbc.managers.jmx.JMXProvider;
+import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
 
 import com.typesafe.config.ConfigFactory;
 
@@ -131,9 +130,10 @@ public final class Bootstrapper extends SipServlet {
     
    
     private void bindConnectors(DaoManager storage) throws Exception {
-    	JMXManager jmxManager=null;
+    	
+    	JMXProvider jmxManager=null;
     	boolean status;
-		jmxManager=JMXManager.getInstance();
+    	jmxManager = JMXProviderFactory.getJMXProvider();
 		
     	ConnectorsDao dao=storage.getConnectorsDao();
     	for(Connector connector:dao.getConnectors()) {

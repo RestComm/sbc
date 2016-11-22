@@ -1,13 +1,37 @@
-package org.restcomm.sbc.managers;
+/*******************************************************************************
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * by the @authors tag.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
+package org.restcomm.sbc.managers.jmx.tomcat;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
@@ -17,56 +41,79 @@ import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-
-
-
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
-
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
+import org.restcomm.sbc.managers.NetworkManager;
+import org.restcomm.sbc.managers.jmx.JMXProvider;
 
 
-@SuppressWarnings("restriction")
-public class JMXManager implements
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    22 nov. 2016 3:08:21
+ * @class   TomcatJMXManager.java
+ *
+ */
+public class Provider implements JMXProvider,
  NotificationListener, SipConnectorListener {
-	private static transient Logger LOG = Logger.getLogger(JMXManager.class);
+	private static transient Logger LOG = Logger.getLogger(Provider.class);
 	
 	private JMXConnector jmxc;
 	private MBeanServerConnection mbsc;
 	private OperatingSystemMXBean osMBean;
 	private ObjectName objectName;
 
-	private static JMXManager jmxManager;
 	private ArrayList<Connector> connectors;
 	
-	private JMXManager() throws IOException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException {
-		System.setProperty("com.sun.management.jmxremote", "");
-		System.setProperty("com.sun.management.jmxremote.port", "9999");
-		System.setProperty("com.sun.management.jmxremote.ssl", "false");
-		System.setProperty("com.sun.management.jmxremote.authenticate", "false");
+	
+	public Provider() throws IOException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException {
+		
+		String urlString			="service:jmx:rmi://localhost:9999/jndi/rmi://localhost:9999/jmxrmi";
+		String objectNamePointer	="Sip-Servlets:type=Service";
+		
+		
 		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("\nCreate an RMI connector client and " +
-				"connect it to the RMI connector server");
+			LOG.debug("\nCreate an RMI connector client on: " +urlString);
+				
 		}
-		StringBuffer urlString = new StringBuffer();
-		urlString.append("service:jmx:rmi://localhost:");
-		urlString.append(9999);
-		urlString.append("/jndi/rmi://localhost:");
-		urlString.append(9999);
-		urlString.append("/jmxrmi");
-		JMXServiceURL url = new JMXServiceURL(urlString.toString());
-		jmxc = JMXConnectorFactory.connect(url, null);
-
-
-		objectName = new ObjectName("Sip-Servlets:type=Service");
 		
+		JMXServiceURL url = new JMXServiceURL(urlString);
+		jmxc = JMXConnectorFactory.connect(url, null);
 		// Get the Platform MBean Server
-		mbsc = jmxc.getMBeanServerConnection();
-		osMBean = ManagementFactory.newPlatformMXBeanProxy(
-				mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+				mbsc = jmxc.getMBeanServerConnection();
+				
+				osMBean = ManagementFactory.newPlatformMXBeanProxy(
+						mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+				
+				/*
+				
+				Set<ObjectName> mbeans = mbsc.queryNames(null, null);
+				
+				for (Object mbean : mbeans)	{
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Ontree: "+(ObjectName)mbean);
+						readAttributes(mbsc, (ObjectName)mbean);
+						readOperations(mbsc, (ObjectName)mbean);
+					}
+				}
+				*/
+
+				objectName = new ObjectName(objectNamePointer);
+		
+				Set<ObjectName> mbeans = mbsc.queryNames(objectName, null);
+		
+			for (Object mbean : mbeans)	{
+				
+				
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Ontree: "+(ObjectName)mbean);
+					readAttributes(mbsc, (ObjectName)mbean);
+					readOperations(mbsc, (ObjectName)mbean);
+				}
+			}
 		
 		
 		mbsc.addNotificationListener(objectName, this, null, null);
@@ -74,11 +121,32 @@ public class JMXManager implements
 
 	}
 	
-	public static JMXManager getInstance() throws MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
-		if(jmxManager==null){
-			jmxManager=new JMXManager();
-		}
-		return jmxManager;
+	
+	
+	private void readAttributes(final MBeanServerConnection mBeanServer, final ObjectName http)
+	        throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException
+	{
+	    MBeanInfo info = mBeanServer.getMBeanInfo(http);
+	    MBeanAttributeInfo[] attrInfo = info.getAttributes();
+
+	    LOG.debug("Attributes for object: " + http +":\n");
+	    for (MBeanAttributeInfo attr : attrInfo)
+	    {
+	        LOG.debug(" -- Attribute " + attr.getName() );
+	    }
+	}
+	
+	private void readOperations(final MBeanServerConnection mBeanServer, final ObjectName http)
+	        throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException
+	{
+	    MBeanInfo info = mBeanServer.getMBeanInfo(http);
+	    MBeanOperationInfo[] operInfo = info.getOperations();
+
+	    LOG.debug("Operations for object: " + http +":\n");
+	    for (MBeanOperationInfo oper : operInfo)
+	    {
+	        LOG.debug(" -- Operation --- " + oper.getName() );
+	    }
 	}
 	
 	public boolean removeSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
@@ -160,7 +228,7 @@ public class JMXManager implements
 	public static void main(String argv[]) {
 		
 		try {
-			JMXManager m=JMXManager.getInstance();
+			Provider m=new Provider();
 			System.out.println("CPU "+m.getCPULoadAverage());
 			System.out.println("MEM "+m.getMemoryUsage());
 			

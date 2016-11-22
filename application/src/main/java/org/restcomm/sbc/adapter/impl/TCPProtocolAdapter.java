@@ -55,7 +55,7 @@ public class TCPProtocolAdapter extends ProtocolAdapter {
 	}
 	
 
-	public void adapt(Message message) throws NoRouteToHostException {
+	public Message adapt(Message message) throws NoRouteToHostException {
 		SIPMutableMessage m=(SIPMutableMessage) message;
 		SipServletMessage sm=m.getContent();
 		
@@ -82,6 +82,7 @@ public class TCPProtocolAdapter extends ProtocolAdapter {
 			((SipServletRequest) sm).setRequestURI(sipUri);
 		
 		m.setContent(sm);
+		return m;
 	
 
 	}

@@ -162,8 +162,8 @@ public class SBCCallServlet extends SipServlet {
 		upChain.process(new SIPMutableMessage(request));
 		
 		try {
-		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-		mediaZone.finalize();
+			MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			mediaZone.finalize();
 		
 		} catch(RuntimeException e) {
 			LOG.error(e);
