@@ -1,27 +1,19 @@
 package org.restcomm.sbc.servlet.sip;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
 import java.util.concurrent.TimeUnit;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ReflectionException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.sip.SipApplicationSession;
+//import javax.servlet.sip.SipApplicationSession;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServlet;
 import javax.swing.event.EventListenerList;
-
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import org.mobicents.servlet.sip.core.SipManager;
-import org.mobicents.servlet.sip.message.MobicentsSipApplicationSessionFacade;
+//import org.mobicents.servlet.sip.core.SipManager;
+//import org.mobicents.servlet.sip.message.MobicentsSipApplicationSessionFacade;
 import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.bo.Statistics;
@@ -30,8 +22,9 @@ import org.restcomm.sbc.dao.BlackListDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
-import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.ScriptDelegationService;
+import org.restcomm.sbc.managers.jmx.JMXProvider;
+import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
 import org.restcomm.sbc.notification.AlertListener;
 import org.restcomm.sbc.notification.NotificationListener;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
@@ -45,19 +38,19 @@ public class SBCMonitorServlet extends SipServlet {
 	private static transient Logger LOG = Logger.getLogger(SBCMonitorServlet.class);
 	private static final long serialVersionUID = -9170263176960604645L;
 	private SipFactory sipFactory;
-	private SipManager sipManager;	
+	//private SipManager sipManager;	
 	
 	private EventListenerList listenerList = new EventListenerList();
 	
 	private final int CACHE_MAX_ITEMS      	= 1024;
 	private final int CACHE_ITEM_TTL 		= 60; 	// segs
-	private final long LOOP_INTERVAL			= 60L;
+	private final long LOOP_INTERVAL		= 3600L;
 	
 	
 	@SuppressWarnings("unused")
 	private SuspectActivityCache<String, SuspectActivityElectable> cache;
 	private DaoManager daoManager;
-	private JMXManager jmxManager;
+	private JMXProvider jmxManager;
 	
 	
 	@Override
@@ -75,9 +68,8 @@ public class SBCMonitorServlet extends SipServlet {
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		try {
-			jmxManager=JMXManager.getInstance();
-		} catch (MalformedObjectNameException | InstanceNotFoundException | IntrospectionException | ReflectionException
-				| IOException e) {
+			jmxManager=JMXProviderFactory.getJMXProvider();
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}
 		
@@ -215,15 +207,18 @@ public class SBCMonitorServlet extends SipServlet {
 		
 	}
 	public int getLiveCallCount() {	 
-	     return sipManager.getActiveSipApplicationSessions();        
+		return 0;
+	    // return sipManager.getActiveSipApplicationSessions();        
 	}
 	
-	public double getCallRatePerSecond() {	 
-	     return sipManager.getNumberOfSipApplicationSessionCreationPerSecond();        
+	public double getCallRatePerSecond() {
+		 return 0.0;
+	     //return sipManager.getNumberOfSipApplicationSessionCreationPerSecond();        
 	}
 	
-	public int getCallRejectedCount() {	 
-	     return sipManager.getRejectedSipApplicationSessions();        
+	public int getCallRejectedCount() {
+		return 0;
+	    // return sipManager.getRejectedSipApplicationSessions();        
 	}
 	
 	private void execute() {
@@ -252,8 +247,8 @@ public class SBCMonitorServlet extends SipServlet {
 		
 		@Override
 		public void run() {
-			SipApplicationSession aSession = sipFactory.createApplicationSession();
-			sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
+			//SipApplicationSession aSession = sipFactory.createApplicationSession();
+			//sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
 			if(LOG.isInfoEnabled()) {
 				LOG.info("Monitor Thread tick pass");
 			}
