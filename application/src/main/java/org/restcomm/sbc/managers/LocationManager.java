@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationNotFoundException;

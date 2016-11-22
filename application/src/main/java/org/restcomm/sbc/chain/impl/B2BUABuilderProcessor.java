@@ -124,7 +124,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		
 		
 		if (message.getDirection()==Message.SOURCE_DMZ) {
-			
+			message.setTarget(Message.TARGET_MZ);
 			// Must create Leg to MZ based on router info
 			try {
 				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
@@ -143,7 +143,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			}
 			message.setTargetLocalAddress(connector.getHost());
 			message.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
-			message.setTargetProtocol(connector.getTransport().toString());
+			message.setTargetTransport(connector.getTransport().toString());
 			
 			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
 			// ConfigurationCache.getTargetHost());
@@ -151,7 +151,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			route="sip:" + ConfigurationCache.getTargetHost();
 
 		} else {
-			
+			message.setTarget(Message.TARGET_DMZ);
 			// Comes from MZ Must create LEG to DMZ based on Location info
 			Location location = null;
 			
@@ -163,7 +163,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				
 				message.setTargetLocalAddress(ConfigurationCache.getDomain());
 				message.setTargetRemoteAddress(location.getHost());
-				message.setTargetProtocol(location.getTransport().toUpperCase());
+				message.setTargetTransport(location.getTransport().toUpperCase());
 
 			} catch (LocationNotFoundException e) {
 				SipServletResponse response =
@@ -316,6 +316,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
 		}
+		if(message.getDirection()==Message.SOURCE_DMZ) {
+			message.setTarget(Message.TARGET_MZ);
+		}
+		else {
+			message.setTarget(Message.TARGET_DMZ);
+		}
 		SipServletResponse dmzResponse=(SipServletResponse) message.getContent();
 		
 		//SipURI toURI = (SipURI) dmzResponse.getTo().getURI();
@@ -352,7 +358,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		if(linked!=null) {
 			message.setTargetLocalAddress(linked.getLocalAddr());
 			message.setTargetRemoteAddress(linked.getRemoteAddr());
-			message.setTargetProtocol(linked.getTransport().toUpperCase());
+			message.setTargetTransport(linked.getTransport().toUpperCase());
 			
 			mzResponse = linked.createResponse(statusResponse, reasonResponse); 
 			
@@ -363,7 +369,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		else {
 			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
 			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
-			message.setTargetProtocol(dmzResponse.getTransport().toUpperCase());
+			message.setTargetTransport(dmzResponse.getTransport().toUpperCase());
 			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
 		}
 		

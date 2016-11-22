@@ -27,8 +27,8 @@ import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.RoutesDao;
-import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.NetworkManager;
+import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.bo.Account;
@@ -80,7 +80,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
     protected AccountsDao accountsDao;
     protected String instanceId;
 	protected RouteListConverter listConverter;
-	protected JMXManager jmxManager;
+	protected Provider jmxManager;
 
 	private static transient Logger LOG = Logger.getLogger(RoutesEndpoint.class);
     public RoutesEndpoint() {
