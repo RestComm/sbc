@@ -1,39 +1,85 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat, Inc. and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2014, Telestax Inc and individual contributors
+ * by the @authors tag.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
  */
+
 
 package org.restcomm.sbc.media;
 
-import java.nio.ByteBuffer;
+import java.net.InetSocketAddress;
+
+import org.mobicents.media.server.io.network.channel.PacketHandlerException;
 
 /**
  * 
- * @author amit bhayani
- *
+ * @author Henrique Rosa (henrique.rosa@telestax.com)
+ * 
  */
-public interface PacketHandler {
+public interface PacketHandler extends Comparable<PacketHandler> {
 
-	public abstract boolean isClosed();
+	/**
+	 * Checks whether the handler can process the incoming packet or not.
+	 * 
+	 * @param packet
+	 *            The packet to be processed.
+	 * @return <code>true</code>, if the packet can be handled.
+	 *         <code>false</code>, otherwise.
+	 */
+	boolean canHandle(byte[] packet);
 
-	public abstract void close();
+	boolean canHandle(byte[] packet, int dataLength, int offset);
 
-	public abstract void receive(ByteBuffer readBuffer);
+	/**
+	 * Processes the packet and provides a suitable answer.
+	 * 
+	 * @param packet
+	 *            The packet to be processed.
+	 * @param localPeer
+	 *            The local peer who received the packet
+	 * @param remotePeer
+	 *            The remote peer who sent the packet
+	 * @return The answer to be sent to the remote peer as response to the
+	 *         incoming packet.
+	 * @throws PacketHandlerException
+	 *             When the handler cannot process the packet.
+	 */
+	byte[] handle(byte[] packet, InetSocketAddress localPeer, InetSocketAddress remotePeer) throws PacketHandlerException;
+
+	/**
+	 * Processes the packet and provides a suitable answer.
+	 * 
+	 * @param packet
+	 *            The packet to be processed.
+	 * @param dataLength
+	 *            The length of the data to be read.
+	 * @param offset
+	 *            The initial position to start reading data from.
+	 * @param localPeer
+	 *            The local peer who received the packet
+	 * @param remotePeer
+	 *            The remote peer who sent the packet
+	 * @return The answer to be sent to the remote peer as response to the
+	 *         incoming packet.
+	 * @throws PacketHandlerException
+	 *             When the handler cannot process the packet.
+	 */
+	byte[] handle(byte[] packet, int dataLength, int offset, InetSocketAddress localPeer, InetSocketAddress remotePeer) throws PacketHandlerException;
+
+	
+
 }

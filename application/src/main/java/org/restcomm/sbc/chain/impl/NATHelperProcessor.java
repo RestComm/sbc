@@ -32,10 +32,8 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.managers.RouteManager;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.managers.LazyRule;
-import org.restcomm.sbc.managers.MessageUtil;
+
 
 
 
@@ -134,7 +132,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 
 		try {
 			uri.setHost(message.getSourceLocalAddress());
-			uri.setPort(dmzRequest.getRemotePort());
+			uri.setPort(dmzRequest.getLocalPort());
 			
 		} catch (IllegalStateException e) {
 			LOG.error("",e);

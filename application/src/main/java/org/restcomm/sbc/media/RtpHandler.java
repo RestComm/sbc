@@ -20,16 +20,20 @@
 
 package org.restcomm.sbc.media;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import org.apache.log4j.Logger;
-import org.restcomm.sbc.media.srtp.DtlsHandler;
-import org.restcomm.sbc.media.srtp.SRTPParameters;
-
+import org.mobicents.media.server.impl.rtcp.RtcpHeader;
+import org.mobicents.media.server.impl.rtp.RTPInput;
+import org.mobicents.media.server.impl.rtp.RtpPacket;
+import org.mobicents.media.server.impl.rtp.rfc2833.DtmfInput;
+import org.mobicents.media.server.impl.rtp.statistics.RtpStatistics;
+import org.mobicents.media.server.impl.srtp.DtlsHandler;
+import org.mobicents.media.server.io.network.channel.PacketHandlerException;
+import org.mobicents.media.server.io.sdp.format.RTPFormat;
+import org.mobicents.media.server.io.sdp.format.RTPFormats;
+import org.mobicents.media.server.scheduler.PriorityQueueScheduler;
 
 /**
  * Handles incoming RTP packets.
@@ -42,7 +46,7 @@ public class RtpHandler implements PacketHandler {
 	
 	private static final Logger logger = Logger.getLogger(RtpHandler.class);
 	
-	
+	private RTPFormats rtpFormats;
 	
 	private boolean loopable;
 	private boolean receivable;
@@ -53,15 +57,15 @@ public class RtpHandler implements PacketHandler {
 	private boolean secure;
 	private DtlsHandler dtlsHandler;
 	
-	public RtpHandler(byte[] packet, int start, int offset) {
+	public RtpHandler() {
 		
-		this.rtpPacket = new RtpPacket(packet, start, offset);
+		this.rtpFormats = new RTPFormats();
+		this.rtpPacket = new RtpPacket(RtpPacket.RTP_PACKET_MAX_SIZE, true);
 		this.receivable = false;
 		this.loopable = false;
 		
 		this.secure = false;
 	}
-	
 	
 	
 	public boolean isLoopable() {
@@ -79,8 +83,11 @@ public class RtpHandler implements PacketHandler {
 	public void setReceivable(boolean receivable) {
 		this.receivable = receivable;
 	}
+
 	
-	
+	public RTPFormats getFormatMap() {
+		return this.rtpFormats;
+	}
 	
 	public void enableSrtp(final DtlsHandler handler) {
 		this.secure = true;
@@ -91,7 +98,6 @@ public class RtpHandler implements PacketHandler {
 		this.secure = false;
 		this.dtlsHandler = null;
 	}
-	
 	
 	
 	public void reset() {
@@ -217,7 +223,12 @@ public class RtpHandler implements PacketHandler {
 					
 					// Write packet
 					int payloadType = rtpPacket.getPayloadType();
-					
+					RTPFormat format = rtpFormats.find(payloadType);
+					if(format != null) {
+						
+					} else {
+						logger.warn("Dropping packet because payload type (" + payloadType + ") is unknown.");
+					}
 				}
 			} else {
 				logger.warn("Skipping packet because limit of the packets buffer is zero");
@@ -225,57 +236,11 @@ public class RtpHandler implements PacketHandler {
 		}
 		return null;
 	}
-
-
-
-	@Override
-	public boolean isClosed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-
-	@Override
-	public void receive(ByteBuffer readBuffer) {
-		// TODO Auto-generated method stub
-		
-	}
 	
-public static void main(String argv[]) throws IOException {
-    	
-    	FileInputStream bs=new FileInputStream(new File(System.getProperty("user.home")+"/srtp-packet.bin"));
-    	byte [] packet=new byte[182];
-    	SRTPParameters params = SRTPParameters.SRTP_AES128_CM_HMAC_SHA1_80;
-    	System.out.println(params);
-    	while(true) {
-    		System.out.println(params);
-	    	RtpHandler handler = new RtpHandler(packet, 0,  182);
-	    	handler.secure=true;
-	    	//if(len<182)
-	    		//break;
-	    	
-	    	RtpPacket raw=new RtpPacket(packet, 0,182);
-	    	System.out.println(raw+" canHandle? "+handler.canHandle(packet, 182,  0)+" DTLS "+handler.dtlsHandler);
-	    	break;
-	    	
-	    	//System.in.read();
-	    	
-    	}
-    	bs.close();
-    	
-    	
-    }
-
-     
-	
-	
+	public int compareTo(PacketHandler o) {
+		if(o == null) {
+			return 1;
+		}
+		return 0;
+	}
 }

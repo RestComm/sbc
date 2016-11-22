@@ -30,19 +30,18 @@ import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 
 
-
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    30 ago. 2016 13:30:19
- * @class   UDPProtocolAdapter.java
+ * @date    14 nov. 2016 12:59:59
+ * @class   WSSProtocolAdapter.java
  *
  */
-public class UDPProtocolAdapter extends ProtocolAdapter {
+public class WSSProtocolAdapter extends ProtocolAdapter {
 	
-	private static transient Logger LOG = Logger.getLogger(UDPProtocolAdapter.class);
+	private static transient Logger LOG = Logger.getLogger(WSSProtocolAdapter.class);
 	
 	
-	public UDPProtocolAdapter() {
+	public WSSProtocolAdapter() {
 		
 	}
 	
@@ -52,12 +51,12 @@ public class UDPProtocolAdapter extends ProtocolAdapter {
 		
 		String sourceTransport=sm.getInitialTransport();
 		if(sourceTransport==null) {
-			sourceTransport=ProtocolAdapterFactory.PROTOCOL_UDP;
+			sourceTransport=ProtocolAdapterFactory.PROTOCOL_WSS;
 		}
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("o Transport "+sourceTransport);
 			//LOG.trace("o Message follows:\n"+message.toString());
-			LOG.trace(">> adapt() Adapting protocol [->UDP]");
+			LOG.trace(">> adapt() Adapting protocol [->WSS]");
 		}
 		adaptMedia(message);
 		
@@ -66,7 +65,7 @@ public class UDPProtocolAdapter extends ProtocolAdapter {
 
 	@Override
 	public String getProtocol() {
-		return ProtocolAdapterFactory.PROTOCOL_UDP;
+		return ProtocolAdapterFactory.PROTOCOL_WSS;
 	}
 
 }

@@ -22,8 +22,7 @@ package org.restcomm.sbc.chain.impl.invite;
 
 
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -34,6 +33,8 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.media.CryptoMediaZone;
+import org.restcomm.sbc.media.MediaMetadata;
 import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
 
@@ -68,21 +69,37 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
-		MediaZone audioManager = null;
+		MediaZone audioZone = null;
 
 		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		try {
-			audioManager=new MediaZone("audio", message.getSourceLocalAddress());
+			MediaMetadata metadata=(MediaMetadata) message.getMetadata();
+			metadata.setIp(message.getSourceLocalAddress());
+			
 			if(LOG.isTraceEnabled()){
-		          LOG.trace("MEDIAMANAGER "+audioManager.toPrint());
+		          LOG.trace("MEDIA-Data "+metadata);
 		    }
 			
+			if(metadata.isSecure()) {
+				audioZone=new CryptoMediaZone(metadata);
+				//audioZone.start();
+			}
+			else
+				audioZone=new MediaZone(metadata);
+			
+			if(LOG.isTraceEnabled()){
+		          LOG.trace("MEDIA-Zone "+audioZone.toPrint());
+		    }
+			message.setMetadata(metadata);
+			
 		} catch (IOException e1) {
-			LOG.warn("Unavailable media port "+e1.getMessage());
+			LOG.error("Unavailable media port ",e1);
+		} catch (RuntimeException e2) {
+			LOG.error("",e2);
 		}
 	
-		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
+		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
 		
 		message.setContent(request);	
 	}
@@ -92,22 +109,40 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
 		if(response.getStatus()==SipServletResponse.SC_OK) {
-			MediaZone audioManager=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			MediaZone audioZone=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
-			MediaZone peerAudioManager = null;
+			MediaZone peerAudioZone = null;
+			
 			try {
-				peerAudioManager = new MediaZone("audio", message.getSourceLocalAddress(), audioManager.getPort());
+				MediaMetadata metadata=(MediaMetadata) message.getMetadata();
+				metadata.setIp(message.getSourceLocalAddress());
+				metadata.setRtpPort(audioZone.getRTPPort());
+				metadata.setRtcpPort(audioZone.getRTCPPort());
+				
 				if(LOG.isTraceEnabled()){
-			          LOG.trace("MEDIAMANAGER "+peerAudioManager.toPrint());
+			          LOG.trace("MEDIA-Data "+metadata);
 			    }
 				
-				peerAudioManager.attach(audioManager);
-			} catch (UnknownHostException | SocketException e) {
-				LOG.error(message.getSourceLocalAddress()+":"+audioManager.getPort(),e);
-			}
+				if(metadata.isSecure()) {
+					peerAudioZone = new CryptoMediaZone(metadata, audioZone.getRTPPort());
+				}
+				else {
+					peerAudioZone = new MediaZone(metadata, audioZone.getRTPPort());
+				}
+				
+				if(LOG.isTraceEnabled()){
+			          LOG.trace("MEDIA-Zone "+peerAudioZone.toPrint());
+			    }
+				message.setMetadata(metadata);
+				peerAudioZone.attach(audioZone);
+				
+			} catch (IOException e) {
+				LOG.error(message.getSourceLocalAddress()+":"+audioZone.getRTPPort(),e);
+			} catch (RuntimeException e2) {
+				LOG.error("",e2);
+			} 
 			
-			
-			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioManager);
+			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
 			
 			message.setContent(response);	
 		}

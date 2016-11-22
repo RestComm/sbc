@@ -32,7 +32,6 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
-import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;

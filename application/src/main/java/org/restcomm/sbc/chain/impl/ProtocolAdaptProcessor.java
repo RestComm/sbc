@@ -30,11 +30,11 @@ import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
-import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.adapter.UnavailableProtocolAdapterException;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.media.MediaMetadata;
 
 
 
@@ -71,11 +71,14 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processResponse()");
+	          LOG.trace(message.toString());
+	          LOG.trace(message.getMetadata());
 	    }
 		ProtocolAdapter adapter = null;
 		try {
-			adapter = protocolAdapterFactory.getAdapter(response.getTransport());
-			adapter.adapt(message);
+			adapter = protocolAdapterFactory.getAdapter(message.getTargetTransport());//response.getTransport());
+			
+			message=adapter.adapt(message);
 		} catch (UnavailableProtocolAdapterException e) {
 			LOG.error("ERROR",e);
 		} catch (NoRouteToHostException e) {
@@ -88,12 +91,14 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 		SipServletRequest request=(SipServletRequest) message.getContent();
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processRequest()");
+	          LOG.trace(message.toString());
 	    }
 		ProtocolAdapter adapter = null;
 		try {
 			
-			adapter = protocolAdapterFactory.getAdapter(request.getTransport());
-			adapter.adapt(message);
+			adapter = protocolAdapterFactory.getAdapter(message.getTargetTransport());//request.getTransport());
+			
+			message=adapter.adapt(message);
 		} catch (UnavailableProtocolAdapterException e) {
 			LOG.error("ERROR",e);
 		} catch (NoRouteToHostException e) {

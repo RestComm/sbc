@@ -31,11 +31,24 @@ public interface Message {
 	static final int SOURCE_DMZ = 0;
 	static final int SOURCE_MZ  = 1;
 	
+	static final int TARGET_DMZ = 0;
+	static final int TARGET_MZ  = 1;
+	static final int TARGET_B2BUA=2;
+	
+	static final String[] TARGET={"DMZ", "MZ", "B2BUA"};
+	
+	
 	/**
 	 * Message Flow direction.
 	 * @return direction
 	 */
 	int getDirection();
+	
+	/**
+	 * Message Flow target.
+	 * @return target
+	 */
+	int getTarget();
 	
 	/**
 	 * Get the IP to where
@@ -67,16 +80,22 @@ public interface Message {
 	String getTargetRemoteAddress();
 	
 	/**
-	 * Get the target Protocol
+	 * Get the target Transport
 	 * @return String
 	 */
-	String getTargetProtocol();
+	String getTargetTransport();
 	
 	/**
-	 * Get the source Protocol
+	 * Get the source Transport
 	 * @return String
 	 */
-	String getSourceProtocol();
+	String getSourceTransport();
+	
+	/**
+	 * Get the attached metadata
+	 * @return Object
+	 */
+	Object getMetadata();
 	
 	
 	Object getContent() ;

@@ -21,7 +21,6 @@
 package org.restcomm.sbc.chain.impl.registrar;
 
 
-import java.net.NoRouteToHostException;
 
 import javax.servlet.sip.Address;
 import javax.servlet.sip.ServletParseException;
@@ -42,7 +41,7 @@ import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.chain.impl.registrar.RegistrarProcessor;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
-import org.restcomm.sbc.managers.RouteManager;
+
 
 import gov.nist.javax.sip.header.SIPHeader;
 
@@ -62,14 +61,12 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	
 	private static transient Logger LOG = Logger.getLogger(RegistrarProcessor.class);
 	private String name="REGISTRAR Processor";
-	private RouteManager routeManager;
-	//private SipFactory sipFactory;
+	
 	
 	public RegistrarProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain=chain;	
-		this.routeManager=RouteManager.getRouteManager();
-		//this.sipFactory=ConfigurationCache.getSipFactory();
+		
 	}
 	
 	public RegistrarProcessor(String name, ProcessorChain chain) {
@@ -160,14 +157,9 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 		}
 		
 		try {
-			contactAddress=routeManager.getRegistrationContactAddress(dmzRequest);
+			//contactAddress=routeManager.getRegistrationContactAddress(dmzRequest);
 			dmzRequest.setAddressHeader(MessageUtil.B2BUA_ORIG_CONTACT_ADDR, dmzRequest.getAddressHeader("Contact"));
-		} catch (NoRouteToHostException e) {
-			LOG.error("ERROR",e);
-			SipServletResponse dmzResponse = dmzRequest.createResponse(401, "Not Found");
-			message.setContent(dmzResponse);	
-			message.unlink();
-			return;
+		
 		} catch (ServletParseException e) {
 			LOG.error("ERROR",e);
 			SipServletResponse dmzResponse = dmzRequest.createResponse(401, "Not Found");
@@ -176,7 +168,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			return;
 		} 
 		
-		dmzRequest.setAddressHeader("Contact", contactAddress);
+		//dmzRequest.setAddressHeader("Contact", contactAddress);
 		message.setContent(dmzRequest);
 		
 		

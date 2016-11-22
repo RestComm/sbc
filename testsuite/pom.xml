@@ -284,11 +284,6 @@
 			<version>${mss.arquillian.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.mobicents.arquillian.container/mss-tomcat-embedded-7 -->
-		<dependency>
-		    <groupId>org.mobicents.arquillian.container</groupId>
-		    <artifactId>mss-tomcat-embedded-7</artifactId>
-		    <version>1.0.1</version>
-		</dependency>
 		
 		<dependency>
 			<groupId>javax.servlet</groupId>
