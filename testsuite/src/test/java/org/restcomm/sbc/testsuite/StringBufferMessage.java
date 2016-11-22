@@ -88,16 +88,31 @@ public class StringBufferMessage implements MutableMessage {
 
 
 	@Override
-	public String getTargetProtocol() {
+	public int getTarget() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public String getTargetTransport() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 
 	@Override
-	public String getSourceProtocol() {
+	public String getSourceTransport() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+	@Override
+	public Object getMetadata() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

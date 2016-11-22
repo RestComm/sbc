@@ -148,17 +148,30 @@ public class SuspectActivityCache<K, T>  implements MutableMessage  {
 		return null;
 	}
 
+
 	@Override
-	public String getTargetProtocol() {
+	public Object getMetadata() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getSourceProtocol() {
+	public int getTarget() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getTargetTransport() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-   
+
+	@Override
+	public String getSourceTransport() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 }

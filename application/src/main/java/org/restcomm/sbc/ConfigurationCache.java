@@ -37,6 +37,7 @@ public class ConfigurationCache {
 	private static String domain;
 	private static String targetHost;
 	private static String targetHAHost;
+	private static String jmxService;
 	private static SipFactory sipFactory;
 	private static boolean regThrottleEnabled;
 	private static int regThrottleMZTTL;
@@ -57,6 +58,7 @@ public class ConfigurationCache {
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
         mediaStartPort=configuration.getInt		("media-proxy.start-port");
         mediaEndPort=configuration.getInt		("media-proxy.end-port");
+        jmxService=configuration.getString	("runtime-settings.jmx-management.service");	
         
 	}
 	
@@ -105,6 +107,11 @@ public class ConfigurationCache {
 
 	public static int getMediaEndPort() {
 		return mediaEndPort;
+	}
+
+
+	public static String getJmxService() {
+		return jmxService;
 	}
 
 

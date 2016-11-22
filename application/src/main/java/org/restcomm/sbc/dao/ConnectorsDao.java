@@ -22,7 +22,6 @@ package org.restcomm.sbc.dao;
 import java.util.List;
 
 import org.restcomm.sbc.bo.Connector;
-import org.restcomm.sbc.bo.Connector.State;
 import org.restcomm.sbc.bo.Sid;
 
 

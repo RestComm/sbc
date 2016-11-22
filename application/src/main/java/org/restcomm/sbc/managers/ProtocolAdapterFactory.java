@@ -27,6 +27,7 @@ import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.adapter.UnavailableProtocolAdapterException;
 import org.restcomm.sbc.adapter.impl.TCPProtocolAdapter;
 import org.restcomm.sbc.adapter.impl.UDPProtocolAdapter;
+import org.restcomm.sbc.adapter.impl.WSSProtocolAdapter;
 
 
 
@@ -54,6 +55,7 @@ public class ProtocolAdapterFactory {
 		
 		registerRouter("UDP", new UDPProtocolAdapter());
 		registerRouter("TCP", new TCPProtocolAdapter());
+		registerRouter("WSS", new WSSProtocolAdapter());
 		
 		
 	}
@@ -75,8 +77,7 @@ public class ProtocolAdapterFactory {
 	
 	public ProtocolAdapter getAdapter(String protocol) throws UnavailableProtocolAdapterException {
 		if(protocol==null) {
-			// implicit protocol
-			protocol="UDP";
+			throw new UnavailableProtocolAdapterException(protocol+" protocol adapter unavailable");
 		}
 		ProtocolAdapter adapter=protocols.get(protocol.toUpperCase());
 		if(adapter==null) {

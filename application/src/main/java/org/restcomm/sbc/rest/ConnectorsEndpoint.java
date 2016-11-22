@@ -24,11 +24,11 @@ import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
-import org.apache.shiro.crypto.hash.Md5Hash;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
-import org.restcomm.sbc.managers.JMXManager;
 import org.restcomm.sbc.managers.NetworkManager;
+import org.restcomm.sbc.managers.jmx.JMXProvider;
+import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.bo.Account;
@@ -45,9 +45,7 @@ import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 import javax.annotation.PostConstruct;
 import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
 import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
@@ -55,7 +53,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.io.IOException;
 import java.util.List;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -87,7 +84,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
     protected AccountsDao accountsDao;
     protected String instanceId;
 	protected ConnectorListConverter listConverter;
-	protected JMXManager jmxManager;
+	protected JMXProvider jmxManager;
 
 	private static transient Logger LOG = Logger.getLogger(ConnectorsEndpoint.class);
     public ConnectorsEndpoint() {
@@ -115,12 +112,11 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         xstream.registerConverter(listConverter);
         instanceId = RestcommConfiguration.getInstance().getMain().getInstanceId();
         try {
-			jmxManager=JMXManager.getInstance();
-		} catch (MalformedObjectNameException | InstanceNotFoundException | IntrospectionException | ReflectionException
-				| IOException e) {
-			LOG.error("Connector Manager unavailable!");
+			jmxManager=JMXProviderFactory.getJMXProvider();
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			LOG.error("JMX Error", e);
 		}
-       
+		
     }
 
     protected Response getConnector(final Sid sid, final MediaType responseType) {

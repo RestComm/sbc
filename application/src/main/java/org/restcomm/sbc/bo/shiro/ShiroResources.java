@@ -22,7 +22,6 @@ package org.restcomm.sbc.bo.shiro;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 
@@ -31,8 +30,7 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
  */
 @ThreadSafe
 public final class ShiroResources {
-	private static final Logger LOG = Logger.getLogger(ShiroResources.class);
-
+	
     private static final class SingletonHolder {
         private static final ShiroResources instance = new ShiroResources();
     }

@@ -20,18 +20,13 @@
  *******************************************************************************/
 package org.restcomm.sbc.managers;
 
-import java.net.NoRouteToHostException;
 
-import javax.servlet.sip.Address;
-import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
-import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.bo.Connector;
+
 
 
 public class MessageUtil {
@@ -83,9 +78,6 @@ public class MessageUtil {
 	}
 	
 	
-	private static String getApplicationData(SipServletMessage message) {
-		return "APP-DATA:"+message.getSession().getApplicationSession().getApplicationName();
-	}
 	
 	
 	/*

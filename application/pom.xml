@@ -10,7 +10,6 @@
 	<artifactId>sbc-application</artifactId>
 	<name>RestComm SBC :: Apps :: ${project.artifactId}</name>
 	
-	
 	<packaging>war</packaging>
 	
 	<url>http://maven.apache.org</url>
@@ -79,18 +78,6 @@
 		</dependency>
 		
 		<dependency>
-  			<groupId>org.glassfish</groupId>
-  			<artifactId>javax.faces</artifactId>
-  			<version>2.2.8</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.primefaces</groupId>
-			<artifactId>primefaces</artifactId>
-			<version>6.0</version>
-		</dependency>
-		
-		<dependency>
   			<groupId>org.infinispan</groupId>
   			<artifactId>infinispan-core</artifactId>
   		
@@ -148,11 +135,7 @@
 			<artifactId>asm</artifactId>
 		
 		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-bundle</artifactId>
-			
-		</dependency>
+		
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -161,6 +144,16 @@
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
+			
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
 			
 		</dependency>
 		<dependency>
@@ -200,6 +193,34 @@
 			    <artifactId>bcprov-jdk15on</artifactId>
 			</dependency>
 			
+			<!--  RestComm media server stuff -->
+		
+			<dependency>
+			    <groupId>org.mobicents.media.io</groupId>
+			    <artifactId>rtp</artifactId>
+			 
+			</dependency>
+			
+			<dependency>
+			    <groupId>org.mobicents.media.io</groupId>
+			    <artifactId>network</artifactId>
+			</dependency>
+			
+			<dependency>
+			    <groupId>org.mobicents.media.io</groupId>
+			    <artifactId>ice</artifactId>
+			</dependency>
+			
+			<dependency>
+			    <groupId>org.mobicents.media.io</groupId>
+			    <artifactId>stun</artifactId>
+			</dependency>
+			
+			<dependency>
+			    <groupId>org.mobicents.media.io</groupId>
+			    <artifactId>sdp</artifactId>
+			</dependency>		
+				
 	</dependencies>
 
 	<build>

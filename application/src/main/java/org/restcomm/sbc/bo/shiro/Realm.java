@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.log4j.Logger;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -51,7 +50,7 @@ import org.restcomm.sbc.bo.Sid;
 @ThreadSafe
 public final class Realm extends AuthorizingRealm {
 	
-	private static final Logger LOG = Logger.getLogger(Realm.class);
+	
     private volatile Map<String, SimpleRole> roles;
 
     public Realm() {

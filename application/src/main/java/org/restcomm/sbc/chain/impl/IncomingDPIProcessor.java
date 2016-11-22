@@ -19,12 +19,11 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-import javax.servlet.sip.Address;
-import javax.servlet.sip.ServletParseException;
+import java.io.IOException;
+
+import javax.sdp.SdpException;
+
 import javax.servlet.sip.SipServletMessage;
-import javax.servlet.sip.SipServletRequest;
-import javax.servlet.sip.SipServletResponse;
-import javax.servlet.sip.SipURI;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -33,8 +32,8 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.managers.LazyRule;
-import org.restcomm.sbc.managers.MessageUtil;
+import org.restcomm.sbc.media.MediaMetadata;
+
 
 
 
@@ -46,6 +45,7 @@ import org.restcomm.sbc.managers.MessageUtil;
  */
 public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
+	@SuppressWarnings("unused")
 	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
 	
 	public IncomingDPIProcessor(ProcessorChain callback) {
@@ -78,8 +78,9 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		}
 		else {
 			message.setDirection(Message.SOURCE_MZ);
-		}	
-
+		}
+		
+		message.setTarget(Message.TARGET_B2BUA);
 	}
 
 	@Override
@@ -100,7 +101,20 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
-		m.setSourceProtocol(sm.getTransport().toUpperCase());
+		m.setSourceTransport(sm.getTransport().toUpperCase());
+		
+		if(sm.getContentLength()>0 &&
+			sm.getContentType().equals("application/sdp")) {
+			try {
+				MediaMetadata metadata=MediaMetadata.build(MediaMetadata.MEDIATYPE_AUDIO, new String(sm.getRawContent()));
+				m.setMetadata(metadata);
+			} catch (IOException | org.mobicents.media.server.io.sdp.SdpException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
 		
 		processMessage(m);
 		

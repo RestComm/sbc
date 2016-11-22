@@ -20,7 +20,6 @@
 package org.restcomm.sbc.bo.shiro;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.log4j.Logger;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
@@ -33,7 +32,7 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 @ThreadSafe
 public final class CredentialsMatcher extends SimpleCredentialsMatcher {
 	
-	private static final Logger LOG = Logger.getLogger(CredentialsMatcher.class);
+	
     public CredentialsMatcher() {
         super();
     }

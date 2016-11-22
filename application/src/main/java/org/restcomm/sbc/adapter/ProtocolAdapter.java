@@ -24,18 +24,17 @@ import java.io.IOException;
 import java.net.NoRouteToHostException;
 import javax.sdp.SdpException;
 import javax.sdp.SdpParseException;
-
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.media.CryptoMediaZone;
 import org.restcomm.sbc.media.MediaMetadata;
 import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.managers.MessageUtil;
-import org.restcomm.sbc.media.SdpUtils;
+
 
 
 
@@ -58,15 +57,16 @@ public abstract class ProtocolAdapter {
 	 * @param message
 	 * @return adapted message to target transport
 	 */
-	public abstract void adapt(Message message) throws NoRouteToHostException;
+	public abstract Message adapt(Message message) throws NoRouteToHostException;
 	
 	public abstract String getProtocol();
 	
-	public void adaptMedia(Message message) {
+	public Message adaptMedia(Message message) {
 				SIPMutableMessage m=(SIPMutableMessage) message;
 				SipServletMessage sm=m.getContent();
 				MediaZone audioZone;
 				int audioPort;
+				int audioControlPort;
 				
 				if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
 					try {
@@ -74,68 +74,77 @@ public abstract class ProtocolAdapter {
 						if(sm instanceof SipServletResponse) {
 							SipServletResponse smr=(SipServletResponse) sm;
 							audioZone=(MediaZone) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-							audioPort=audioZone.getMediaZonePeer().getPort();
+							audioPort=audioZone.getMediaZonePeer().getRTPPort();
+							audioControlPort=audioZone.getMediaZonePeer().getRTCPPort();
 							
 						}
 						else {
 							SipServletRequest smr=(SipServletRequest) sm;
 							SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 							audioZone=(MediaZone) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-							audioPort=audioZone.getPort();
+							audioPort=audioZone.getRTPPort();
+							audioControlPort=audioZone.getRTCPPort();
 							
 						}
 						
 						String host=message.getTargetLocalAddress();
 						
-						MediaMetadata metadata=new MediaMetadata();
-						metadata=MediaMetadata.build(new String(sm.getRawContent()));
+						MediaMetadata metadata=MediaMetadata.build(MediaMetadata.MEDIATYPE_AUDIO, new String(sm.getRawContent()));
 						
-						metadata.setPort("audio", audioPort);
+						metadata.setRtpPort(audioPort);
+						metadata.setRtcpPort(audioControlPort);
 						metadata.setIp(host);
 						
-						String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(), metadata);
+						String sdpContent=metadata.getSdp().toString();
 						
-						//String sdpContent = SdpUtils.patch("application/sdp", sm.getRawContent(),	host);
 						
-						//sdpContent = SdpUtils.fix("audio", audioPort, sdpContent);
-						//sdpContent = SdpUtils.endWithNewLine(sdpContent);
+						if(m.getTarget()==Message.TARGET_MZ) {
+							//always stream plain media to MZ	
+							sdpContent=metadata.unSecureSdp().toString();
+							
+							
+						}
+						else if(audioZone instanceof CryptoMediaZone) {
+							// must reply in secure mode
+						    sdpContent=metadata.secureSdp().toString();		
+						}
+						
+						sdpContent=metadata.patch(sdpContent).toString();
+						
+						
+						m.setMetadata(metadata);
 						
 						if (LOG.isDebugEnabled()) {
-							LOG.debug(metadata);
-							LOG.debug("<=> "+(m.getDirection()==Message.SOURCE_DMZ?"from-DMZ":"from-MZ"));
-							LOG.debug("SLA "+m.getSourceLocalAddress());
-							LOG.debug("SRA "+m.getSourceRemoteAddress());
-							LOG.debug("TLA "+m.getTargetLocalAddress());
-							LOG.debug("TRA "+m.getTargetRemoteAddress());
-							LOG.debug("SPR "+m.getSourceProtocol());
-							LOG.debug("TPR "+m.getTargetProtocol());
+							LOG.debug("MDA "+m.getMetadata());
+							LOG.debug(m.toString());
 							
-							LOG.debug("Audio port " + audioZone.getPort());
+							LOG.debug("Audio port " + audioZone.getRTPPort());
 							if(audioZone.getMediaZonePeer()!=null)
-								LOG.debug("Audio peer port " + audioZone.getMediaZonePeer().getPort());
+								LOG.debug("Audio peer port " + audioZone.getMediaZonePeer().getRTPPort());
 							LOG.debug("patched Content:\n" + sdpContent);
 						}
 						
+						
 						sm.setContent(sdpContent, "application/sdp");
+						
+						m.setContent(sm);
 						
 
 					} catch (IOException e) {
 						LOG.error("No SDP content!", e);
-						return;
-					} catch (SdpParseException e) {
-						LOG.error("Bad SDP", e);
-						return;
-					} catch (SdpException e) {
-						LOG.error("Bad SDP treatment", e);
-						return;
+						return m;
+					
 					} catch (RuntimeException e) {
 						LOG.error("State SDP treatment", e);
-						return;
+						return m;
+					} catch (org.mobicents.media.server.io.sdp.SdpException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					} 
 
 				}
 			
-		
+		return m;
 	}
 	
 

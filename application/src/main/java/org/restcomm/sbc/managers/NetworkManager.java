@@ -18,7 +18,6 @@ import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 
-import static java.lang.System.out;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)

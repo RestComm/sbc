@@ -37,7 +37,7 @@ public final class Sid {
         ACCOUNT, CONNECTOR, ROUTE, RANDOM
     };
 
-    private static final Sid INVALID_SID = new Sid("IN00000000000000000000000000000000");
+    //private static final Sid INVALID_SID = new Sid("IN00000000000000000000000000000000");
 
     public Sid(final String id) throws IllegalArgumentException {
         super();

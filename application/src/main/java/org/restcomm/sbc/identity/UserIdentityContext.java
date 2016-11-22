@@ -30,7 +30,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
-import org.restcomm.sbc.managers.JMXManager;
+import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.bo.Account;
 
 /**

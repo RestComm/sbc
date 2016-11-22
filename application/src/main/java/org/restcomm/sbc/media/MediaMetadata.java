@@ -2,17 +2,20 @@ package org.restcomm.sbc.media;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Vector;
+import org.mobicents.media.io.ice.IceAuthenticatorImpl;
+import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
+import org.mobicents.media.server.io.sdp.SdpException;
+import org.mobicents.media.server.io.sdp.SessionDescription;
+import org.mobicents.media.server.io.sdp.SessionDescriptionParser;
+import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
+import org.mobicents.media.server.io.sdp.dtls.attributes.SetupAttribute;
+import org.mobicents.media.server.io.sdp.fields.ConnectionField;
+import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
+import org.mobicents.media.server.io.sdp.fields.OriginField;
+import org.mobicents.media.server.io.sdp.fields.SessionNameField;
+import org.mobicents.media.server.io.sdp.ice.attributes.IcePwdAttribute;
+import org.mobicents.media.server.io.sdp.ice.attributes.IceUfragAttribute;
 
-import javax.sdp.Attribute;
-import javax.sdp.Media;
-import javax.sdp.MediaDescription;
-import javax.sdp.SdpException;
-import javax.sdp.SdpFactory;
-
-import javax.sdp.SessionDescription;
 
 
 /**
@@ -22,36 +25,47 @@ import javax.sdp.SessionDescription;
  *
  */
 public class MediaMetadata {
-	/*
-	 * 	v=0
-		o=11 8000 8000 IN IP4 192.168.88.3
-		s=SBC Call
-		c=IN IP4 192.168.88.3
-		t=0 0
-		m=audio 10002 RTP/SAVP 18 4 3 0 8
-		a=sendrecv
-		a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:XK2+f3dMxqq9yfhYNSO3cwSnFACD+/h5xnXG15iQ
-		a=crypto:2 AES_CM_128_HMAC_SHA1_32 inline:Fqpm95oH83bu61+saLnKi4NY0kzJ1fhwQS/DfxCz
-		a=rtpmap:18 G729/8000
-		a=rtpmap:4 G723/8000
-		a=rtpmap:3 GSM/8000
-		a=rtpmap:0 PCMU/8000
-		a=rtpmap:8 PCMA/8000
-		a=ptime:20
-	 */
 	
+	private SessionDescription sdp ;
 	
-	private String protocol;
 	private String ip;
+	private String mediaType;
+	private String protocol;
+	private int rtpPort;
+	private int rtcpPort;
+	private String fingerprint;
+	private String fingerAlgorithm;
+	private boolean canMux;
+	
+	public static final String MEDIATYPE_AUDIO   = "audio";
+	public static final String MEDIATYPE_VIDEO   = "video";
+	public static final String MEDIATYPE_MESSAGE = "message";
+	
 	
 	// a map for each Mediatype (audio, video, etc)
-	private HashMap<String, Integer> portsMap=new HashMap<String, Integer>();
-	// a map for each Mediatype (audio, video, etc)
-	private HashMap<String, Fingerprint> fingerprintsMap=new HashMap<String, Fingerprint>();
+   
 	private ArrayList<Crypto> cryptos=new ArrayList<Crypto>();
+
 	
 	
-	public MediaMetadata() {
+
+
+	
+	private MediaMetadata(String mediaType, String text) throws SdpException  {
+		this.mediaType=mediaType;
+		this.sdp=SessionDescriptionParser.parse(text);
+		MediaDescriptionField mediaDescription = sdp.getMediaDescription(mediaType);
+		this.protocol=mediaDescription.getProtocol();
+		this.rtpPort=mediaDescription.getPort();
+		this.rtcpPort=mediaDescription.getRtcpPort();
+		this.canMux=mediaDescription.isRtcpMux();
+		this.ip=mediaDescription.getConnection().getAddress();
+		FingerprintAttribute fp = mediaDescription.getFingerprint();
+   		if(fp!=null) {		
+   			setFingerprint(fp.getFingerprint());
+   			setFingerAlgorithm(fp.getHashFunction());
+		
+   		}
 		
 	}
 
@@ -65,6 +79,19 @@ public class MediaMetadata {
 		return false;
 	}
 	
+	
+	
+	public CipherSuite[] getCipherSuites() {
+		ArrayList<CipherSuite> ciphers=new ArrayList<CipherSuite>();
+		CipherSuite[] suites = new CipherSuite[10];
+		
+		for(Crypto crypto: cryptos) {
+			ciphers.add(crypto.getCryptoSuite());
+		}
+		
+		return ciphers.toArray(suites);
+	}
+	
 	public ArrayList<Crypto> getCryptos() {
 		return cryptos;
 	}
@@ -76,40 +103,7 @@ public class MediaMetadata {
 		this.cryptos.add(new Crypto(line));
 	}
 	
-	public void setPort(String mediaType, int port) {
-		portsMap.put(mediaType, port);
-	}
-	
-	public void setFingerprint(String mediaType, String line) {
-		fingerprintsMap.put(mediaType, new Fingerprint(line));
-	}
-	
-	public HashMap<String, Integer> getPortsMap() {
-		return portsMap;
-	}
-	public void setPortsMap(HashMap<String, Integer> portsMap) {
-		this.portsMap = portsMap;
-	}
-	
-	public int getPort(String mediaType) {
-		return portsMap.get(mediaType);
-		
-	}
-	
-	public Fingerprint getFingerprint(String mediaType) {
-		return fingerprintsMap.get(mediaType);
-		
-	}
 
-	
-	public String getProtocol() {
-		return protocol;
-	}
-
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
-	
 	public String getIp() {
 		return ip;
 	}
@@ -117,68 +111,138 @@ public class MediaMetadata {
 	public void setIp(String ip) {
 		this.ip = ip;
 	}
+	
+	
+
+	public void setSdp(SessionDescription sdp) {
+		this.sdp = sdp;
+	}
+	
 	public String toString() {
 		String result;
+		CipherSuite[] suites = this.getCipherSuites();
 		result="MediaMetadata [";
+			this.getCipherSuites();
 				for(int i=0;i<cryptos.size();i++) {
-					result+="\n"+cryptos.get(i);
+					result+="\n"+cryptos.get(i)+":"+suites[i];
 				}
-				for(Entry<String, Integer> ports:portsMap.entrySet()) {
-					result+="\n{media="+ports.getKey()+", IP="+getIp()+", port="+ports.getValue()+", "+fingerprintsMap.get(ports.getKey())+"}";
-				}
+				
+				result+="\n{media="+mediaType+", IP="+getIp()+", RTPport="+rtpPort+", RTCPport="+rtcpPort+", Can Mux RTCP? "+canMux+"}";
 				result+=", protocol="+protocol+", secure="+isSecure();
+				if(isSecure()) {
+					result+=", fingerprint="+fingerAlgorithm+":"+fingerprint;
+				}
 				return result;
 	}
 	
-	/*
-     * Returns audio/video port
-     */
-    @SuppressWarnings("unchecked")
-    public static  MediaMetadata build(String text)
+	
+	public SessionDescription getSdp() {
+		return sdp;
+	}
+
+    public static  MediaMetadata build(String mediaType, String text)
             throws UnknownHostException, SdpException {
-        MediaMetadata metadata=new MediaMetadata();
-        
-            final SessionDescription sdp = SdpFactory.getInstance().createSessionDescription(text);
-         // Handle the connections at the media description level.
-            final Vector<MediaDescription> descriptions = sdp.getMediaDescriptions(false);
-            for (final MediaDescription description : descriptions) {
-            	
-            	final Media media=description.getMedia();
-            	
-            		metadata.setPort(media.getMediaType(),media.getMediaPort());
-            		
-            		metadata.setProtocol(media.getProtocol());
-            		Vector <Attribute>attrs = description.getAttributes(false);
-            		for(Attribute attr:attrs){
-            			if(attr.getName().equalsIgnoreCase("crypto")){
-            				metadata.addCrypto(attr.getValue());
-            				//System.out.println("name "+attr.getName()+" value "+attr.getValue());
-            			}
-            			if(attr.getName().equalsIgnoreCase("fingerprint")){
-            				metadata.setFingerprint(media.getMediaType(),attr.getValue());
-            				//System.out.println("name "+attr.getName()+" value "+attr.getValue());
-            			}
-            			if(attr.getName().equalsIgnoreCase("setup")){
-            				metadata.setFingerprint(media.getMediaType(),attr.getValue());
-            				//System.out.println("name "+attr.getName()+" value "+attr.getValue());
-            			}
-            		}
-            		
-            	
-            }
-       
+    		
+        	MediaMetadata metadata=new MediaMetadata(mediaType, text);
+     
        return metadata;
     }
     
-   public static String fix(final byte[] data, MediaMetadata newMetadata) throws UnknownHostException, SdpException {
-	       
-	        return SdpUtils.patch("application/sdp", data, newMetadata);
+    public String patch(String sdp) throws SdpException {
+
+   		SessionDescription psdp = SessionDescriptionParser.parse(sdp);
+   		
+   		OriginField origin = psdp.getOrigin();
+   		origin.setAddress(ip);
+   		
+   		SessionNameField sessionName=new SessionNameField("SBC Call");
+		psdp.setSessionName(sessionName);
+   		
+   		ConnectionField connection = new ConnectionField();
+   		
+   		connection.setAddress(ip);
+   		if(psdp.getConnection()!=null)
+   			psdp.setConnection(connection);
+   		
+   		MediaDescriptionField audioDescription = psdp.getMediaDescription(mediaType);
+   		audioDescription.setConnection(connection);
+   		audioDescription.setPort(this.getRtpPort());
+   		
+   		return psdp.toString().trim().concat("\n");
+    	
+    }
+    
+   
+   
+   public SessionDescription unSecureSdp() throws UnknownHostException, SdpException {
+	   
+	   		SessionDescription usdp = SessionDescriptionParser.parse(sdp.toString());
+			
+	   		
+	   		MediaDescriptionField audioDescription = usdp.getMediaDescription(mediaType);
+	   		audioDescription.setProtocol("RTP/AVP");
+	   		audioDescription.removeAllCandidates();
+	   	
+	   		
+			return usdp;
 	                  
 	     
    }
-
+   
+   
+   public SessionDescription secureSdp() throws UnknownHostException, SdpException {
+	    SessionDescription ssdp = SessionDescriptionParser.parse(sdp.toString());
+	    
+	    IceAuthenticatorImpl auth = new IceAuthenticatorImpl();
+	    auth.generateIceCredentials();
+	    
+		MediaDescriptionField audioDescription = ssdp.getMediaDescription(mediaType);
+   		audioDescription.setProtocol("RTP/SAVPF");
+   		
+   		FingerprintAttribute fp;
+   		
+   		fp=audioDescription.getFingerprint();
+   		if(fp==null)
+   			fp=new FingerprintAttribute();
+   		fp.setFingerprint("E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47");
+   		fp.setHashFunction("sha-1");
+		audioDescription.setFingerprint(fp);
+		
+		IceUfragAttribute ice_ufrag;
+		IcePwdAttribute ice_pwd;
+		
+		ice_ufrag=audioDescription.getIceUfrag();
+		ice_pwd=audioDescription.getIcePwd();
+		
+		if(ice_ufrag==null) {
+			ice_ufrag = new IceUfragAttribute();
+			ice_pwd = new IcePwdAttribute();
+		}
+		ice_ufrag.setUfrag(auth.getUfrag());
+		ice_pwd.setPassword(auth.getPassword());
+		
+		audioDescription.setIcePwd(ice_pwd);
+		audioDescription.setIceUfrag(ice_ufrag);
+		
+		SetupAttribute setup=new SetupAttribute("passive");
+		audioDescription.setSetup(setup);
+		
+		
+	
+      return ssdp;         
+    
+   }
+   
+   /*
+   public String patchedSdp(final byte[] data) throws UnknownHostException, SdpException {
+	   return SdpUtils.patch("application/sdp", data, this);
+	  
+   }
+   */
+   
    public static void main(String argv[]) {
-		String sdp="v=0\n"+
+	   /*
+		String sdpText="v=0\n"+
 					"o=12-jitsi.org 0 0 IN IP4 192.168.88.3\n"+
 					"s=SBC Call\n"+
 					"c=IN IP4 192.168.88.3\n"+
@@ -254,8 +318,69 @@ public class MediaMetadata {
 					"a=rtpmap:108 ulpfec/90000\n"+
 					"a=rtpmap:109 VP8/90000\n"+
 					"a=setup:actpass\n"+
+					// just for test
+					//"a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:XK2+f3dMxqq9yfhYNSO3cwSnFACD+/h5xnXG15iQ\n"+
+					//"a=crypto:2 AES_CM_128_HMAC_SHA1_32 inline:Fqpm95oH83bu61+saLnKi4NY0kzJ1fhwQS/DfxCz\n"+
+					//
 					"a=fingerprint:sha-1 E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47";
-	/*	String sdp="v=0\n"+
+					*/
+	   String sdpText="v=0\n"+
+			   "o=- 188809950206000236 2 IN IP4 127.0.0.1\n"+
+			   "s=-\n"+
+			   "t=0 0\n"+
+			   "a=group:BUNDLE audio\n"+
+			   "a=msid-semantic: WMS QTjs4Sqxmip7GwcQ1fZqeLcl4dEdAOzccBZN\n"+
+			   "m=audio 54011 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126\n"+
+			   "c=IN IP4 181.165.120.41\n\r"+
+			   "a=rtcp:54013 IN IP4 181.165.120.41\n"+
+			   "a=candidate:2162125114 1 udp 2122260223 10.0.0.10 54010 typ host generation 0 network-id 2\n"+
+			   "a=candidate:4221882981 1 udp 2122194687 192.168.88.2 54011 typ host generation 0 network-id 1\n"+
+			   "a=candidate:2162125114 2 udp 2122260222 10.0.0.10 54012 typ host generation 0 network-id 2\n"+
+			   "a=candidate:4221882981 2 udp 2122194686 192.168.88.2 54013 typ host generation 0 network-id 1\n"+
+			   "a=candidate:3462174154 1 tcp 1518280447 10.0.0.10 9 typ host tcptype active generation 0 network-id 2\n"+
+			   "a=candidate:3039243925 1 tcp 1518214911 192.168.88.2 9 typ host tcptype active generation 0 network-id 1\n"+
+			   "a=candidate:3462174154 2 tcp 1518280446 10.0.0.10 9 typ host tcptype active generation 0 network-id 2\n"+
+			   "a=candidate:3039243925 2 tcp 1518214910 192.168.88.2 9 typ host tcptype active generation 0 network-id 1\n"+
+			   "a=candidate:229944241 2 udp 1685987070 181.165.120.41 54013 typ srflx raddr 192.168.88.2 rport 54013 generation 0 network-id 1\n"+
+			   "a=candidate:229944241 1 udp 1685987071 181.165.120.41 54011 typ srflx raddr 192.168.88.2 rport 54011 generation 0 network-id 1\n"+
+			   "a=ice-ufrag:lPqG\n"+
+			   "a=ice-pwd:1iy3iKIrMn88BMA+abWT8hbZ\n"+
+			   "a=fingerprint:sha-256 32:B6:92:32:22:5D:A4:0F:C4:B3:18:B7:23:FB:DF:82:6A:0C:13:82:AA:3E:89:6F:C7:83:1F:60:C2:9B:5D:68\n"+
+			   "a=setup:actpass\n"+
+			   "a=mid:audio\n"+
+			   "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\n"+
+			   "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\n"+
+			   "a=sendrecv\n"+
+			   "a=rtcp-mux\n"+
+			   "a=rtpmap:111 opus/48000/2\n"+
+			   "a=rtcp-fb:111 transport-cc\n"+
+			   "a=fmtp:111 minptime=10;useinbandfec=1\n"+
+			   "a=rtpmap:103 ISAC/16000\n"+
+			   "a=rtpmap:104 ISAC/32000\n"+
+			   "a=rtpmap:9 G722/8000\n"+
+			   "a=rtpmap:0 PCMU/8000\n"+
+			   "a=rtpmap:8 PCMA/8000\n"+
+			   "a=rtpmap:106 CN/32000\n"+
+			   "a=rtpmap:105 CN/16000\n"+
+			   "a=rtpmap:13 CN/8000\n"+
+			   "a=rtpmap:126 telephone-event/8000\n"+
+			   "a=ssrc:819597054 cname:bHyZrjk3sM4Psqgb\n"+
+			   "a=ssrc:819597054 msid:QTjs4Sqxmip7GwcQ1fZqeLcl4dEdAOzccBZN 3a3383c1-c87e-4739-9e94-19992cc433ff\n"+
+			   "a=ssrc:819597054 mslabel:QTjs4Sqxmip7GwcQ1fZqeLcl4dEdAOzccBZN\n"+
+			   "a=ssrc:819597054 label:3a3383c1-c87e-4739-9e94-19992cc433ff";
+	  /*
+		String sdpText="v=0\n"+
+				"o=root 10050031 10050031 IN IP4 192.168.0.2\n"+
+				"s=eolosCM-2.6\n"+
+				"c=IN IP4 192.168.0.2\n"+
+				"t=0 0\n"+
+				"m=audio 17398 RTP/AVP 8\n"+
+				"a=rtpmap:8 PCMA/8000\n"+
+				"a=ptime:20\n"+
+				"a=sendrecv\n"+
+				"m=video 0 RTP/AVP 105 99 106 107 108 109\n";	
+				
+	/*	String sdpText="v=0\n"+
 				"o=11 8000 8000 IN IP4 192.168.88.3\n"+
 				"s=SBC Call\n"+
 				"c=IN IP4 192.168.88.3\n"+
@@ -273,13 +398,29 @@ public class MediaMetadata {
 				*/
 		MediaMetadata metadata;
 		try {
-			metadata = MediaMetadata.build(sdp);
-			metadata.setIp("201.216.233.187");
-			metadata.setPort("audio", 50000);
-			metadata.setPort("video", 60000);
-			System.out.println(MediaMetadata.fix(sdp.getBytes(), metadata));
+			metadata = MediaMetadata.build(MediaMetadata.MEDIATYPE_AUDIO, sdpText);
+			
+			System.out.println("---------------original-------------------");
+			System.out.println(metadata.getSdp());
 			System.out.println(metadata);
-		} catch (UnknownHostException | SdpException e) {
+			
+			String unsecure = metadata.patch(metadata.unSecureSdp().toString());
+			System.out.println("---------------unsecure-------------------");
+			System.out.println(unsecure);
+			System.out.println(metadata);
+			
+			metadata.setIp("201.216.233.187");
+			metadata.setRtpPort(50000);
+			metadata.setRtcpPort(60000);
+			
+			String secure   = metadata.patch(metadata.secureSdp().toString());
+			System.out.println("---------------secure---------------------");
+			System.out.println(secure);
+			
+			
+			
+			System.out.println(metadata);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -287,13 +428,67 @@ public class MediaMetadata {
 		
 	}
 
+	public String getMediaType() {
+		return mediaType;
+	}
+	
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public int getRtpPort() {
+		return rtpPort;
+	}
+
+	public void setRtpPort(int rtpPort) {
+		this.rtpPort = rtpPort;
+	}
+
+	public int getRtcpPort() {
+		return rtcpPort;
+	}
+
+	public void setRtcpPort(int rtcpPort) {
+		this.rtcpPort = rtcpPort;
+	}
+
+	public String getFingerAlgorithm() {
+		return fingerAlgorithm;
+	}
+
+	public void setFingerAlgorithm(String fingerAlgorithm) {
+		this.fingerAlgorithm = fingerAlgorithm;
+	}
+
+	public String getFingerprint() {
+		return fingerprint;
+	}
+
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
+	}
+	
+	public void setRtcpMultiplexed(boolean mux) {
+		canMux=mux;
+	}
+
+	public boolean isRtcpMultiplexed() {
+		if(rtcpPort<=0)
+			return true;
+		return canMux;
+	}
 
    }
 
 	class Crypto {
 				
 		private int tag;
-		private String cryptoSuite;
+		private CipherSuite cryptoSuite;
 		private String keyParams;
 		
 		Crypto(String line) {
@@ -301,7 +496,8 @@ public class MediaMetadata {
 			keyParams=fields[1];
 			String crypto[]=fields[0].split(" ");
 			tag=Integer.parseInt(crypto[0]);
-			cryptoSuite=crypto[1];
+			//cryptoSuite=CipherSuite.valueOf(crypto[1]);
+			cryptoSuite=CipherSuite.TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA;
 		}
 		
 		public int getTag() {
@@ -310,10 +506,10 @@ public class MediaMetadata {
 		public void setTag(int tag) {
 			this.tag = tag;
 		}
-		public String getCryptoSuite() {
+		public CipherSuite getCryptoSuite() {
 			return cryptoSuite;
 		}
-		public void setCryptoSuite(String cryptoSuite) {
+		public void setCryptoSuite(CipherSuite cryptoSuite) {
 			this.cryptoSuite = cryptoSuite;
 		}
 		public String getKeyParams() {
@@ -326,51 +522,6 @@ public class MediaMetadata {
 		public String toString() {
 			return "Crypto [tag="+tag+", crypto-suite="+cryptoSuite+", key="+keyParams+"]";
 		}
-	}
-		
-		class Fingerprint {
-			
-			private String algorithm;
-			private String hash;
-			private String setup;
-			
-			Fingerprint(String line) {
-				String fprint[]=line.split(" ");
-				algorithm=fprint[0];
-				hash=fprint[1];
-			}
-			
-				
-			public String toString() {
-				return "Fingerprint [algorithm="+algorithm+", hash="+hash+"]";
-			}
-
-			public String getAlgorithm() {
-				return algorithm;
-			}
-
-
-			public void setAlgorithm(String algorithm) {
-				this.algorithm = algorithm;
-			}
-
-			public String getHash() {
-				return hash;
-			}
-
-			public void setHash(String hash) {
-				this.hash = hash;
-			}
-
-			public String getSetup() {
-				return setup;
-			}
-
-			public void setSetup(String setup) {
-				this.setup = setup;
-			}
-		
-	
 		
 		
 
