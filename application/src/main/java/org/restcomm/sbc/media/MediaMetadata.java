@@ -47,10 +47,6 @@ public class MediaMetadata {
 	private ArrayList<Crypto> cryptos=new ArrayList<Crypto>();
 
 	
-	
-
-
-	
 	private MediaMetadata(String mediaType, String text) throws SdpException  {
 		this.mediaType=mediaType;
 		this.sdp=SessionDescriptionParser.parse(text);
@@ -59,7 +55,13 @@ public class MediaMetadata {
 		this.rtpPort=mediaDescription.getPort();
 		this.rtcpPort=mediaDescription.getRtcpPort();
 		this.canMux=mediaDescription.isRtcpMux();
-		this.ip=mediaDescription.getConnection().getAddress();
+		if(sdp.getConnection()!=null) {
+			this.ip=sdp.getConnection().getAddress();
+		}
+		else {
+			this.ip=mediaDescription.getConnection().getAddress();
+		}
+		
 		FingerprintAttribute fp = mediaDescription.getFingerprint();
    		if(fp!=null) {		
    			setFingerprint(fp.getFingerprint());
@@ -143,7 +145,7 @@ public class MediaMetadata {
     public static  MediaMetadata build(String mediaType, String text)
             throws UnknownHostException, SdpException {
     		
-        	MediaMetadata metadata=new MediaMetadata(mediaType, text);
+       MediaMetadata metadata=new MediaMetadata(mediaType, text);
      
        return metadata;
     }
@@ -164,9 +166,9 @@ public class MediaMetadata {
    		if(psdp.getConnection()!=null)
    			psdp.setConnection(connection);
    		
-   		MediaDescriptionField audioDescription = psdp.getMediaDescription(mediaType);
-   		audioDescription.setConnection(connection);
-   		audioDescription.setPort(this.getRtpPort());
+   		MediaDescriptionField mediaDescription = psdp.getMediaDescription(mediaType);
+   		mediaDescription.setConnection(connection);
+   		mediaDescription.setPort(this.getRtpPort());
    		
    		return psdp.toString().trim().concat("\n");
     	
@@ -179,9 +181,9 @@ public class MediaMetadata {
 	   		SessionDescription usdp = SessionDescriptionParser.parse(sdp.toString());
 			
 	   		
-	   		MediaDescriptionField audioDescription = usdp.getMediaDescription(mediaType);
-	   		audioDescription.setProtocol("RTP/AVP");
-	   		audioDescription.removeAllCandidates();
+	   		MediaDescriptionField mediaDescription = usdp.getMediaDescription(mediaType);
+	   		mediaDescription.setProtocol("RTP/AVP");
+	   		mediaDescription.removeAllCandidates();
 	   	
 	   		
 			return usdp;
@@ -196,23 +198,23 @@ public class MediaMetadata {
 	    IceAuthenticatorImpl auth = new IceAuthenticatorImpl();
 	    auth.generateIceCredentials();
 	    
-		MediaDescriptionField audioDescription = ssdp.getMediaDescription(mediaType);
-   		audioDescription.setProtocol("RTP/SAVPF");
+		MediaDescriptionField mediaDescription = ssdp.getMediaDescription(mediaType);
+   		mediaDescription.setProtocol("RTP/SAVPF");
    		
    		FingerprintAttribute fp;
    		
-   		fp=audioDescription.getFingerprint();
+   		fp=mediaDescription.getFingerprint();
    		if(fp==null)
    			fp=new FingerprintAttribute();
    		fp.setFingerprint("E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47");
    		fp.setHashFunction("sha-1");
-		audioDescription.setFingerprint(fp);
+		mediaDescription.setFingerprint(fp);
 		
 		IceUfragAttribute ice_ufrag;
 		IcePwdAttribute ice_pwd;
 		
-		ice_ufrag=audioDescription.getIceUfrag();
-		ice_pwd=audioDescription.getIcePwd();
+		ice_ufrag=mediaDescription.getIceUfrag();
+		ice_pwd=mediaDescription.getIcePwd();
 		
 		if(ice_ufrag==null) {
 			ice_ufrag = new IceUfragAttribute();
@@ -221,24 +223,17 @@ public class MediaMetadata {
 		ice_ufrag.setUfrag(auth.getUfrag());
 		ice_pwd.setPassword(auth.getPassword());
 		
-		audioDescription.setIcePwd(ice_pwd);
-		audioDescription.setIceUfrag(ice_ufrag);
+		mediaDescription.setIcePwd(ice_pwd);
+		mediaDescription.setIceUfrag(ice_ufrag);
 		
 		SetupAttribute setup=new SetupAttribute("passive");
-		audioDescription.setSetup(setup);
+		mediaDescription.setSetup(setup);
 		
 		
 	
       return ssdp;         
     
    }
-   
-   /*
-   public String patchedSdp(final byte[] data) throws UnknownHostException, SdpException {
-	   return SdpUtils.patch("application/sdp", data, this);
-	  
-   }
-   */
    
    public static void main(String argv[]) {
 	   /*
@@ -417,9 +412,10 @@ public class MediaMetadata {
 			System.out.println("---------------secure---------------------");
 			System.out.println(secure);
 			
-			
-			
+			System.out.println("---------------original-------------------");
+			System.out.println(metadata.getSdp());
 			System.out.println(metadata);
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

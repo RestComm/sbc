@@ -22,22 +22,22 @@
 package org.restcomm.sbc.servlet.sip;
 
 import java.io.IOException;
-
-
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServlet;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
-import org.apache.commons.configuration.Configuration;
+import javax.servlet.sip.SipURI;
+
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.bo.Call;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
 import org.restcomm.sbc.media.MediaZone;
+import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.media.MediaSessionListener;
+import org.restcomm.sbc.managers.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 
@@ -48,75 +48,67 @@ import org.restcomm.sbc.managers.RouteManager;
  * @class   SBCCallServlet.java
  *
  */
-public class SBCCallServlet extends SipServlet {	
+public class SBCCallServlet extends SipServlet implements MediaSessionListener {	
 	private static final long serialVersionUID = 1L;	
 	
-	private Configuration configuration;
-	private SipFactory sipFactory;	
-	
-	private String routeMZIPAddress;
 	
 	private static transient Logger LOG = Logger.getLogger(SBCCallServlet.class);
 	
 	private UpstreamInviteProcessorChain upChain;
-	
+	private CallManager callManager;
 	private DownstreamInviteProcessorChain dwChain;
-	private boolean callStablished=false;
+	
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
+		super.init(servletConfig);
+		
+		callManager=CallManager.getCallManager();
 		
 		LOG.info("Call sip servlet has been started");
 		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> init()");
 	    }
-		super.init(servletConfig);
-		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
-		final ServletContext context = servletConfig.getServletContext();
-		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
-		ConfigurationCache.build(sipFactory, configuration);
-		
-	      routeMZIPAddress=ConfigurationCache.getTargetHost();
-		  
-		
-		if(LOG.isDebugEnabled()){
 			
-			LOG.debug("Route MZ Target:"+routeMZIPAddress);
-			LOG.debug("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
-			LOG.debug("UATTL:"+ConfigurationCache.getRegThrottleUATTL());
-			LOG.debug("MZTTL:"+ConfigurationCache.getRegThrottleMZTTL());
-	    }
-		super.init(servletConfig);
-		
 		upChain=new UpstreamInviteProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamInviteProcessorChain();
-		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
-		
-		
+		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());	
 		
 	}
 	
 	
 	@Override
-	protected void doInvite(SipServletRequest request) throws ServletException,
-			IOException {
-							
+	protected void doInvite(SipServletRequest request) throws ServletException,	IOException {
+		String direction="outbound";
+		if(RouteManager.isFromDMZ(request)) {
+			direction="inbound";
+		}
 		if(LOG.isTraceEnabled()) {	
-			LOG.trace("CALL REQUEST DMZ:"+RouteManager.isFromDMZ(request));	
+			LOG.trace("CALL REQUEST DMZ:"+direction);	
 			LOG.trace("CALL REQUEST SES:"+request.getSession());	
 		}
 		
-		upChain. process(new SIPMutableMessage(request));
+		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
+		SipURI toURI 	= (SipURI) request.getTo().  getURI();
 		
+		Call call=callManager.createCall(
+				request.getSession().getId(),
+				toURI.getUser(),
+				fromURI.getUser(),
+				direction,
+				null,
+				request.getFrom().getDisplayName());
 		
+		request.getSession().setAttribute(MessageUtil.CALL_MANAGER, call);
+		
+		upChain. process(new SIPMutableMessage(request));	
 		
 	}
 	
 	@Override
-	protected void doInfo(SipServletRequest request) throws ServletException,
-			IOException {
+	protected void doInfo(SipServletRequest request) throws ServletException, IOException {
 							
 		if(LOG.isTraceEnabled()) {	
 			LOG.trace("INFO REQUEST DMZ:"+RouteManager.isFromDMZ(request));	
@@ -129,19 +121,45 @@ public class SBCCallServlet extends SipServlet {
 	/**
 	 * {@inheritDoc}
 	 */
-	protected void doResponse(SipServletResponse response)
-			throws ServletException, IOException {
+	protected void doResponse(SipServletResponse response) throws ServletException, IOException {
 		
 		// dismissing
 		if(response.getStatus()==SipServletResponse.SC_TRYING) {
 			return;
 		}
-		/*
+		String callSessionId=getCallSessionId(response.getRequest());
+		Call call=callManager.getCall(callSessionId);
+		
 		if(response.getStatus()==SipServletResponse.SC_RINGING) {
-			response.setStatus(SipServletResponse.SC_SESSION_PROGRESS);
+			call.setStatus(Call.Status.RINGING);	
 		}
-		*/
-		dwChain.process(new SIPMutableMessage(response));
+		
+		else if(response.getStatus()>=SipServletResponse.SC_OK) {
+			if(call!=null) {
+				// Completed in the other leg?
+				call.setStatus(response.getStatus(), response.getReasonPhrase());
+				call.getMediaSession().stop();		
+			}
+			else {
+				callSessionId=response.getRequest().getSession().getId();	
+				call=callManager.getCall(callSessionId);
+				
+				if(call!=null) {
+					// Completed in the other leg?
+					call.setStatus(response.getStatus(), response.getReasonPhrase());
+					call.getMediaSession().stop();
+					
+				}
+			}
+		
+		}
+		
+		try {
+			dwChain.process(new SIPMutableMessage(response));
+		} catch (IllegalStateException e) {
+			LOG.warn(e.getMessage()+" not forwarding message");
+			return;
+		}
 		super.doResponse(response);
 	}
 	
@@ -151,24 +169,50 @@ public class SBCCallServlet extends SipServlet {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void doBye(SipServletRequest request) throws ServletException,
-			IOException {
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("Bye Request "+request.getMethod());
+	protected void doBye(SipServletRequest request) throws ServletException, IOException {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("CALL BYE SES:"+request.getSession());	
+			LOG.debug("Got Request BYE: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
+			LOG.debug("RTP Session might end");				
 		}
 		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
 		response.send();
+					
+		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 		
-		upChain.process(new SIPMutableMessage(request));
+		String callSessionId=getCallSessionId(request);	
+		Call call=callManager.getCall(callSessionId);
+		
+		/*if(call!=null) {
+			// Completed in the other leg?
+			call.setStatus(Call.Status.COMPLETED);
+			call.getMediaSession().stop();
+			
+		}
+		else {
+			callSessionId=request.getSession().getId();	
+			call=callManager.getCall(callSessionId);
+			
+			if(call!=null) {
+				// Completed in the other leg?
+				call.setStatus(Call.Status.COMPLETED);
+				call.getMediaSession().stop();
+				
+			}
+		}
+		*/
+		//if(mediaZone!=null)
+		//	mediaZone.finalize();
+		//else 
+		//	LOG.warn("NULL MediaZone on BYE :(");
 		
 		try {
-			MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-			mediaZone.finalize();
+			upChain.process(new SIPMutableMessage(request));
+		} catch (IllegalStateException e) {
+			LOG.warn(e.getMessage()+" not forwarding message");
+		}	
 		
-		} catch(RuntimeException e) {
-			LOG.error(e);
-		}
-
+		
 	}
 	
 	/**
@@ -176,22 +220,24 @@ public class SBCCallServlet extends SipServlet {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void doAck(SipServletRequest request) throws ServletException,
-			IOException {
+	protected void doAck(SipServletRequest request) throws ServletException, IOException {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("CALL ACK SES:"+request.getSession());	
 			LOG.debug("Got Request ACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
-			LOG.debug("RTP Session might start");
-			
-			
+			LOG.debug("RTP Session might start");				
 		}
-		try {
-			MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-			mediaZone.start();
-		} catch(RuntimeException e) {
-			LOG.error(e);
-		}
-		callStablished=true;
+		
+		String callSessionId=request.getSession().getId();	
+		Call call=callManager.getCall(callSessionId);
+		call.setStatus(Call.Status.BRIDGED);	
+		
+		MediaSession mediaSession=call.getMediaSession();
+		mediaSession.addMediaSessionListener(this);
+		mediaSession.start();
+		
+		//MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
+		//mediaZone.addMediaZoneListener(this);
+		//mediaZone.start();
 		
 
 	}
@@ -199,23 +245,47 @@ public class SBCCallServlet extends SipServlet {
 	@Override
 	protected void doCancel(SipServletRequest request) throws ServletException,
 			IOException {
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("Cancel Request "+request.getMethod());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("CALL CANCEL SES:"+request.getSession());	
+			LOG.debug("Got Request CANCEL: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
+			LOG.debug("RTP Session might end");				
 		}
 		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
 		response.send();
 		response = request.createResponse(SipServletResponse.SC_REQUEST_TERMINATED);
 		response.send();
-		
-		
+			
 		upChain.process(new SIPMutableMessage(request));
 		
+		String callSessionId=request.getSession().getId();	
+		Call call=callManager.getCall(callSessionId);
+		call.setStatus(Call.Status.COMPLETED);	
+		
+		call.getMediaSession().stop();
+		//MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+		
+		//mediaZone.finalize();
+		
+		
+	}
+	
+	private String getCallSessionId(SipServletRequest currentRequest) {
+		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		return oRequest.getSession().getId();
+	}
+
+
+	@Override
+	public void onRTPTimeout(String mediaType, String message) {
+		if(LOG.isInfoEnabled())
+			LOG.info("RTP Flow stuck on mediaType "+mediaType+":"+message);
+		/*
 		try {
-		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-		mediaZone.finalize();
-		} catch (RuntimeException e) {
-			LOG.error(e);
+			upChain. process(new SIPMutableMessage(callRequest.createCancel()));
+		} catch (IOException e) {
+			LOG.error("Cannot CANCEL on Media Timeout!");
 		}
+	*/
 		
 	}
 

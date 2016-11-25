@@ -76,7 +76,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	    
 	    AlgorithmCertificate algorithmCertificate = AlgorithmCertificate.RSA;
 	    
-	    try {
+	    
 	        DtlsSrtpServerProvider dtlsServerProvider = 
 	        		new DtlsSrtpServerProvider(	ProtocolVersion.DTLSv10,
 	        									ProtocolVersion.DTLSv12,
@@ -100,23 +100,17 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	    	channel.setChannel(rtpChannel);
 	    	
 	    	channel.setRtpListener(this);
-	    	
-	    } catch (RuntimeException e){
-	    	LOG.error("DTLS",e);
-	    }
+	    
 		
 	}
 	
 	@Override
 	public void start() throws UnknownHostException {
 		super.start();
-		try {
-			channel.setRemotePeer(getRemoteAddress());
-			
-		} 
-		catch (RuntimeException e) {
-			LOG.error("Runtime", e);
-		}
+		
+		channel.setRemotePeer(getRemoteAddress());
+		
+		
 		LOG.info("AVAILABLE:"+channel.isAvailable());
 		LOG.info("BOUND    :"+channel.isBound());
 		LOG.info("CONNECTED:"+channel.isConnected());
@@ -162,7 +156,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	public String toPrint() {
 		String value;
 		
-		value="CryptoMediaZone "+(metadata.isRtcpMultiplexed()?"Muxed (":"(")+this.hashCode()+") "+name+" "+host+" mp:SRTP("+rtpPort+") SRTCP("+(rtcpPort)+")]";
+		value="CryptoMediaZone "+(metadata.isRtcpMultiplexed()?"Muxed (":"(")+this.hashCode()+") "+mediaType+" "+host+" mp:SRTP("+rtpPort+") SRTCP("+(rtcpPort)+")]";
 		
 		return value;
 	}
@@ -172,7 +166,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		String value="";
 		
 		if(mediaZonePeer!=null)
-				value="CryptoMediaZone ["+mediaZonePeer.name+" "+mediaZonePeer.host+" mp:SRTP("+mediaZonePeer.rtpPort+") SRTCP("+(mediaZonePeer.rtcpPort)+")]";
+				value="CryptoMediaZone ["+mediaZonePeer.mediaType+" "+mediaZonePeer.host+" mp:SRTP("+mediaZonePeer.rtpPort+") SRTCP("+(mediaZonePeer.rtcpPort)+")]";
 		return value;
 	}
 	
