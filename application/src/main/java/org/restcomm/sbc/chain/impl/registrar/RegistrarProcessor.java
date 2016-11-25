@@ -194,7 +194,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			
 			try {
 				
-				address=mzResponse.getRequest().getAddressHeader("Contact");
+				address=mzResponse.getAddressHeader("Contact");
 				uri=(SipURI) address.getURI();
 				
 				LOG.info("URI "+uri.toString());
@@ -209,7 +209,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 			
 			if(mzExpires<=0) {
 				location=locationManager.unregister(user, domain);
-				if(LOG.isDebugEnabled()){
+				if(LOG.isDebugEnabled()&&location!=null){
 			          LOG.debug("UNREGISTER "+location.getUser());
 			    }
 				
@@ -222,6 +222,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 				
 				int cSeq=getCSeq(mzResponse.getRequest());
 				String callerID=mzResponse.getCallId();
+				
 				
 				if(!locationManager.exists(user, domain)) {
 					location=new Location(uri.getUser(), domain, uri.getHost(), uri.getPort(), uri.getTransportParam());

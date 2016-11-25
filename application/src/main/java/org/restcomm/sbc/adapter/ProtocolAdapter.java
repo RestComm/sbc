@@ -22,8 +22,6 @@ package org.restcomm.sbc.adapter;
 
 import java.io.IOException;
 import java.net.NoRouteToHostException;
-import javax.sdp.SdpException;
-import javax.sdp.SdpParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -134,9 +132,6 @@ public abstract class ProtocolAdapter {
 						LOG.error("No SDP content!", e);
 						return m;
 					
-					} catch (RuntimeException e) {
-						LOG.error("State SDP treatment", e);
-						return m;
 					} catch (org.mobicents.media.server.io.sdp.SdpException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
