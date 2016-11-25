@@ -44,7 +44,6 @@ date_created DATETIME NOT NULL,
 date_updated DATETIME NOT NULL,
 sender VARCHAR(30) NOT NULL,
 recipient VARCHAR(64) NOT NULL,
-phone_number_sid VARCHAR(34),
 status VARCHAR(20) NOT NULL,
 start_time DATETIME,
 end_time DATETIME,
@@ -59,10 +58,7 @@ uri MEDIUMTEXT NOT NULL,
 call_path VARCHAR(255),
 ring_duration INT,
 instanceid VARCHAR(255),
-conference_sid VARCHAR(34),
 muted BOOLEAN, 
-start_conference_on_enter BOOLEAN,
-end_conference_on_exit BOOLEAN,
 on_hold BOOLEAN
 );
 

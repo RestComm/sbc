@@ -1,8 +1,7 @@
 package org.restcomm.sbc.bo;
 
 import org.joda.time.DateTime;
-import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
-
+import org.restcomm.sbc.managers.Monitor;
 
 
 
@@ -15,7 +14,7 @@ import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
 public final class WhiteList extends BanList {
 
 	public WhiteList(DateTime dateCreated, DateTime dateExpires, String ipAddress, Sid accountSid,
-			Reason reason, Action action) {
+			Reason reason, Monitor.Action action) {
 		super(dateCreated, dateExpires, ipAddress, accountSid, reason, action);
 	}
 
