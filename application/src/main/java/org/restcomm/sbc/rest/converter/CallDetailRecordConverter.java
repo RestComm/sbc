@@ -67,7 +67,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeParentCallSid(cdr.getParentCallSid(), writer);
         writeTo(cdr.getTo(), writer);
         writeFrom(cdr.getFrom(), writer);
-        writePhoneNumberSid(cdr.getPhoneNumberSid(), writer);
         writeStatus(cdr.getStatus(), writer);
         writeStartTime(cdr.getStartTime(), writer);
         writeEndTime(cdr.getEndTime(), writer);
@@ -101,7 +100,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeParentCallSid(cdr.getParentCallSid(), object);
         writeTo(cdr.getTo(), object);
         writeFrom(cdr.getFrom(), object);
-        writePhoneNumberSid(cdr.getPhoneNumberSid(), object);
         writeStatus(cdr.getStatus(), object);
         writeStartTime(cdr.getStartTime(), object);
         writeEndTime(cdr.getEndTime(), object);
@@ -198,20 +196,6 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
     private void writeParentCallSid(final Sid sid, final JsonObject object) {
         if (sid != null) {
             object.addProperty("parent_call_sid", sid.toString());
-        }
-    }
-
-    private void writePhoneNumberSid(final Sid sid, final HierarchicalStreamWriter writer) {
-        writer.startNode("PhoneNumberSid");
-        if (sid != null) {
-            writer.setValue(sid.toString());
-        }
-        writer.endNode();
-    }
-
-    private void writePhoneNumberSid(final Sid sid, final JsonObject object) {
-        if (sid != null) {
-            object.addProperty("phone_number_sid", sid.toString());
         }
     }
 

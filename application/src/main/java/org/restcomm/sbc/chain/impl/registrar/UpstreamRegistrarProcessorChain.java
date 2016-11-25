@@ -61,16 +61,14 @@ public class UpstreamRegistrarProcessorChain extends DefaultSerialProcessorChain
 		c3.addProcessorListener(this);
 		Processor c4 = new B2BUABuilderProcessor(this);
 		c4.addProcessorListener(this);
-		Processor c5 = new NATHelperProcessor(this);
-		c5.addProcessorListener(this);
-		Processor c6 = new SanityCheckProcessor(this);
-		c6.addProcessorListener(this);		
-		Processor c7 = new RegistrarProcessor(this);
+		Processor c5 = new SanityCheckProcessor(this);
+		c5.addProcessorListener(this);		
+		Processor c6 = new RegistrarProcessor(this);
+		c6.addProcessorListener(this);
+		Processor c7 = new ProtocolAdaptProcessor(this);
 		c7.addProcessorListener(this);
-		Processor c8 = new ProtocolAdaptProcessor(this);
+		Processor c8 = new DispatchDPIProcessor("Dispatcher",this);
 		c8.addProcessorListener(this);
-		Processor c9 = new DispatchDPIProcessor("Dispatcher",this);
-		c9.addProcessorListener(this);
 		
 		
 		//set the chain of responsibility
@@ -83,7 +81,6 @@ public class UpstreamRegistrarProcessorChain extends DefaultSerialProcessorChain
 			link(c5, c6);
 			link(c6, c7);
 			link(c7, c8);
-			link(c8, c9);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);

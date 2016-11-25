@@ -160,8 +160,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
 				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
 				contactURI.setTransportParam(location.getTransport());
-				
-				message.setTargetLocalAddress(ConfigurationCache.getDomain());
+		
+				message.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
 				message.setTargetRemoteAddress(location.getHost());
 				message.setTargetTransport(location.getTransport().toUpperCase());
 
@@ -300,8 +300,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			LOG.error("", e);
 		} catch (ServletParseException e) {
 			LOG.error("", e);
-		} catch (RuntimeException e) {
-			LOG.error("", e);
 		} catch (UnsupportedEncodingException e) {
 			LOG.error("", e);
 		} catch (IOException e) {
@@ -370,7 +368,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
 			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
 			message.setTargetTransport(dmzResponse.getTransport().toUpperCase());
-			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
+			//mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
+			
+			LOG.warn(">>>>>>>>>>>>Aborting Message flow!, No linked Session available.");
+			
+			message.abort();
+			return;
 		}
 		
 		

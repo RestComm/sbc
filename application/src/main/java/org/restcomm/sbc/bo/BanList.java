@@ -23,7 +23,8 @@ package org.restcomm.sbc.bo;
 
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.Immutable;
-import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
+import org.restcomm.sbc.managers.Monitor;
+
 
 
 
@@ -40,12 +41,12 @@ public class BanList {
     private final String ipAddress;
     private final Sid accountSid;
     private final Reason reason;
-    private final Action action;
+    private final Monitor.Action action;
     
    
 
     public BanList(final DateTime dateCreated, final DateTime dateExpires, final String ipAddress,
-            final Sid accountSid, final Reason reason, final Action action) {
+            final Sid accountSid, final Reason reason, final Monitor.Action action) {
         super();
         this.dateCreated = dateCreated;
         this.dateExpires = dateExpires;
@@ -80,7 +81,7 @@ public class BanList {
         return reason;
     }
     
-    public Action getAction() {
+    public Monitor.Action getAction() {
     	return action;
     }
 
@@ -93,7 +94,7 @@ public class BanList {
         return new BanList(DateTime.now(), DateTime.now().plusDays(1), ipAddress, accountSid, reason, action);
     }
     
-    public BanList setAction(final Action action) {
+    public BanList setAction(final Monitor.Action action) {
         return new BanList(DateTime.now(), DateTime.now().plusDays(1), ipAddress, accountSid, reason, action);
     }
 
@@ -151,7 +152,7 @@ public class BanList {
         private String ipAddress;
         private Sid accountSid;
         private Reason reason;
-        private Action action;
+        private Monitor.Action action;
         
         private Builder() {
             super();
@@ -175,7 +176,7 @@ public class BanList {
             this.reason = reason;
         }
 		
-		public void setAction(final Action action) {
+		public void setAction(final Monitor.Action action) {
 			this.action = action;
 		}
 

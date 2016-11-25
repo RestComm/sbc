@@ -87,7 +87,6 @@ CREATE TABLE "restcomm_call_detail_records" (
 "date_updated" DATETIME NOT NULL,
 "sender" VARCHAR(15) NOT NULL,
 "recipient" VARCHAR(64) NOT NULL,
-"phone_number_sid" VARCHAR(34),
 "status" VARCHAR(20) NOT NULL,
 "start_time" DATETIME,
 "end_time" DATETIME,
@@ -100,10 +99,7 @@ CREATE TABLE "restcomm_call_detail_records" (
 "caller_name" VARCHAR(30),
 "uri" LONGVARCHAR NOT NULL,
 "ring_duration" INT,
-"conference_sid" VARCHAR(34), 
 "muted" BOOLEAN, 
-"start_conference_on_enter" BOOLEAN,
-"end_conference_on_exit" BOOLEAN,
 "on_hold" BOOLEAN
 );
 

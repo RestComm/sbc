@@ -38,6 +38,7 @@ public class MessageUtil {
 	public static String B2BUA_ORIG_CONTACT_ADDR ="X-SBC-OriginalContact-Address";
 	public static String B2BUA_ORIG_REGISTER_ATTR ="X-SBC-OriginalRegister";
 	public static String MEDIA_MANAGER ="X-SBC-MediaManager";
+	public static String CALL_MANAGER ="X-SBC-Call";
 	
 	public static void tracer(SipServletMessage message) {
 		

@@ -59,7 +59,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> init()");
+	          LOG.trace(">> Registart Servlet init()");
 	    }
 		super.init(servletConfig);
 		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
@@ -70,16 +70,7 @@ public class SBCRegistrarServlet extends SipServlet {
       
         routeMZIPAddress=ConfigurationCache.getTargetHost();
 		
-		
-		if(LOG.isDebugEnabled()){
-			LOG.debug("Route MZ Target:"+routeMZIPAddress);
-			LOG.debug("Registration Throttling enabled:"+ConfigurationCache.isRegThrottleEnabled());
-			LOG.debug("UATTL:"+ConfigurationCache.getRegThrottleUATTL());
-			LOG.debug("MZTTL:"+ConfigurationCache.getRegThrottleMZTTL());
-	    }
-		
 		upChain=new UpstreamRegistrarProcessorChain();
-		
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamRegistrarProcessorChain();
 		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());

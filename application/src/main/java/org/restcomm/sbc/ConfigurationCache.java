@@ -21,6 +21,9 @@
 package org.restcomm.sbc;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.servlet.sip.SipFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
@@ -37,19 +40,22 @@ public class ConfigurationCache {
 	private static String domain;
 	private static String targetHost;
 	private static String targetHAHost;
-	private static String jmxService;
 	private static SipFactory sipFactory;
 	private static boolean regThrottleEnabled;
 	private static int regThrottleMZTTL;
 	private static int regThrottleUATTL;
 	private static int mediaStartPort;
 	private static int mediaEndPort;
-
+	private static String ipOfDomain;
+	private static String apiVersion;
+	
 	private static transient Logger LOG = Logger.getLogger(ConfigurationCache.class);
+	
 	
 	private ConfigurationCache(SipFactory factory, Configuration configuration) {
 		sipFactory=factory;
 		
+		apiVersion=configuration.getString		("runtime-settings.api-version");	
 		domain=configuration.getString		("runtime-settings.domain");	
 	    targetHost=configuration.getString		("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
 	    targetHAHost=configuration.getString	("runtime-settings.routing-policy.militarized-zone-target.failover-ip-address");	
@@ -58,7 +64,15 @@ public class ConfigurationCache {
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
         mediaStartPort=configuration.getInt		("media-proxy.start-port");
         mediaEndPort=configuration.getInt		("media-proxy.end-port");
-        jmxService=configuration.getString	("runtime-settings.jmx-management.service");	
+        ipOfDomain="";
+		
+		try {
+			ipOfDomain=InetAddress.getByName(domain).getHostAddress();
+		} catch (UnknownHostException e) {
+			LOG.fatal("Cannot resolve IP Address of "+domain);
+			System.exit(100);
+		}
+        	
         
 	}
 	
@@ -110,8 +124,13 @@ public class ConfigurationCache {
 	}
 
 
-	public static String getJmxService() {
-		return jmxService;
+	public static String getIpOfDomain() {
+		return ipOfDomain;
+	}
+
+
+	public static String getApiVersion() {
+		return apiVersion;
 	}
 
 

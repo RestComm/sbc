@@ -19,8 +19,6 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-import javax.servlet.sip.Address;
-import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -35,8 +33,6 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
 
 
-
-
 /**
  * @author ocarriles@eolos.la (Oscar Andres Carriles)
  * @date 13 sept. 2016 18:10:42
@@ -47,8 +43,6 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
 
-	private Address contactAddress=null;
-	
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
 	}
@@ -72,78 +66,39 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 	}
 
 	private void processResponse(SIPMutableMessage message) {
+		SipServletResponse response=(SipServletResponse) message.getContent();
+		SipServletRequest request=response.getRequest();
+		//SipServletRequest orequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
-		}
-	}
-
-	private void processRequest(SIPMutableMessage message) {
-		
-		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
-		
-		if (LOG.isTraceEnabled()) {
-			LOG.trace(">> processRequest()");
-			LOG.trace(">> message: \n" + dmzRequest.toString());
-		}
-		if(!dmzRequest.isInitial()) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("No initial request, NAT does not apply.");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
-		}
-
-		if (message.getDirection()==Message.SOURCE_MZ) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("-----> MZ");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
-		}
-		
-		try {
-			contactAddress = dmzRequest.getAddressHeader("Contact");
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("Contact "+contactAddress.toString());
-			} 
-		} catch (ServletParseException e) {
-			LOG.error("Cannot get Contact Address!");
-		} catch (IllegalStateException e) {
-			LOG.error("",e);
-			message.setContent(dmzRequest);
-			return;
+			LOG.trace(">> request Coming from host: "+request.getRemoteHost());
+			LOG.trace(">> request Coming from port: "+request.getRemotePort());		
 			
 		}
-		SipURI uri = (SipURI) contactAddress.getURI();
-
 		
-		if(uri.getHost().equals(dmzRequest.getRemoteAddr())) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace(">> ByPassing ...");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
-		 
+		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
+		SipURI contactURI = null;
+		
+		contactURI = ConfigurationCache.getSipFactory().createSipURI(fromURI.getUser(), request.getRemoteHost());
+		contactURI.setPort(request.getRemotePort());
+		
+		if(LOG.isTraceEnabled()){ 
+			LOG.trace("Patching NATed Contact Address to: "+contactURI.toString());
 		}
-	
+		
 		/*
 		 * Replace Contact address from IP/Port the message is coming from
 		 */
 
-		try {
-			uri.setHost(message.getSourceLocalAddress());
-			uri.setPort(dmzRequest.getLocalPort());
-			
-		} catch (IllegalStateException e) {
-			LOG.error("",e);
-			message.setContent(dmzRequest);
-			return;
-			
-		}
-		dmzRequest.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(uri));
-		message.setContent(dmzRequest);
-		return;
+		response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
+		
+		message.setContent(response);
+		
+	}
 
+	private void processRequest(SIPMutableMessage message) {
+		
 	}
 
 	@Override
@@ -166,7 +121,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		if( sm instanceof SipServletRequest) {
 			processRequest(m);
 		}
-		if (message instanceof SipServletResponse) {
+		if (sm instanceof SipServletResponse) {
 			processResponse(m);
 		}
 		

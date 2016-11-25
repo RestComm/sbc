@@ -35,7 +35,10 @@ import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.media.CryptoMediaZone;
 import org.restcomm.sbc.media.MediaMetadata;
+import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.media.MediaZone;
+import org.restcomm.sbc.bo.Call;
+import org.restcomm.sbc.managers.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 
 
@@ -55,6 +58,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
+	private CallManager callManager=CallManager.getCallManager();
+	
 	
 	public InviteProcessor(ProcessorChain chain) {
 		super(chain);
@@ -69,6 +74,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
+		
 		MediaZone audioZone = null;
 
 		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
@@ -95,9 +101,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 			
 		} catch (IOException e1) {
 			LOG.error("Unavailable media port ",e1);
-		} catch (RuntimeException e2) {
-			LOG.error("",e2);
-		}
+		} 
+		
 	
 		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
 		
@@ -105,8 +110,11 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	}
 	
 	private void processInviteResponse(SIPMutableMessage message) {
-		
 		SipServletResponse response=(SipServletResponse) message.getContent();
+		
+		String callSessionId=response.getRequest().getSession().getId();
+		Call call=callManager.getCall(callSessionId);
+		MediaSession mediaSession=call.getMediaSession();
 		
 		if(response.getStatus()==SipServletResponse.SC_OK) {
 			MediaZone audioZone=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
@@ -135,12 +143,12 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 			    }
 				message.setMetadata(metadata);
 				peerAudioZone.attach(audioZone);
+				mediaSession.addMediaZone(audioZone);
+				
 				
 			} catch (IOException e) {
 				LOG.error(message.getSourceLocalAddress()+":"+audioZone.getRTPPort(),e);
-			} catch (RuntimeException e2) {
-				LOG.error("",e2);
-			} 
+			}  
 			
 			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
 			
@@ -180,6 +188,12 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private void processCancelResponse(SIPMutableMessage message)  {	
 		
 	}
+	
+	private String getCallSessionId(SipServletRequest currentRequest) {
+		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		return oRequest.getSession().getId();
+	}
+
 
 
 	public String getName() {
