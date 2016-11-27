@@ -35,6 +35,7 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
+import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
 import org.restcomm.sbc.chain.impl.TopologyHideProcessor;
 
@@ -58,15 +59,17 @@ public class DownstreamInviteProcessorChain extends DefaultSerialProcessorChain 
 		
 		Processor c3 = new B2BUABuilderProcessor(this);
 		c3.addProcessorListener(this);
-		Processor c4 = new InviteProcessor(this);
+		Processor c4 = new NATHelperProcessor(this);
 		c4.addProcessorListener(this);
-		
-		Processor c5 = new ProtocolAdaptProcessor(this);
+		Processor c5 = new InviteProcessor(this);
 		c5.addProcessorListener(this);
-		Processor c6 = new TopologyHideProcessor(this);
+		
+		Processor c6 = new ProtocolAdaptProcessor(this);
 		c6.addProcessorListener(this);
-		Processor c7 = new DispatchDPIProcessor("Dispatch", this);
+		Processor c7 = new TopologyHideProcessor(this);
 		c7.addProcessorListener(this);
+		Processor c8 = new DispatchDPIProcessor("Dispatch", this);
+		c8.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		try {
@@ -76,6 +79,7 @@ public class DownstreamInviteProcessorChain extends DefaultSerialProcessorChain 
 			link(c4, c5);
 			link(c5, c6);
 			link(c6, c7);
+			link(c7, c8);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);

@@ -32,6 +32,7 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
+import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
@@ -60,13 +61,15 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 		Processor c3 = new B2BUABuilderProcessor(this);
 		c3.addProcessorListener(this);
 		Processor c4 = new SanityCheckProcessor(this);
-		c4.addProcessorListener(this);
+		c4.addProcessorListener(this);	
 		Processor c5 = new InviteProcessor(this);
 		c5.addProcessorListener(this);
 		Processor c6 = new ProtocolAdaptProcessor(this);
 		c6.addProcessorListener(this);
-		Processor c7 = new DispatchDPIProcessor("Dispatch", this);
+		Processor c7 = new NATHelperProcessor(this);
 		c7.addProcessorListener(this);
+		Processor c8 = new DispatchDPIProcessor("Dispatch", this);
+		c8.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		
@@ -77,6 +80,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			link(c4, c5);
 			link(c5, c6);
 			link(c6, c7);
+			link(c7, c8);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);

@@ -166,6 +166,10 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		
 	}
 	
+	private void processPrackRequest(SIPMutableMessage message)  {
+		
+	}
+	
 	private void processInfoRequest(SIPMutableMessage message)  {
 		
 	}
@@ -236,6 +240,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 				processByeRequest(m);
 			else if(sm.getMethod().equals("ACK"))
 				processAckRequest(m);
+			else if(sm.getMethod().equals("PRACK"))
+				processPrackRequest(m);
 			else if(sm.getMethod().equals("CANCEL"))
 				processCancelRequest(m);
 			else if(sm.getMethod().equals("INFO"))

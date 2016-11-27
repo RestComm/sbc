@@ -19,6 +19,10 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
+import java.net.InetSocketAddress;
+
+import javax.servlet.sip.Address;
+import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -31,6 +35,10 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.bo.Location;
+import org.restcomm.sbc.bo.LocationNotFoundException;
+import org.restcomm.sbc.managers.LocationManager;
+import org.restcomm.sbc.managers.MessageUtil;
 
 
 /**
@@ -42,6 +50,7 @@ import org.restcomm.sbc.ConfigurationCache;
 public class NATHelperProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
+	private LocationManager locationManager=LocationManager.getLocationManager();
 
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
@@ -89,16 +98,56 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		
 		/*
 		 * Replace Contact address from IP/Port the message is coming from
+		 * Used mainly for Registration, Location subsystem pick NATed data
+		 * from here
 		 */
-
-		response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
+		try {
+			if(!response.getAddressHeaders("Contact").hasNext())
+				response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
+			else
+				LOG.warn("Contact address exists, CANNOT patch NATed Contact Address to: "+contactURI.toString());
+		} catch (ServletParseException e) {
+				LOG.error("CANNOT Patch NATed Contact Address to: "+contactURI.toString(), e);
+		}
 		
 		message.setContent(response);
 		
 	}
 
 	private void processRequest(SIPMutableMessage message) {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(message.toString());
+		}
 		
+		SipServletRequest request=(SipServletRequest) message.getContent();
+		SipURI toURI 	= (SipURI) request.getTo().getURI();
+		
+		/*
+		 * If the request goes to DMZ and it is not inital
+		 * it means that the original request came from a 
+		 * previously registered user.
+		 * has to patch NATed routes to reach the endpoint.
+		 */
+		if(message.getDirection()==Message.SOURCE_MZ){
+			if(!request.isInitial()) {
+				Location location = null;
+				try {
+					location = locationManager.getLocation(toURI.getUser(), ConfigurationCache.getDomain());
+				} catch (LocationNotFoundException e) {
+					LOG.error("User not found!",e);
+					return;
+				}
+				toURI.setHost(location.getHost());
+				toURI.setPort(location.getPort());
+				request.setRequestURI(toURI);
+				if(LOG.isTraceEnabled()){ 
+					LOG.trace("Patching NATed Contact requestURI       : "+toURI.toString());
+				}
+			}
+		
+		}
+
+		message.setContent(request);		
 	}
 
 	@Override
