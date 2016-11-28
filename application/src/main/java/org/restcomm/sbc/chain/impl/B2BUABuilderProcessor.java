@@ -166,8 +166,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				message.setTargetTransport(location.getTransport().toUpperCase());
 
 			} catch (LocationNotFoundException e) {
+				if (LOG.isTraceEnabled()) {			
+					LOG.error(e);
+				}
+				
 				SipServletResponse response =
-				request.createResponse(SipServletResponse.SC_DOES_NOT_EXIST_ANYWHERE);
+				request.createResponse(SipServletResponse.SC_FORBIDDEN);
 				try {
 					response.send();
 				} catch (IOException e1) {
@@ -242,36 +246,33 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("NOT Initial Request " + request.getMethod());
 				}
+				
+				SipSession session = request.getSession();
+				SipSession linkedSession = helper.getLinkedSession(session);
 
-				if (request.getMethod().equals("BYE")) {
-					SipSession session = request.getSession();
-					SipSession linkedSession = helper.getLinkedSession(session);
-					newRequest = linkedSession.createRequest("BYE");
-					
+				if(linkedSession==null) {
+					// what else can I do?
+					LOG.warn("No linked session for request "+request.getMethod());
+					linkedSession=session;
+				}
+				
+				if (request.getMethod().equals("BYE")) {		
+					newRequest = linkedSession.createRequest("BYE");		
 				} 
 				else if (request.getMethod().equals("ACK")) {
-					SipSession session = request.getSession();
-					SipSession linkedSession = helper.getLinkedSession(session);
-					newRequest = linkedSession.createRequest("ACK");
-					
+					newRequest = linkedSession.createRequest("ACK");		
+				} 
+				else if (request.getMethod().equals("PRACK")) {
+					newRequest = linkedSession.createRequest("PRACK");		
 				} 
 				else if (request.getMethod().equals("INFO")) {
-					SipSession session = request.getSession();
-					SipSession linkedSession = helper.getLinkedSession(session);
 					newRequest = linkedSession.createRequest("INFO");
-					newRequest.setContent(request.getContent(), request.getContentType());
-					
+					newRequest.setContent(request.getContent(), request.getContentType());		
 				} 
-				
 				else if (request.getMethod().equals("CANCEL")) {
-					
-					SipSession session = request.getSession();
-					SipSession linkedSession = helper.getLinkedSession(session);
 					SipServletRequest originalRequest = (SipServletRequest) linkedSession
 							.getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
-					newRequest = helper.getLinkedSipServletRequest(originalRequest).createCancel();
-					
-					
+					newRequest = helper.getLinkedSipServletRequest(originalRequest).createCancel();	
 				} 
 				else {
 					LOG.error(request.getMethod() + " not implemented!");

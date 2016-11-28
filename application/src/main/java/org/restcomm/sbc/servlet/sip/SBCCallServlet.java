@@ -242,6 +242,21 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 
 	}
 	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void doPrack(SipServletRequest request) throws ServletException, IOException {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("CALL PRACK SES:"+request.getSession());	
+			LOG.debug("Got Request PRACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
+					
+		}
+		upChain.process(new SIPMutableMessage(request));
+
+	}
+	
 	@Override
 	protected void doCancel(SipServletRequest request) throws ServletException,
 			IOException {
@@ -276,10 +291,14 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 
 
 	@Override
-	public void onRTPTimeout(String mediaType, String message) {
+	public void onRTPTimeout(MediaSession session, MediaZone zone, String message) {
 		if(LOG.isInfoEnabled())
-			LOG.info("RTP Flow stuck on mediaType "+mediaType+":"+message);
+			LOG.info("RTP Flow stuck on mediaType "+zone.getMediaType()+":"+message);
 		/*
+		SipServletRequest invite = ConfigurationCache.getSipFactory().createRequest(resp
+				.getApplicationSession(), "INVITE", session
+				.getRemoteParty(), secondPartyAddress);
+		
 		try {
 			upChain. process(new SIPMutableMessage(callRequest.createCancel()));
 		} catch (IOException e) {
