@@ -71,8 +71,8 @@ public class MediaSession implements MediaZoneListener {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==MediaSessionListener.class) {             
-	             ((MediaSessionListener)listeners[i+1]).onRTPTimeout(mediaType, message);
+	         if (listeners[i] instanceof MediaZoneListener) {             
+	             //((MediaZoneListener)listeners[i+1]).onRTPTimeout(mediaType, message);
 	         }
 	         
 	     }
@@ -102,29 +102,29 @@ public class MediaSession implements MediaZoneListener {
 	}
 	
 	public enum State {
-        ACTIVE("active"), CLOSED("closed"), INACTIVE("inactive");
+		ACTIVE("active"), CLOSED("closed"), INACTIVE("inactive");
 
-        private final String text;
+		private final String text;
 
-        private State(final String text) {
-            this.text = text;
-        }
+		private State(final String text) {
+		    this.text = text;
+		}
 
-        public static State getValueOf(final String text) {
-            State[] values = values();
-            for (final State value : values) {
-                if (value.toString().equals(text)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(text + " is not a valid media session state.");
-        }
+		public static State getValueOf(final String text) {
+		    State[] values = values();
+		    for (final State value : values) {
+		        if (value.toString().equals(text)) {
+		            return value;
+		        }
+		    }
+		    throw new IllegalArgumentException(text + " is not a valid media session state.");
+		}
 
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
+		@Override
+		public String toString() {
+		    return text;
+		}
+	}
 	
 	public boolean isActive() {
 		return state==State.ACTIVE?true:false;
@@ -141,7 +141,7 @@ public class MediaSession implements MediaZoneListener {
 	public String getSessionId() {
 		return sessionId;
 	}
-
+	
 	@Override
 	public void onRTPTimeout(MediaZone mediaZone, String message) {
 		this.fireRTPTimeoutEvent(mediaZone.getMediaType(), message);
