@@ -31,6 +31,6 @@ import java.util.EventListener;
  */
 public interface MediaSessionListener extends EventListener {
 	
-	void onRTPTimeout(String mediaType, String message);
+	void onRTPTimeout(MediaSession session, MediaZone zone, String message);
 
 }
