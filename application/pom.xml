@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.restcomm</groupId>
 		<artifactId>restcomm-sbc</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.30</version>
 	</parent>
 	
 	<artifactId>sbc-application</artifactId>
