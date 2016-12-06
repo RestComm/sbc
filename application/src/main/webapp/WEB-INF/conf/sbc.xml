@@ -47,6 +47,22 @@
                	</jmx-management>
                 
                 <domain>10.0.0.10</domain>
+                
+                <nat-helper>
+                	<!-- The SBC acts as a NAT helper.
+                		 Some endpoints publish their local IP contact address,
+                		 this way, responses to these endpoints will never reach its target back.
+                		 The SBC checks for the real NATed address from where the message is coming
+                		 and fixes the contact in the REGISTER/Location cache.
+                		 Real life is a bit more complex. Some routed networks must not be fixed because
+                		 they are routable in the LAN. Here comes the exceptions -->
+                		<local-networks>
+                		<!-- 
+		                	<local-address>192.168.88.0/24</local-address>
+		                	<local-address>192.168.120.0/24</local-address>
+		                -->
+		                </local-networks>
+                </nat-helper>
 
                 <!-- If set to true RestComm will use the To header to determine the destination.
                         If set to false RestComm will use the Request URI to determine the destination. -->
@@ -85,7 +101,7 @@
                 <routing-policy>
                         <!-- Parameters for static routing policiy provider -->
                         <militarized-zone-target>
-	                        <ip-address>192.168.120.2</ip-address>
+	                        <ip-address>192.168.120.96</ip-address>
 	                        
 	                        <failover-ip-address>192.168.120.6</failover-ip-address>
 

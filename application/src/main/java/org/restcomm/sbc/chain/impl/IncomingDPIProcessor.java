@@ -21,31 +21,36 @@ package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 
-import javax.sdp.SdpException;
 
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
+
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.call.CallManager;
+import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.media.MediaMetadata;
-
+import org.restcomm.sbc.media.MediaController;
+import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.media.MediaZone;
 
 
 
 /**
- * @author ocarriles@eolos.la (Oscar Andres Carriles)
- * @date 13 sept. 2016 18:10:42
- * @class NATHelperProcessor.java
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    28 nov. 2016 9:15:15
+ * @class   IncomingDPIProcessor.java
  *
  */
 public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
-	@SuppressWarnings("unused")
 	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
 	
 	public IncomingDPIProcessor(ProcessorChain callback) {
@@ -98,6 +103,7 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m = (SIPMutableMessage) message;
 		SipServletMessage sm=m.getContent();
+		MediaSession mediaSession;
 		
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
@@ -106,11 +112,22 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		if(sm.getContentLength()>0 &&
 			sm.getContentType().equals("application/sdp")) {
 			try {
-				MediaMetadata metadata=MediaMetadata.build(MediaMetadata.MEDIATYPE_AUDIO, new String(sm.getRawContent()));
-				m.setMetadata(metadata);
-			} catch (IOException | org.mobicents.media.server.io.sdp.SdpException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
+				if(sm instanceof SipServletRequest) {
+					mediaSession=CallManager.getCallManager().getMediaSession(sm.getSession().getId());
+					mediaSession.setOffer(new MediaController(MediaZone.Direction.OFFER, new String(sm.getRawContent())));	
+				}
+				else {	
+					SipServletResponse response=(SipServletResponse) sm;
+					String callSessionId=getCallSessionId(response.getRequest());
+					mediaSession=CallManager.getCallManager().getMediaSession(callSessionId);
+					mediaSession.setAnswer(new MediaController(MediaZone.Direction.ANSWER, new String(sm.getRawContent())));
+				}
+				m.setMetadata(mediaSession);
+				
+				
+			} catch (IOException | SdpException  e) {
+				LOG.error("Invalid MediaMetadata!", e);
 			}
 			
 		}
@@ -119,6 +136,10 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		processMessage(m);
 		
 		
+	}
+	private String getCallSessionId(SipServletRequest currentRequest) {
+		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		return oRequest.getSession().getId();
 	}
 
 }

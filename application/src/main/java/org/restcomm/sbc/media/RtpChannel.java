@@ -509,7 +509,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
 	    AlgorithmCertificate algorithmCertificate = AlgorithmCertificate.RSA;
 	    DtlsSrtpServerProvider dtlsServerProvider = null;
 	    
-	    try {
+	    
 	        dtlsServerProvider = 
 	        		new DtlsSrtpServerProvider(	ProtocolVersion.DTLSv10,
 	        									ProtocolVersion.DTLSv12,
@@ -520,9 +520,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
 	        
 	       
 	       
-	    } catch (RuntimeException e){
-	    	e.printStackTrace();
-	    }
+	    
     	RtpChannel channel=new RtpChannel(dtlsServerProvider);
     	
 		DatagramChannel rtpChannel = DatagramChannel.open();

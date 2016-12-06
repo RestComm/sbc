@@ -27,6 +27,7 @@ import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.BanListDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.WhiteListDao;
+import org.restcomm.sbc.managers.Monitor;
 import org.restcomm.sbc.bo.Account;
 import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.BanList.Reason;
@@ -39,7 +40,6 @@ import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.rest.converter.BanListConverter;
 import org.restcomm.sbc.rest.converter.BanListListConverter;
 import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
-import org.restcomm.sbc.servlet.sip.SBCMonitorServlet.Action;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -169,7 +169,7 @@ public abstract class WhiteListsEndpoint extends SecuredEndpoint {
         if (banList == null)
             return status(NOT_FOUND).build();
         
-        banList=banList.setAction(Action.REMOVE);
+        banList=banList.setAction(Monitor.Action.REMOVE);
        
         dao.updateBanList(banList);
 
@@ -291,7 +291,7 @@ public abstract class WhiteListsEndpoint extends SecuredEndpoint {
         builder.setAccountSid(new Sid(accountSid));
         String ipAddress = data.getFirst("IpAddress");
         builder.setipAddress(ipAddress);
-        builder.setAction(Action.APPLY);
+        builder.setAction(Monitor.Action.APPLY);
         builder.setReason(Reason.ADMIN);
         return builder.build();
     }

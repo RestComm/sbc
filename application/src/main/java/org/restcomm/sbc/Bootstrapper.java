@@ -39,6 +39,7 @@ import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
+import org.restcomm.sbc.managers.Monitor;
 import org.restcomm.sbc.managers.NetworkManager;
 import org.restcomm.sbc.managers.jmx.JMXProvider;
 import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
@@ -123,6 +124,9 @@ public final class Bootstrapper extends SipServlet {
 		}
        
         Version.printVersion();
+        
+        Monitor monitor=Monitor.getMonitor();
+        monitor.start();
        
         
         

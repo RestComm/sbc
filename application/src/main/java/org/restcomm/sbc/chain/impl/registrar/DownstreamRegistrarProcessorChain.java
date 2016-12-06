@@ -31,6 +31,7 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.ProcessorListener;
 import org.restcomm.sbc.chain.impl.DispatchDPIProcessor;
 import org.restcomm.sbc.chain.impl.IncomingDPIProcessor;
+import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
@@ -56,14 +57,16 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 		c1.addProcessorListener(this);
 		Processor c2 = new B2BUABuilderProcessor(this);
 		c2.addProcessorListener(this);
-		Processor c3 = new RegistrarProcessor(this);
+		Processor c3 = new NATHelperProcessor(this);
 		c3.addProcessorListener(this);
-		Processor c4 = new ProtocolAdaptProcessor(this);
+		Processor c4 = new RegistrarProcessor(this);
 		c4.addProcessorListener(this);
-		Processor c5 = new TopologyHideProcessor(this);
+		Processor c5 = new ProtocolAdaptProcessor(this);
 		c5.addProcessorListener(this);
-		Processor c6 = new DispatchDPIProcessor("Dispatcher",this);
+		Processor c6 = new TopologyHideProcessor(this);
 		c6.addProcessorListener(this);
+		Processor c7 = new DispatchDPIProcessor("Dispatcher",this);
+		c7.addProcessorListener(this);
 		
 		// set the chain of responsibility
 		try {
@@ -72,6 +75,7 @@ public class DownstreamRegistrarProcessorChain extends DefaultSerialProcessorCha
 			link(c3, c4);
 			link(c4, c5);
 			link(c5, c6);
+			link(c6, c7);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);

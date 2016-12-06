@@ -1,28 +1,27 @@
-package org.restcomm.sbc.servlet.sip;
+package org.restcomm.sbc.managers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-//import javax.servlet.sip.SipApplicationSession;
-import javax.servlet.sip.SipFactory;
-import javax.servlet.sip.SipServlet;
+
 import javax.swing.event.EventListenerList;
+
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-//import org.mobicents.servlet.sip.core.SipManager;
-//import org.mobicents.servlet.sip.message.MobicentsSipApplicationSessionFacade;
 import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.call.Call;
+import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.bo.Statistics;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.BlackListDao;
+import org.restcomm.sbc.dao.CallDetailRecordsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
-import org.restcomm.sbc.managers.ScriptDelegationService;
 import org.restcomm.sbc.managers.jmx.JMXProvider;
 import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
 import org.restcomm.sbc.notification.AlertListener;
@@ -31,39 +30,29 @@ import org.restcomm.sbc.notification.SuspectActivityElectable;
 import org.restcomm.sbc.notification.impl.SuspectActivityCache;
 
 
-public class SBCMonitorServlet extends SipServlet {
-	
-	private static SBCMonitorServlet monitor;
 
-	private static transient Logger LOG = Logger.getLogger(SBCMonitorServlet.class);
-	private static final long serialVersionUID = -9170263176960604645L;
-	private SipFactory sipFactory;
-	//private SipManager sipManager;	
+
+public class Monitor {
+	
+	private static Monitor monitor;
+
+	private static transient Logger LOG = Logger.getLogger(Monitor.class);
+	
 	
 	private EventListenerList listenerList = new EventListenerList();
 	
 	private final int CACHE_MAX_ITEMS      	= 1024;
 	private final int CACHE_ITEM_TTL 		= 60; 	// segs
-	private final long LOOP_INTERVAL		= 3600L;
+	private final long LOOP_INTERVAL		= 60L;
 	
 	
 	@SuppressWarnings("unused")
 	private SuspectActivityCache<String, SuspectActivityElectable> cache;
 	private DaoManager daoManager;
 	private JMXProvider jmxManager;
+	private CallManager callManager;
 	
-	
-	@Override
-	public void init(ServletConfig servletConfig) throws ServletException {
-		super.init(servletConfig);
-		LOG.info("Monitor sip servlet has been started");
-		
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> init()");
-	    }
-		
-		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
-		
+	private Monitor() {
 		
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
@@ -72,12 +61,14 @@ public class SBCMonitorServlet extends SipServlet {
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}
+		callManager=CallManager.getCallManager();
 		
-		monitor=this;
-		execute();
 	}
 	
-	public static SBCMonitorServlet getMonitor() {
+	
+	public static Monitor getMonitor() {
+		if(monitor==null)
+			monitor=new Monitor();
 		return monitor;
 		
 	}
@@ -123,7 +114,7 @@ public class SBCMonitorServlet extends SipServlet {
 	     }
 	 }
 	
-	private void applyBanningRules() {
+	private synchronized void  applyBanningRules() {
 		BlackListDao blackListDao = daoManager.getBlackListDao();
 		List<BanList> entries = blackListDao.getBanLists();
 		int status=0;
@@ -189,6 +180,28 @@ public class SBCMonitorServlet extends SipServlet {
 		
 	}
 	
+	private synchronized void synchronizeCDR() {
+		CallDetailRecordsDao cdrDao = daoManager.getCallDetailRecordsDao();
+		Collection<Call> entries = callManager.getCalls();
+		ArrayList<String> removed=new ArrayList<String>();
+		
+		for(Call call:entries) {
+			switch(call.getStatus()) {
+				case FAILED:
+				case COMPLETED:
+					cdrDao.addCallDetailRecord(call.getCdr());
+					removed.add(call.getSessionId());
+					break;
+				default:
+					break;		
+			}
+		}	
+		for(String id:removed) {
+			callManager.remove(id);	
+		}	
+	
+	}
+	
 	private void writeStats() {
 		StatisticsDao statsDao = daoManager.getStatisticsDao();
 		
@@ -207,7 +220,7 @@ public class SBCMonitorServlet extends SipServlet {
 		
 	}
 	public int getLiveCallCount() {	 
-		return 0;
+		return callManager.getCalls().size();
 	    // return sipManager.getActiveSipApplicationSessions();        
 	}
 	
@@ -221,21 +234,12 @@ public class SBCMonitorServlet extends SipServlet {
 	    // return sipManager.getRejectedSipApplicationSessions();        
 	}
 	
-	private void execute() {
+	public void start() {
 		
 		ScheduledExecutorService scheduledExecutorService =
-		        Executors.newScheduledThreadPool(5);
+		        Executors.newSingleThreadScheduledExecutor();
 
-		
-		    scheduledExecutorService.scheduleWithFixedDelay(new Task() {
-		        @SuppressWarnings("unused")
-				public Object call() throws Exception {
-		        	if(LOG.isInfoEnabled()) {
-						LOG.info("Monitor Thread tick pass");
-					}
-		            return "Called!";
-		        }
-		    },
+		    scheduledExecutorService.scheduleWithFixedDelay(new Task(),
 		    LOOP_INTERVAL,
 		    LOOP_INTERVAL,
 		    TimeUnit.SECONDS);
@@ -249,11 +253,22 @@ public class SBCMonitorServlet extends SipServlet {
 		public void run() {
 			//SipApplicationSession aSession = sipFactory.createApplicationSession();
 			//sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
+			//System.out.println(DateTime.now()+" Monitor Thread tick pass");
 			if(LOG.isInfoEnabled()) {
 				LOG.info("Monitor Thread tick pass");
 			}
-			applyBanningRules();
-			writeStats();
+			try {
+				
+				synchronizeCDR();
+			
+				applyBanningRules();
+				
+				writeStats();
+				
+			} catch (Exception e) {
+				LOG.error("OUCH!",e);
+				
+			}
 			
 		}
 		
@@ -284,6 +299,12 @@ public class SBCMonitorServlet extends SipServlet {
             return text;
         }
     };
+    
+    public static void main(String argv[]) {
+    	Monitor monitor=Monitor.getMonitor();
+    	monitor.start();
+    }
+
 
 
 }

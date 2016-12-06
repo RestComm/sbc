@@ -36,7 +36,6 @@ import org.mobicents.media.server.impl.rtp.crypto.DtlsSrtpServerProvider;
 import org.mobicents.media.server.impl.srtp.DtlsHandler;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
 import org.restcomm.sbc.media.MediaZone.Proxy;
-import org.restcomm.sbc.media.MediaZone.RTCPProxy;
 import org.restcomm.sbc.media.dtls.DtlsConfiguration;
 
 
@@ -55,28 +54,30 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	private DtlsHandler dtlsHandler;
 	private RtpChannel channel;
 	
-	public CryptoMediaZone(MediaMetadata metadata, int port) throws IOException {
-		super(metadata, port);
-		channel.bind(rtpChannel, port);
+	
+	public CryptoMediaZone(Direction direction, String mediaType, String originalHost, int originalPort) throws UnknownHostException {
+		super(direction, mediaType, originalHost, originalPort);
+		DatagramChannel rtpChannel;
+		try {
+			rtpChannel = DatagramChannel.open();
+			channel.bind(rtpChannel,  originalPort);
+		} catch (IOException e) {
+			LOG.error("Cannot bind!");
+		}
 		
-		
-	}
-	public CryptoMediaZone(MediaMetadata metadata) throws IOException {
-		super(metadata);
-		init(metadata);
-
-		channel.setChannel(rtpChannel);
-		
+				
 	}
 	
-	private void init(MediaMetadata metadata) {
+	
+	
+	private void init() {
 		//Dtls Server Provider
 		   
 	    CipherSuite[] cipherSuites = new DtlsConfiguration().getCipherSuites();
 	    
 	    AlgorithmCertificate algorithmCertificate = AlgorithmCertificate.RSA;
 	    
-	    try {
+	    
 	        DtlsSrtpServerProvider dtlsServerProvider = 
 	        		new DtlsSrtpServerProvider(	ProtocolVersion.DTLSv10,
 	        									ProtocolVersion.DTLSv12,
@@ -88,8 +89,8 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	        
 	        channel=new RtpChannel(dtlsServerProvider);
 	        
-	        String fingerprint = metadata.getFingerprint();
-	        String hash = metadata.getFingerAlgorithm();
+	       // String fingerprint = metadata.getFingerprint();
+	       // String hash = metadata.getFingerAlgorithm();
 	        /*
 	        dtlsHandler = new DtlsHandler(dtlsServerProvider);
 	        dtlsHandler.setRemoteFingerprint(hash, fingerprint);   
@@ -97,26 +98,18 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	        dtlsHandler.setChannel(rtpChannel);  
 	    	dtlsHandler.addListener(this);
 	    	*/
-	    	channel.setChannel(rtpChannel);
 	    	
-	    	channel.setRtpListener(this);
-	    	
-	    } catch (RuntimeException e){
-	    	LOG.error("DTLS",e);
-	    }
+	    
 		
 	}
 	
 	@Override
 	public void start() throws UnknownHostException {
 		super.start();
-		try {
-			channel.setRemotePeer(getRemoteAddress());
-			
-		} 
-		catch (RuntimeException e) {
-			LOG.error("Runtime", e);
-		}
+		
+		//channel.setRemotePeer(super.getRemoteAddress());
+		
+		
 		LOG.info("AVAILABLE:"+channel.isAvailable());
 		LOG.info("BOUND    :"+channel.isBound());
 		LOG.info("CONNECTED:"+channel.isConnected());
@@ -127,52 +120,14 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		
 	}
 	
-	@Override
-	public ByteBuffer rtpReceive() throws IOException {
-		ByteBuffer buffer=super.rtpReceive();
-		byte[] packet=buffer.array();
-		
-		boolean canHandle = dtlsHandler.canHandle(packet);
-		if(LOG.isTraceEnabled()) {
-			if(canHandle)
-				LOG.trace("Handling RTP DTLS Packet? "+dtlsHandler.canHandle(packet));
-		}
-			
-		return buffer;
-		
-	}
 	
-	@Override
-	public ByteBuffer rtcpReceive() throws IOException {
-		ByteBuffer buffer=super.rtcpReceive();
-		byte[] packet=buffer.array();
-		
-		boolean canHandle = dtlsHandler.canHandle(packet);
-		if(LOG.isTraceEnabled()) {
-			if(canHandle)
-				LOG.trace("Handling RTCP DTLS Packet? "+dtlsHandler.canHandle(packet));
-		}
-								
-		
-		return buffer;
-		
-	}
 	
-	@Override
 	public String toPrint() {
 		String value;
 		
-		value="CryptoMediaZone "+(metadata.isRtcpMultiplexed()?"Muxed (":"(")+this.hashCode()+") "+name+" "+host+" mp:SRTP("+rtpPort+") SRTCP("+(rtcpPort)+")]";
-		
-		return value;
-	}
-	
-	@Override
-	public String toPrintPeer() {
-		String value="";
-		
+		value="("+this.hashCode()+")"+mediaType+", Origin "+originalHost+":"+originalPort+",Proxy "+proxyHost+" mp:"+proxyPort;
 		if(mediaZonePeer!=null)
-				value="CryptoMediaZone ["+mediaZonePeer.name+" "+mediaZonePeer.host+" mp:SRTP("+mediaZonePeer.rtpPort+") SRTCP("+(mediaZonePeer.rtcpPort)+")]";
+				value+="["+mediaZonePeer.mediaType+" "+mediaZonePeer.proxyHost+" mp:"+mediaZonePeer.proxyPort+"]";
 		return value;
 	}
 	
@@ -186,10 +141,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		executorService = Executors.newSingleThreadExecutor();
 		executorService.execute(new Proxy());
 		
-		if(!metadata.isRtcpMultiplexed()) {
-			executorService = Executors.newSingleThreadExecutor();
-			executorService.execute(new RTCPProxy());
-		}
+		
 		if(!mediaZonePeer.isRunning())
 			try {
 				mediaZonePeer.start();

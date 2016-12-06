@@ -1,7 +1,31 @@
+/*******************************************************************************
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * by the @authors tag.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ *******************************************************************************/
+
 package org.restcomm.sbc.media;
 
+import java.io.IOException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.apache.log4j.Logger;
 import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
 import org.mobicents.media.server.io.sdp.SdpException;
@@ -20,137 +44,156 @@ import org.mobicents.media.server.io.sdp.ice.attributes.IceUfragAttribute;
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    31 oct. 2016 13:48:51
- * @class   MediaMetadata.java
+ * @date    2 dic. 2016 9:22:42
+ * @class   MediaController.java
  *
  */
-public class MediaMetadata {
+public class MediaController {
 	
-	private SessionDescription sdp ;
+	private static transient Logger LOG = Logger.getLogger(MediaController.class);
 	
-	private String ip;
-	private String mediaType;
-	private String protocol;
-	private int rtpPort;
-	private int rtcpPort;
-	private String fingerprint;
-	private String fingerAlgorithm;
-	private boolean canMux;
 	
 	public static final String MEDIATYPE_AUDIO   = "audio";
 	public static final String MEDIATYPE_VIDEO   = "video";
 	public static final String MEDIATYPE_MESSAGE = "message";
 	
+	static String[] supportedMediaTypes = { 
+			MEDIATYPE_AUDIO,
+			MEDIATYPE_VIDEO,
+			MEDIATYPE_MESSAGE
+	};
 	
-	// a map for each Mediatype (audio, video, etc)
-   
-	private ArrayList<Crypto> cryptos=new ArrayList<Crypto>();
-
+	private SessionDescription sdp ;
+	private MediaZone.Direction direction;
 	
-	
-
-
-	
-	private MediaMetadata(String mediaType, String text) throws SdpException  {
-		this.mediaType=mediaType;
-		this.sdp=SessionDescriptionParser.parse(text);
-		MediaDescriptionField mediaDescription = sdp.getMediaDescription(mediaType);
-		this.protocol=mediaDescription.getProtocol();
-		this.rtpPort=mediaDescription.getPort();
-		this.rtcpPort=mediaDescription.getRtcpPort();
-		this.canMux=mediaDescription.isRtcpMux();
-		this.ip=mediaDescription.getConnection().getAddress();
-		FingerprintAttribute fp = mediaDescription.getFingerprint();
-   		if(fp!=null) {		
-   			setFingerprint(fp.getFingerprint());
-   			setFingerAlgorithm(fp.getHashFunction());
-		
-   		}
-		
-	}
-
-	public boolean isSecure() {
-		if(protocol!=null) {
-			if(protocol.equalsIgnoreCase("RTP/AVP"))
-				return false;
-			else
-				return true;
-		}
-		return false;
-	}
-	
-	
-	
-	public CipherSuite[] getCipherSuites() {
-		ArrayList<CipherSuite> ciphers=new ArrayList<CipherSuite>();
-		CipherSuite[] suites = new CipherSuite[10];
-		
-		for(Crypto crypto: cryptos) {
-			ciphers.add(crypto.getCryptoSuite());
-		}
-		
-		return ciphers.toArray(suites);
-	}
-	
-	public ArrayList<Crypto> getCryptos() {
-		return cryptos;
-	}
-	public void setCryptos(ArrayList<Crypto> cryptos) {
-		this.cryptos = cryptos;
-	}
-	
-	public void addCrypto(String line) {
-		this.cryptos.add(new Crypto(line));
-	}
-	
-
-	public String getIp() {
-		return ip;
-	}
-
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-	
-	
-
-	public void setSdp(SessionDescription sdp) {
-		this.sdp = sdp;
-	}
-	
-	public String toString() {
-		String result;
-		CipherSuite[] suites = this.getCipherSuites();
-		result="MediaMetadata [";
-			this.getCipherSuites();
-				for(int i=0;i<cryptos.size();i++) {
-					result+="\n"+cryptos.get(i)+":"+suites[i];
-				}
-				
-				result+="\n{media="+mediaType+", IP="+getIp()+", RTPport="+rtpPort+", RTCPport="+rtcpPort+", Can Mux RTCP? "+canMux+"}";
-				result+=", protocol="+protocol+", secure="+isSecure();
-				if(isSecure()) {
-					result+=", fingerprint="+fingerAlgorithm+":"+fingerprint;
-				}
-				return result;
-	}
-	
+	private HashMap<String, MediaZone> mediaZones=new HashMap<String, MediaZone>();
 	
 	public SessionDescription getSdp() {
 		return sdp;
 	}
 
-    public static  MediaMetadata build(String mediaType, String text)
-            throws UnknownHostException, SdpException {
-    		
-        	MediaMetadata metadata=new MediaMetadata(mediaType, text);
-     
-       return metadata;
+    public MediaController(MediaZone.Direction  direction, String sdpText) throws SdpException, UnknownHostException {
+    	this.sdp=SessionDescriptionParser.parse(sdpText);
+    	this.direction=direction;
+    	buildMediaZones();
+		
     }
     
-    public String patch(String sdp) throws SdpException {
+    private String toPrint() {
+    	return "[MediaController ("+direction+")]";
+    }
+    
+    
+    private void buildMediaZones ()
+            throws UnknownHostException, SdpException {
+    	
+    	for(int type=0;type<supportedMediaTypes.length;type++) {
+    			MediaZone mediaZone;
+    			String ip;
+    			int rtpPort;
+    			
+    			MediaDescriptionField mediaDescription = sdp.getMediaDescription(supportedMediaTypes[type]);
+    			
+    			if(mediaDescription==null) {
+    				LOG.warn("No media type "+supportedMediaTypes[type]);
+    				continue;
+    			}
+    			
+    			rtpPort=mediaDescription.getPort();
+    			
+    			if(sdp.getConnection()!=null) {
+    				ip=sdp.getConnection().getAddress();
+    			}
+    			else {
+    				ip=mediaDescription.getConnection().getAddress();
+    			}
+    			if (mediaDescription.getProtocol().equals("RTP/AVP")) {
+    				mediaZone=new MediaZone(direction, supportedMediaTypes[type], ip, rtpPort);	
+    			}
+    			else {
+    				mediaZone=new CryptoMediaZone(direction, supportedMediaTypes[type], ip, rtpPort);
+    			}
+    	   		
+    	   		mediaZones.put(supportedMediaTypes[type], mediaZone);
+    	   		if(LOG.isTraceEnabled()) {
+    	   			LOG.trace("Adding MediaZone "+mediaZone.toPrint());
+    	   		}
+    	}
+    		
+    }
+    
+    public boolean isSecure() {
+    	
+    	for(MediaZone zone:mediaZones.values()) {
+    		if(zone instanceof CryptoMediaZone )
+    			return true;
+    	}
+    	return false;
+    	
+    }
+    /**
+     * Attach peers of same mediatype and different direction
+     * @param peerController
+     */
+    public void attach(MediaController peerController) {
+    	
+    	for(MediaZone zone:mediaZones.values()) {
+    		MediaZone peerZone=peerController.getMediaZone(zone.getMediaType());
+    			if(LOG.isTraceEnabled()) {
+    				LOG.trace("Ataching "+zone.toPrint());
+    				LOG.trace("with     "+peerZone.toPrint());
+    			}
+    			zone.attach(peerZone);
+    	}   	
+    }
+    
+    public void start() throws UnknownHostException {
+    	if(LOG.isInfoEnabled()) {
+			LOG.info("Starting "+this.toPrint());	
+		}
+    	for(MediaZone zone:mediaZones.values()) {
+    			zone.start();
+    	}
+    	
+    }
+    
+    public MediaZone checkStreaming()  {	
+    	for(MediaZone zone:mediaZones.values()) {
+    		if(!zone.isStreaming())
+    			return zone;
+    	}
+    	return null;
+    	
+    }
+    
+    public void finalize() throws IOException {
+    	if(LOG.isInfoEnabled()) {
+			LOG.info("Finalizing "+this.toPrint());	
+		}
+    	for(MediaZone zone:mediaZones.values()) {
+    		zone.finalize();
+    	}
+    	
+    }
+    
+    public MediaZone getMediaZone(String mediaType) {
+    	return mediaZones.get(mediaType);
+    }
+    
+    public void setLocalProxy(String proxyHost, boolean create) throws UnknownHostException, SocketException {
+    	for(MediaZone zone:mediaZones.values()) {
+    		zone.setLocalProxy(proxyHost, create);
+    	}
+    	
+    }
+    
+    
+    public String patchIPAddressAndPort(String ip) throws SdpException  {
 
-   		SessionDescription psdp = SessionDescriptionParser.parse(sdp);
+   		SessionDescription psdp;
+		
+		psdp = SessionDescriptionParser.parse(sdp.toString());
+		
    		
    		OriginField origin = psdp.getOrigin();
    		origin.setAddress(ip);
@@ -164,84 +207,161 @@ public class MediaMetadata {
    		if(psdp.getConnection()!=null)
    			psdp.setConnection(connection);
    		
-   		MediaDescriptionField audioDescription = psdp.getMediaDescription(mediaType);
-   		audioDescription.setConnection(connection);
-   		audioDescription.setPort(this.getRtpPort());
-   		
+   		for(int type=0;type<supportedMediaTypes.length;type++) {
+   			MediaZone zone=mediaZones.get(supportedMediaTypes[type]);
+   			
+	   		MediaDescriptionField mediaDescription = psdp.getMediaDescription(supportedMediaTypes[type]);
+	   		
+	   		if(mediaDescription!=null) {
+	   			mediaDescription.setConnection(connection);
+	   			mediaDescription.setPort(zone.getProxyPort());
+	   		}
+   		}
    		return psdp.toString().trim().concat("\n");
     	
     }
-    
+      
    
-   
-   public SessionDescription unSecureSdp() throws UnknownHostException, SdpException {
+   public SessionDescription unSecureSdp() throws SdpException  {
 	   
-	   		SessionDescription usdp = SessionDescriptionParser.parse(sdp.toString());
+	   		SessionDescription usdp;
 			
-	   		
-	   		MediaDescriptionField audioDescription = usdp.getMediaDescription(mediaType);
-	   		audioDescription.setProtocol("RTP/AVP");
-	   		audioDescription.removeAllCandidates();
+			usdp = SessionDescriptionParser.parse(sdp.toString());
+			
+			for(int type=0;type<supportedMediaTypes.length;type++) {
+		   		MediaDescriptionField mediaDescription = usdp.getMediaDescription(supportedMediaTypes[type]);
+		   		
+		   		if(mediaDescription!=null) {
+		   			mediaDescription.removeAllCandidates();
+		   			mediaDescription.setProtocol("RTP/AVP");
+		   		}
+	   		}
+			
 	   	
-	   		
 			return usdp;
 	                  
 	     
    }
    
    
-   public SessionDescription secureSdp() throws UnknownHostException, SdpException {
-	    SessionDescription ssdp = SessionDescriptionParser.parse(sdp.toString());
+   public SessionDescription secureSdp() throws SdpException  {
+	    SessionDescription ssdp;
+		
+		ssdp = SessionDescriptionParser.parse(sdp.toString());
+		
 	    
 	    IceAuthenticatorImpl auth = new IceAuthenticatorImpl();
 	    auth.generateIceCredentials();
 	    
-		MediaDescriptionField audioDescription = ssdp.getMediaDescription(mediaType);
-   		audioDescription.setProtocol("RTP/SAVPF");
-   		
-   		FingerprintAttribute fp;
-   		
-   		fp=audioDescription.getFingerprint();
-   		if(fp==null)
-   			fp=new FingerprintAttribute();
-   		fp.setFingerprint("E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47");
-   		fp.setHashFunction("sha-1");
-		audioDescription.setFingerprint(fp);
-		
-		IceUfragAttribute ice_ufrag;
-		IcePwdAttribute ice_pwd;
-		
-		ice_ufrag=audioDescription.getIceUfrag();
-		ice_pwd=audioDescription.getIcePwd();
-		
-		if(ice_ufrag==null) {
-			ice_ufrag = new IceUfragAttribute();
-			ice_pwd = new IcePwdAttribute();
-		}
-		ice_ufrag.setUfrag(auth.getUfrag());
-		ice_pwd.setPassword(auth.getPassword());
-		
-		audioDescription.setIcePwd(ice_pwd);
-		audioDescription.setIceUfrag(ice_ufrag);
-		
-		SetupAttribute setup=new SetupAttribute("passive");
-		audioDescription.setSetup(setup);
-		
+	    for(int type=0;type<supportedMediaTypes.length;type++) {
+	    	MediaDescriptionField mediaDescription = ssdp.getMediaDescription(supportedMediaTypes[type]);
+	    	
+	    	if(mediaDescription!=null) {
+		   		mediaDescription.setProtocol("RTP/SAVPF");
+		   		
+		   		FingerprintAttribute fp;
+		   		
+		   		fp=mediaDescription.getFingerprint();
+		   		if(fp==null)
+		   			fp=new FingerprintAttribute();
+		   		fp.setFingerprint("E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47");
+		   		fp.setHashFunction("sha-1");
+				mediaDescription.setFingerprint(fp);
+				
+				IceUfragAttribute ice_ufrag;
+				IcePwdAttribute ice_pwd;
+				
+				ice_ufrag=mediaDescription.getIceUfrag();
+				ice_pwd=mediaDescription.getIcePwd();
+				
+				if(ice_ufrag==null) {
+					ice_ufrag = new IceUfragAttribute();
+					ice_pwd = new IcePwdAttribute();
+				}
+				ice_ufrag.setUfrag(auth.getUfrag());
+				ice_pwd.setPassword(auth.getPassword());
+				
+				mediaDescription.setIcePwd(ice_pwd);
+				mediaDescription.setIceUfrag(ice_ufrag);
+				
+				SetupAttribute setup=new SetupAttribute("passive");
+				mediaDescription.setSetup(setup);
+	    	}
+   		}
+	    
 		
 	
       return ssdp;         
     
    }
    
-   /*
-   public String patchedSdp(final byte[] data) throws UnknownHostException, SdpException {
-	   return SdpUtils.patch("application/sdp", data, this);
-	  
+   @Override
+	public boolean equals(Object controller) {
+		MediaController otherController=(MediaController) controller;
+		if (!(controller instanceof MediaController)) {
+			return false;
+		}
+		
+		if (otherController.getSdp().equals(this.getSdp()) &&
+			otherController.direction.equals(direction)) {
+			return true;
+		}
+		return false;
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 1;
+		result = prime * result + ((sdp == null) ? 0 : sdp.hashCode());
+		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
+		return result;
+
+	}
+   
+   class Crypto {
+		
+		private int tag;
+		private CipherSuite cryptoSuite;
+		private String keyParams;
+		
+		Crypto(String line) {
+			String fields[]=line.split("inline:");
+			keyParams=fields[1];
+			String crypto[]=fields[0].split(" ");
+			tag=Integer.parseInt(crypto[0]);
+			//cryptoSuite=CipherSuite.valueOf(crypto[1]);
+			cryptoSuite=CipherSuite.TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA;
+		}
+		
+		public int getTag() {
+			return tag;
+		}
+		public void setTag(int tag) {
+			this.tag = tag;
+		}
+		public CipherSuite getCryptoSuite() {
+			return cryptoSuite;
+		}
+		public void setCryptoSuite(CipherSuite cryptoSuite) {
+			this.cryptoSuite = cryptoSuite;
+		}
+		public String getKeyParams() {
+			return keyParams;
+		}
+		public void setKeyParams(String keyParams) {
+			this.keyParams = keyParams;
+		}
+		
+		public String toString() {
+			return "Crypto [tag="+tag+", crypto-suite="+cryptoSuite+", key="+keyParams+"]";
+		}
+		
    }
-   */
    
    public static void main(String argv[]) {
-	   /*
+	   
 		String sdpText="v=0\n"+
 					"o=12-jitsi.org 0 0 IN IP4 192.168.88.3\n"+
 					"s=SBC Call\n"+
@@ -323,14 +443,16 @@ public class MediaMetadata {
 					//"a=crypto:2 AES_CM_128_HMAC_SHA1_32 inline:Fqpm95oH83bu61+saLnKi4NY0kzJ1fhwQS/DfxCz\n"+
 					//
 					"a=fingerprint:sha-1 E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47";
-					*/
+					/*
 	   String sdpText="v=0\n"+
 			   "o=- 188809950206000236 2 IN IP4 127.0.0.1\n"+
 			   "s=-\n"+
 			   "t=0 0\n"+
 			   "a=group:BUNDLE audio\n"+
 			   "a=msid-semantic: WMS QTjs4Sqxmip7GwcQ1fZqeLcl4dEdAOzccBZN\n"+
+		
 			   "m=audio 54011 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126\n"+
+			   
 			   "c=IN IP4 181.165.120.41\n\r"+
 			   "a=rtcp:54013 IN IP4 181.165.120.41\n"+
 			   "a=candidate:2162125114 1 udp 2122260223 10.0.0.10 54010 typ host generation 0 network-id 2\n"+
@@ -396,30 +518,32 @@ public class MediaMetadata {
 				"a=rtpmap:8 PCMA/8000\n"+
 				"a=ptime:20";
 				*/
-		MediaMetadata metadata;
+		
 		try {
-			metadata = MediaMetadata.build(MediaMetadata.MEDIATYPE_AUDIO, sdpText);
+			MediaController controller = new MediaController(MediaZone.Direction.OFFER, sdpText);
+			
 			
 			System.out.println("---------------original-------------------");
-			System.out.println(metadata.getSdp());
-			System.out.println(metadata);
+			//System.out.println(metadata.getSdp());
+			//System.out.println(metadata.mediaType+", "+metadata.getProtocol()+", "+metadata.getIp()+":"+metadata.getRtpPort());
+			System.out.println(controller.getSdp().toString());
 			
-			String unsecure = metadata.patch(metadata.unSecureSdp().toString());
+			String unsecure = controller.unSecureSdp().toString();
+			
 			System.out.println("---------------unsecure-------------------");
 			System.out.println(unsecure);
-			System.out.println(metadata);
 			
-			metadata.setIp("201.216.233.187");
-			metadata.setRtpPort(50000);
-			metadata.setRtcpPort(60000);
 			
-			String secure   = metadata.patch(metadata.secureSdp().toString());
+			String secure   = controller.secureSdp().toString();
 			System.out.println("---------------secure---------------------");
 			System.out.println(secure);
 			
+			String patched   = controller.patchIPAddressAndPort("201.216.233.187");
+			System.out.println("---------------patched---------------------");
+			System.out.println(patched);
 			
 			
-			System.out.println(metadata);
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -427,102 +551,6 @@ public class MediaMetadata {
 		
 		
 	}
-
-	public String getMediaType() {
-		return mediaType;
-	}
-	
-
-	public String getProtocol() {
-		return protocol;
-	}
-
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
-
-	public int getRtpPort() {
-		return rtpPort;
-	}
-
-	public void setRtpPort(int rtpPort) {
-		this.rtpPort = rtpPort;
-	}
-
-	public int getRtcpPort() {
-		return rtcpPort;
-	}
-
-	public void setRtcpPort(int rtcpPort) {
-		this.rtcpPort = rtcpPort;
-	}
-
-	public String getFingerAlgorithm() {
-		return fingerAlgorithm;
-	}
-
-	public void setFingerAlgorithm(String fingerAlgorithm) {
-		this.fingerAlgorithm = fingerAlgorithm;
-	}
-
-	public String getFingerprint() {
-		return fingerprint;
-	}
-
-	public void setFingerprint(String fingerprint) {
-		this.fingerprint = fingerprint;
-	}
-	
-	public void setRtcpMultiplexed(boolean mux) {
-		canMux=mux;
-	}
-
-	public boolean isRtcpMultiplexed() {
-		if(rtcpPort<=0)
-			return true;
-		return canMux;
-	}
-
-   }
-
-	class Crypto {
-				
-		private int tag;
-		private CipherSuite cryptoSuite;
-		private String keyParams;
-		
-		Crypto(String line) {
-			String fields[]=line.split("inline:");
-			keyParams=fields[1];
-			String crypto[]=fields[0].split(" ");
-			tag=Integer.parseInt(crypto[0]);
-			//cryptoSuite=CipherSuite.valueOf(crypto[1]);
-			cryptoSuite=CipherSuite.TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA;
-		}
-		
-		public int getTag() {
-			return tag;
-		}
-		public void setTag(int tag) {
-			this.tag = tag;
-		}
-		public CipherSuite getCryptoSuite() {
-			return cryptoSuite;
-		}
-		public void setCryptoSuite(CipherSuite cryptoSuite) {
-			this.cryptoSuite = cryptoSuite;
-		}
-		public String getKeyParams() {
-			return keyParams;
-		}
-		public void setKeyParams(String keyParams) {
-			this.keyParams = keyParams;
-		}
-		
-		public String toString() {
-			return "Crypto [tag="+tag+", crypto-suite="+cryptoSuite+", key="+keyParams+"]";
-		}
-		
-		
-
+   
+  
 }

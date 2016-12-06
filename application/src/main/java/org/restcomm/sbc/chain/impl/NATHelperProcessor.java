@@ -19,7 +19,9 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-import javax.servlet.sip.Address;
+
+import java.util.List;
+
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
@@ -33,7 +35,11 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
-
+import org.restcomm.sbc.bo.Location;
+import org.restcomm.sbc.bo.LocationNotFoundException;
+import org.restcomm.sbc.managers.LocationManager;
+import org.apache.commons.net.util.SubnetUtils;
+import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 
 
 
@@ -46,9 +52,9 @@ import org.restcomm.sbc.ConfigurationCache;
 public class NATHelperProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
-
-	private Address contactAddress=null;
+	private LocationManager locationManager=LocationManager.getLocationManager();
 	
+
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
 	}
@@ -72,78 +78,96 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 	}
 
 	private void processResponse(SIPMutableMessage message) {
+		
+		SipServletResponse response=(SipServletResponse) message.getContent();
+		SipServletRequest request=response.getRequest();
+		//SipServletRequest orequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
+			LOG.trace(">> request Coming from host: "+request.getRemoteHost());
+			LOG.trace(">> request Coming from port: "+request.getRemotePort());		
 		}
+		
+		
+		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
+		SipURI contactURI = null;
+		
+		if(isRoutedAddress(request.getRemoteHost())){
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("RouteAddress "+request.getRemoteHost()+" MUST not be fixed "+fromURI.toString());
+			}
+			return;
+		}
+		
+		contactURI = ConfigurationCache.getSipFactory().createSipURI(fromURI.getUser(), request.getRemoteHost());
+		contactURI.setPort(request.getRemotePort());
+		
+		if(LOG.isTraceEnabled()){ 
+			LOG.trace("Patching NATed Contact Address to: "+contactURI.toString());
+		}
+		
+		/*
+		 * Replace Contact address from IP/Port the message is coming from
+		 * Used mainly for Registration, Location subsystem pick NATed data
+		 * from here
+		 */
+		try {
+			if(!response.getAddressHeaders("Contact").hasNext())
+				response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
+			else
+				LOG.warn("Contact address exists, CANNOT patch NATed Contact Address to: "+contactURI.toString());
+		} catch (ServletParseException e) {
+				LOG.error("CANNOT Patch NATed Contact Address to: "+contactURI.toString(), e);
+		}
+		
+		message.setContent(response);
+		
 	}
 
 	private void processRequest(SIPMutableMessage message) {
-		
-		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
-		
 		if (LOG.isTraceEnabled()) {
-			LOG.trace(">> processRequest()");
-			LOG.trace(">> message: \n" + dmzRequest.toString());
-		}
-		if(!dmzRequest.isInitial()) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("No initial request, NAT does not apply.");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
-		}
-
-		if (message.getDirection()==Message.SOURCE_MZ) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("-----> MZ");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
+			LOG.trace(message.toString());
 		}
 		
-		try {
-			contactAddress = dmzRequest.getAddressHeader("Contact");
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace("Contact "+contactAddress.toString());
-			} 
-		} catch (ServletParseException e) {
-			LOG.error("Cannot get Contact Address!");
-		} catch (IllegalStateException e) {
-			LOG.error("",e);
-			message.setContent(dmzRequest);
-			return;
-			
-		}
-		SipURI uri = (SipURI) contactAddress.getURI();
-
+		SipServletRequest request=(SipServletRequest) message.getContent();
+		SipURI toURI 	= (SipURI) request.getTo().getURI();
 		
-		if(uri.getHost().equals(dmzRequest.getRemoteAddr())) {
-			if(LOG.isTraceEnabled()){ 
-				LOG.trace(">> ByPassing ...");
-			} // Nothing
-			message.setContent(dmzRequest);
-			return;
-		 
-		}
-	
+		
+		
 		/*
-		 * Replace Contact address from IP/Port the message is coming from
+		 * If the request goes to DMZ and it is not inital
+		 * it means that the original request came from a 
+		 * previously registered user.
+		 * has to patch NATed routes to reach the endpoint.
 		 */
-
-		try {
-			uri.setHost(message.getSourceLocalAddress());
-			uri.setPort(dmzRequest.getLocalPort());
-			
-		} catch (IllegalStateException e) {
-			LOG.error("",e);
-			message.setContent(dmzRequest);
-			return;
-			
+		if(message.getDirection()==Message.SOURCE_MZ){
+			if(!request.isInitial()) {
+				
+				Location location = null;
+				try {
+					location = locationManager.getLocation(toURI.getUser(), ConfigurationCache.getDomain());
+				} catch (LocationNotFoundException e) {
+					LOG.error("User not found!",e);
+					return;
+				}
+				if(isRoutedAddress(request.getRemoteHost())){
+					if(LOG.isTraceEnabled()) {
+						LOG.trace("RouteAddress "+location.getHost()+" MUST not be fixed "+location.getHost());
+					}
+					return;
+				}
+				toURI.setHost(location.getHost());
+				toURI.setPort(location.getPort());
+				request.setRequestURI(toURI);
+				if(LOG.isTraceEnabled()){ 
+					LOG.trace("Patching NATed Contact requestURI       : "+toURI.toString());
+				}
+			}
+		
 		}
-		dmzRequest.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(uri));
-		message.setContent(dmzRequest);
-		return;
 
+		message.setContent(request);		
 	}
 
 	@Override
@@ -166,9 +190,32 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		if( sm instanceof SipServletRequest) {
 			processRequest(m);
 		}
-		if (message instanceof SipServletResponse) {
+		if (sm instanceof SipServletResponse) {
 			processResponse(m);
 		}
+		
+	}
+	
+	private boolean isRoutedAddress(String ipAddress) {
+		List<String> localNetworks=ConfigurationCache.getLocalNetworks();
+		
+		for(String localNetwork:localNetworks) {
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("Traversing localNetworks "+localNetwork);
+			}
+			SubnetUtils utils=new SubnetUtils(localNetwork);
+			if(utils.getInfo().isInRange(ipAddress)) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("ipAddress "+ipAddress+" Is in network "+localNetwork);
+				}
+				return true;	
+			}
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("ipAddress "+ipAddress+" Is NOT in network "+localNetwork);
+			}
+		}
+		
+		return false;
 		
 	}
 

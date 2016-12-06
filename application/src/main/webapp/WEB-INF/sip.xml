@@ -13,6 +13,7 @@
 	<app-name>RestcommSBC</app-name>
 	<display-name>Restcomm SBC</display-name>
 	<description>Restcomm SIP Session Border Controller.</description>
+	
 	<servlet-selection>
 	    
 		<servlet-mapping>
@@ -94,16 +95,6 @@
 		</servlet-class>
 		<load-on-startup>3</load-on-startup>
 	</servlet>
-	<servlet>
-		<servlet-name>Monitor</servlet-name>
-		<display-name>Monitor</display-name>
-		<description>SBC Monitor.</description>
-		<servlet-class>
-			org.restcomm.sbc.servlet.sip.SBCMonitorServlet
-		</servlet-class>
-		<load-on-startup>4</load-on-startup>
-	</servlet>
-	
 
 </sip-app>
 

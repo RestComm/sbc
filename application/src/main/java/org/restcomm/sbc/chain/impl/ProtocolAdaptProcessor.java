@@ -34,7 +34,7 @@ import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.adapter.UnavailableProtocolAdapterException;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.media.MediaMetadata;
+
 
 
 

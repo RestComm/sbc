@@ -21,21 +21,20 @@
 package org.restcomm.sbc.chain.impl.invite;
 
 
-import java.io.IOException;
-
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.media.CryptoMediaZone;
-import org.restcomm.sbc.media.MediaMetadata;
-import org.restcomm.sbc.media.MediaZone;
+import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.call.Call;
+import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 
 
@@ -55,6 +54,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
+	private CallManager callManager=CallManager.getCallManager();
+	
 	
 	public InviteProcessor(ProcessorChain chain) {
 		super(chain);
@@ -69,80 +70,62 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
-		MediaZone audioZone = null;
-
+		MediaSession mediaSession=null;
+		
 		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		try {
-			MediaMetadata metadata=(MediaMetadata) message.getMetadata();
-			metadata.setIp(message.getSourceLocalAddress());
+			mediaSession=(MediaSession) message.getMetadata();
+			mediaSession.getOffer().patchIPAddressAndPort(message.getSourceLocalAddress());
 			
 			if(LOG.isTraceEnabled()){
-		          LOG.trace("MEDIA-Data "+metadata);
+		          LOG.trace("MEDIA-Session "+mediaSession);
 		    }
 			
-			if(metadata.isSecure()) {
-				audioZone=new CryptoMediaZone(metadata);
-				//audioZone.start();
-			}
-			else
-				audioZone=new MediaZone(metadata);
 			
-			if(LOG.isTraceEnabled()){
-		          LOG.trace("MEDIA-Zone "+audioZone.toPrint());
-		    }
-			message.setMetadata(metadata);
+			message.setMetadata(mediaSession);
 			
-		} catch (IOException e1) {
+		} catch (SdpException e1) {
 			LOG.error("Unavailable media port ",e1);
-		} catch (RuntimeException e2) {
-			LOG.error("",e2);
-		}
+		} 
+		
 	
-		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
+		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, mediaSession);
 		
 		message.setContent(request);	
 	}
 	
 	private void processInviteResponse(SIPMutableMessage message) {
-		
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
+		String callSessionId=response.getRequest().getSession().getId();
+		Call call=callManager.getCall(callSessionId);
+		
 		if(response.getStatus()==SipServletResponse.SC_OK) {
-			MediaZone audioZone=(MediaZone) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			MediaSession mediaSession=(MediaSession) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
-			MediaZone peerAudioZone = null;
 			
 			try {
-				MediaMetadata metadata=(MediaMetadata) message.getMetadata();
-				metadata.setIp(message.getSourceLocalAddress());
-				metadata.setRtpPort(audioZone.getRTPPort());
-				metadata.setRtcpPort(audioZone.getRTCPPort());
+				
+				mediaSession.getAnswer().patchIPAddressAndPort(message.getSourceLocalAddress());
+				
+			//	metadata.setRtpPort(audioZone.getRTPPort());
+			//	metadata.setRtcpPort(audioZone.getRTCPPort());
 				
 				if(LOG.isTraceEnabled()){
-			          LOG.trace("MEDIA-Data "+metadata);
+			          LOG.trace("MEDIA-Session "+mediaSession);
 			    }
 				
-				if(metadata.isSecure()) {
-					peerAudioZone = new CryptoMediaZone(metadata, audioZone.getRTPPort());
-				}
-				else {
-					peerAudioZone = new MediaZone(metadata, audioZone.getRTPPort());
-				}
+				message.setMetadata(mediaSession);
+			//	peerAudioZone.attach(audioZone);
+			//	mediaSession.addMediaZone(audioZone);
 				
-				if(LOG.isTraceEnabled()){
-			          LOG.trace("MEDIA-Zone "+peerAudioZone.toPrint());
-			    }
-				message.setMetadata(metadata);
-				peerAudioZone.attach(audioZone);
 				
-			} catch (IOException e) {
-				LOG.error(message.getSourceLocalAddress()+":"+audioZone.getRTPPort(),e);
-			} catch (RuntimeException e2) {
-				LOG.error("",e2);
-			} 
+			} catch (SdpException e) {
+				LOG.error(message.getSourceLocalAddress(),e);
+			}  
 			
-			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, audioZone);
+			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, mediaSession);
 			
 			message.setContent(response);	
 		}
@@ -155,6 +138,10 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	}
 	
 	private void processAckRequest(SIPMutableMessage message)  {
+		
+	}
+	
+	private void processPrackRequest(SIPMutableMessage message)  {
 		
 	}
 	
@@ -180,6 +167,12 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private void processCancelResponse(SIPMutableMessage message)  {	
 		
 	}
+	
+	private String getCallSessionId(SipServletRequest currentRequest) {
+		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		return oRequest.getSession().getId();
+	}
+
 
 
 	public String getName() {
@@ -222,6 +215,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 				processByeRequest(m);
 			else if(sm.getMethod().equals("ACK"))
 				processAckRequest(m);
+			else if(sm.getMethod().equals("PRACK"))
+				processPrackRequest(m);
 			else if(sm.getMethod().equals("CANCEL"))
 				processCancelRequest(m);
 			else if(sm.getMethod().equals("INFO"))

@@ -48,8 +48,22 @@ public class JMXProviderFactory {
 		if(instance!=null)
 			return instance;
 		
+		String providerClass;
+		
 		Configuration configuration = (Configuration) ShiroResources.getInstance().get(Configuration.class);
-		String providerClass=configuration.getString("jmx-management.provider");
+		
+		if(configuration==null) {
+			providerClass="org.restcomm.sbc.managers.jmx.tomcat.Provider";
+			
+		}
+		else {
+			providerClass=configuration.getString("jmx-management.provider");
+			
+			if(providerClass==null) {
+				providerClass="org.restcomm.sbc.managers.jmx.tomcat.Provider";
+				
+			}
+		}
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Factoring JMXProvider "+providerClass);
 		}

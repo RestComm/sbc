@@ -27,6 +27,8 @@
 		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
+	
+	
 	<context-param>
 		<param-name>resteasy.scan</param-name>
 		<param-value>false</param-value>

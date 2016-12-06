@@ -31,7 +31,8 @@ import org.restcomm.sbc.bo.BanList;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.bo.Sid;
-import org.restcomm.sbc.servlet.sip.SBCMonitorServlet;
+import org.restcomm.sbc.managers.Monitor;
+
 
 
 
@@ -77,9 +78,9 @@ public final class DaoUtils {
         }
     }
 
-    public static SBCMonitorServlet.Action readMonitorAction(final Object object) {
+    public static Monitor.Action readMonitorAction(final Object object) {
         if (object != null) {
-            return SBCMonitorServlet.Action.getValueOf((String) object);
+            return Monitor.Action.getValueOf((String) object);
         } else {
             return null;
         }
@@ -212,7 +213,7 @@ public final class DaoUtils {
         return color.toString();
     }
     
-    public static String writeMonitorAction(final SBCMonitorServlet.Action action) {
+    public static String writeMonitorAction(final Monitor.Action action) {
         return action.toString();
     }
     

@@ -13,34 +13,22 @@ the following tutorial will show how to get started with SBC and Mysql._
 * Install link:http://dev.mysql.com/doc/refman/5.7/en/installing.html[MySQL]
 
 == Configuring the mybatis.xml file to use Mysql
-* Go to the *$SBC_HOME/standalone/deployments/restcomm-sbc.war/WEB-INF/conf/* directory.
- Open the *mybatis.xml*. $SBC_HOME is conventional name for unzipped *SBC-JBoss-AS7-1.0.0* directory.
-* Change the
+* Go to the *$SBC_HOME/webapps/restcomm-sbc/WEB-INF/conf/* directory.
+ Open the *mybatis.xml*. $SBC_HOME is conventional name for unzipped *SBC-Tomcat-1.0.0* directory.
 
-[source,bash]
-----
-<environments default="production">
-----
-to
-[source,bash]
-----
-<environments default="mariadb">
-----
-* Add the MariaDB configuration environment tag as shown below.
+* Add the Mysql configuration environment tag as shown below.
 Make sure that you have indicated the correct MySQL username, password
-and IP of the computer where the database is located (it is 172.21.0.107 in the example).
+and IP of the computer where the database is located (it is 192.168.0.2 in the example).
 
 [source,bash]
 ----
-<environment id="mariadb">
-<transactionManager type="JDBC"/>
 <dataSource type="POOLED">
-<property name="driver" value="com.mysql.jdbc.Driver"/>
-<property name="url" value="jdbc:mysql://172.21.0.107:3306/restcomm"/>
-<property name="username" value="MySQL_Username"/>
-<property name="password" value="MySQL_Password"/>
+        <property name="driver" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://192.168.0.2/sbc"/>
+        <property name="username" value="YourUser"/>
+        <property name="password" value="YourPass"/>
 </dataSource>
-</environment>
+
 ----
 * Save and exit the mybatis.xml file.
 
@@ -55,7 +43,7 @@ sudo /etc/init.d/mysql start
 
 Or use link:http://dev.mysql.com/doc/refman/5.7/en/windows-start-command-line.html[MySQL guide].
 
-* Go to the *$SBC_HOME/standalone/deployments/restcomm-sbc.war/WEB-INF/scripts/mariadb* directory. There will be the *init.sql* file and *sql* directory:
+* Go to the *$SBC_HOME/webapps/restcomm-sbc/WEB-INF/scripts/mariadb* directory. There will be the *init.sql* file and *sql* directory:
 
 image::images/13.png[]
 
@@ -76,26 +64,27 @@ If the process was successful you will see the following:
 image::images/14.png[]
 == Edit the sbc.xml file to point the DAO to MySQL
 
-* Go to the *$SBC_HOME/standalone/deployments/restcomm-sbc.war/WEB-INF/conf/*.
+* Go to the *$SBC_HOME/webapps/restcomm-sbc/WEB-INF/conf/*.
 Open the *sbc.xml* file.
 * Find the dao-manager tag and change the sql-files path to mariadb as shown below:
 
 [source,bash]
 ----
- <dao-manager class="org.mobicents.servlet.sbc.dao.mybatis.MybatisDaoManager">
-    <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml</configuration-file>
+<dao-manager class="org.restcomm.sbc.dao.mybatis.MybatisDaoManager">
+    <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml
+    </configuration-file>
     <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
     <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
 </dao-manager>
-        
+
 ----
 == Download Mysql Java Client Driver
 
 * Download the latest *MySQL Java Connector* from http://mvnrepository.com/artifact/mysql/mysql-connector-java.
 * Put the jar file in
-*$SBC_HOME/standalone/deployments/restcomm.war/WEB-INF/lib/*.
+*$SBC_HOME/webapps/restcomm-sbc/WEB-INF/lib/*.
 
-* Go to the $SBC_HOME/bin/sbc/ directory.
+* Go to the $SBC_HOME/bin/ directory.
 
 == Verify the setup was successful
 
@@ -103,7 +92,7 @@ Open the *sbc.xml* file.
 
 [source,bash]
 ----
-./start-sbc.sh
+./catalina.sh start
 ----
 
 * Open your web browser and go to the url – https://IP:8443. Instead of "IP" you should put your IP.
