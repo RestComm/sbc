@@ -11,55 +11,43 @@ Oscar Andrés Carriles <ocarriles@eolos.la>
 
 :leveloffset: 1
 
-include::design/preface.adoc[]
+include::api/account-api.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/glossary.adoc[]
+include::api/banlists-api.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/chapter-01.adoc[]
+include::api/calls-api.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/chapter-02.adoc[]
+include::api/connectors-api.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/chapter-03.adoc[]
+include::api/locations-api.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/chapter-04.adoc[]
+include::api/net-points.adoc[]
 
 :leveloffset: 0
 
 :leveloffset: 1
 
-include::design/chapter-05.adoc[]
-
-:leveloffset: 0
-
-:leveloffset: 1
-
-include::design/chapter-06.adoc[]
-
-:leveloffset: 0
-
-:leveloffset: 1
-
-include::design/colophon.adoc[]
+include::api/routes-api.adoc[]
 
 :leveloffset: 0
 

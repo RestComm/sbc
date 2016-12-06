@@ -18,7 +18,7 @@
  *
  */
 
-package org.restcomm.sbc.bo;
+package org.restcomm.sbc.call;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.bo.CallDetailRecord;
+import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.media.MediaSession;
 
 
@@ -40,6 +42,7 @@ public class Call  {
 	
 	private static transient Logger LOG = Logger.getLogger(Call.class);
 	
+	private Call parent;
 	private Sid sid;
 	private CallDetailRecord cdr;
 	private MediaSession mediaSession;
@@ -47,12 +50,12 @@ public class Call  {
 	private Direction direction;
 	private String sessionId;
 	
-	public Call(final String sessionId, final String to, final String from,    
+	protected Call(Call parent, final String sessionId, final String to, final String from,    
             final String direction, 
             final String callerName) {
 		
+		this.parent=parent;
 		this.sessionId=sessionId;
-		this.mediaSession=new MediaSession(sessionId);
 		this.sid=Sid.generate(Sid.Type.RANDOM);
 		Sid parentCallSid=Sid.generate(Sid.Type.RANDOM);
 		DateTime dateCreated=DateTime.now();
@@ -162,7 +165,7 @@ public class Call  {
 		return sessionId;
 	}
 	
-	public void setStatus(int statusCode, String reasonPhrase) {
+	protected void setStatus(int statusCode, String reasonPhrase) {
 		if(statusCode>=400 )
 			setStatus(Call.Status.FAILED);
 		else if(statusCode>=200)
@@ -170,7 +173,7 @@ public class Call  {
 	
 	}
 
-	public void setStatus(Status status) {
+	protected void setStatus(Status status) {
 		
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("Call was in status "+getStatus()+", now changing to "+status.text);
@@ -228,6 +231,10 @@ public class Call  {
 		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
 		return result;
 
+	}
+
+	public Call getParent() {
+		return parent;
 	}
 
 	

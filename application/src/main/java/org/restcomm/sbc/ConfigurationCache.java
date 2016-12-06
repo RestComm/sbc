@@ -23,6 +23,7 @@ package org.restcomm.sbc;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import javax.servlet.sip.SipFactory;
 import org.apache.commons.configuration.Configuration;
@@ -48,10 +49,12 @@ public class ConfigurationCache {
 	private static int mediaEndPort;
 	private static String ipOfDomain;
 	private static String apiVersion;
+	private static List<String> localNetworks;
 	
 	private static transient Logger LOG = Logger.getLogger(ConfigurationCache.class);
 	
 	
+	@SuppressWarnings("unchecked")
 	private ConfigurationCache(SipFactory factory, Configuration configuration) {
 		sipFactory=factory;
 		
@@ -65,6 +68,7 @@ public class ConfigurationCache {
         mediaStartPort=configuration.getInt		("media-proxy.start-port");
         mediaEndPort=configuration.getInt		("media-proxy.end-port");
         ipOfDomain="";
+        localNetworks=configuration.getList("runtime-settings.nat-helper.local-networks.local-address");
 		
 		try {
 			ipOfDomain=InetAddress.getByName(domain).getHostAddress();
@@ -131,6 +135,11 @@ public class ConfigurationCache {
 
 	public static String getApiVersion() {
 		return apiVersion;
+	}
+
+
+	public static List<String> getLocalNetworks() {
+		return localNetworks;
 	}
 
 

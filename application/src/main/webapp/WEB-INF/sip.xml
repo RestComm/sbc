@@ -13,6 +13,7 @@
 	<app-name>RestcommSBC</app-name>
 	<display-name>Restcomm SBC</display-name>
 	<description>Restcomm SIP Session Border Controller.</description>
+	
 	<servlet-selection>
 	    
 		<servlet-mapping>

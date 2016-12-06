@@ -25,19 +25,20 @@ import java.io.IOException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.sip.SipServlet;
+import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-import org.restcomm.sbc.bo.Call;
+import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
 import org.restcomm.sbc.media.MediaZone;
 import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.media.MediaSessionListener;
-import org.restcomm.sbc.managers.CallManager;
+import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 
@@ -93,13 +94,31 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
 		SipURI toURI 	= (SipURI) request.getTo().  getURI();
 		
-		Call call=callManager.createCall(
+		Call call=callManager.getCall(request.getSession().getId());
+		/*
+		 * By now reuse the call in a Re-INVITE
+		 */
+		if(call==null) {
+			call=callManager.createCall(
+				null,
 				request.getSession().getId(),
 				toURI.getUser(),
 				fromURI.getUser(),
 				direction,
 				null,
 				request.getFrom().getDisplayName());
+		}
+		else {
+			call=callManager.createCall(
+				call,
+				request.getSession().getId(),
+				toURI.getUser(),
+				fromURI.getUser(),
+				direction,
+				null,
+				request.getFrom().getDisplayName());
+			
+		}
 		
 		request.getSession().setAttribute(MessageUtil.CALL_MANAGER, call);
 		
@@ -128,30 +147,34 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 			return;
 		}
 		String callSessionId=getCallSessionId(response.getRequest());
-		Call call=callManager.getCall(callSessionId);
+		//Call call=callManager.getCall(callSessionId);
 		
 		if(response.getStatus()==SipServletResponse.SC_RINGING) {
-			call.setStatus(Call.Status.RINGING);	
+			callManager.changeCallStatus(callSessionId, Call.Status.RINGING);
+
 		}
 		
-		else if(response.getStatus()>=SipServletResponse.SC_OK) {
-			if(call!=null) {
-				// Completed in the other leg?
-				call.setStatus(response.getStatus(), response.getReasonPhrase());
-				call.getMediaSession().stop();		
-			}
-			else {
-				callSessionId=response.getRequest().getSession().getId();	
-				call=callManager.getCall(callSessionId);
-				
+		if(response.getMethod().equals("INVITE")) {
+			if(response.getStatus()>=SipServletResponse.SC_OK) {
+				Call call=callManager.getCall(callSessionId);
 				if(call!=null) {
 					// Completed in the other leg?
-					call.setStatus(response.getStatus(), response.getReasonPhrase());
-					call.getMediaSession().stop();
-					
+					callManager.changeCallStatus(callSessionId, response.getStatus(), response.getReasonPhrase());
+						
 				}
+				else {
+					callSessionId=response.getRequest().getSession().getId();	
+					call=callManager.getCall(callSessionId);
+					
+					if(call!=null) {
+						// Completed in the other leg?
+						callManager.changeCallStatus(callSessionId, response.getStatus(), response.getReasonPhrase());
+					
+						
+					}
+				}
+			
 			}
-		
 		}
 		
 		try {
@@ -177,42 +200,29 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 		}
 		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
 		response.send();
-					
-		MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 		
-		String callSessionId=getCallSessionId(request);	
+		String callSessionId=getCallSessionId(request);
+				
 		Call call=callManager.getCall(callSessionId);
-		
-		/*if(call!=null) {
+		if(call!=null) {
 			// Completed in the other leg?
-			call.setStatus(Call.Status.COMPLETED);
-			call.getMediaSession().stop();
-			
+			call.getMediaSession().finalize();		
 		}
 		else {
 			callSessionId=request.getSession().getId();	
-			call=callManager.getCall(callSessionId);
-			
+			call=callManager.getCall(callSessionId);				
 			if(call!=null) {
 				// Completed in the other leg?
-				call.setStatus(Call.Status.COMPLETED);
-				call.getMediaSession().stop();
-				
+				call.getMediaSession().finalize();					
 			}
 		}
-		*/
-		//if(mediaZone!=null)
-		//	mediaZone.finalize();
-		//else 
-		//	LOG.warn("NULL MediaZone on BYE :(");
-		
+				
 		try {
 			upChain.process(new SIPMutableMessage(request));
 		} catch (IllegalStateException e) {
 			LOG.warn(e.getMessage()+" not forwarding message");
 		}	
-		
-		
+				
 	}
 	
 	/**
@@ -229,17 +239,12 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 		
 		String callSessionId=request.getSession().getId();	
 		Call call=callManager.getCall(callSessionId);
-		call.setStatus(Call.Status.BRIDGED);	
+		callManager.changeCallStatus(callSessionId, Call.Status.BRIDGED);	
 		
 		MediaSession mediaSession=call.getMediaSession();
 		mediaSession.addMediaSessionListener(this);
 		mediaSession.start();
 		
-		//MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-		//mediaZone.addMediaZoneListener(this);
-		//mediaZone.start();
-		
-
 	}
 	
 	/**
@@ -274,12 +279,10 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 		
 		String callSessionId=request.getSession().getId();	
 		Call call=callManager.getCall(callSessionId);
-		call.setStatus(Call.Status.COMPLETED);	
+		callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);	
 		
-		call.getMediaSession().stop();
-		//MediaZone mediaZone=(MediaZone) request.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-		
-		//mediaZone.finalize();
+		MediaSession mediaSession=call.getMediaSession();
+		mediaSession.finalize();
 		
 		
 	}
@@ -293,7 +296,7 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 	@Override
 	public void onRTPTimeout(MediaSession session, MediaZone zone, String message) {
 		if(LOG.isInfoEnabled())
-			LOG.info("RTP Flow stuck on mediaType "+zone.getMediaType()+":"+message);
+			LOG.info("Detected RTP Flow stuck on "+zone.toPrint()+":"+message);
 		/*
 		SipServletRequest invite = ConfigurationCache.getSipFactory().createRequest(resp
 				.getApplicationSession(), "INVITE", session
@@ -305,6 +308,13 @@ public class SBCCallServlet extends SipServlet implements MediaSessionListener {
 			LOG.error("Cannot CANCEL on Media Timeout!");
 		}
 	*/
+		
+	}
+
+
+	@Override
+	public void onRTPTerminated(MediaSession mediaSession, MediaZone mediaZone, String message) {
+		// TODO Auto-generated method stub
 		
 	}
 

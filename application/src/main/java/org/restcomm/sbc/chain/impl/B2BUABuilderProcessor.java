@@ -149,6 +149,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			// ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
 			route="sip:" + ConfigurationCache.getTargetHost();
+			
 
 		} else {
 			message.setTarget(Message.TARGET_DMZ);
@@ -258,6 +259,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				
 				if (request.getMethod().equals("BYE")) {		
 					newRequest = linkedSession.createRequest("BYE");		
+				} 
+				/*
+				 * Reinvites
+				 */
+				else if (request.getMethod().equals("INVITE")) {		
+					newRequest = linkedSession.createRequest("INVITE");		
 				} 
 				else if (request.getMethod().equals("ACK")) {
 					newRequest = linkedSession.createRequest("ACK");		
@@ -369,12 +376,13 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
 			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
 			message.setTargetTransport(dmzResponse.getTransport().toUpperCase());
-			//mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
+			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
 			
-			LOG.warn(">>>>>>>>>>>>Aborting Message flow!, No linked Session available.");
 			
-			message.abort();
-			return;
+			LOG.warn(">>>>>>>>>>>>Must Abort Message flow?, No linked Session available.");
+			
+			//message.abort();
+			//return;
 		}
 		
 		

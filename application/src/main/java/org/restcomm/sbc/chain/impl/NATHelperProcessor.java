@@ -19,9 +19,9 @@
  *******************************************************************************/
 package org.restcomm.sbc.chain.impl;
 
-import java.net.InetSocketAddress;
 
-import javax.servlet.sip.Address;
+import java.util.List;
+
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
@@ -38,7 +38,9 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.managers.LocationManager;
-import org.restcomm.sbc.managers.MessageUtil;
+import org.apache.commons.net.util.SubnetUtils;
+import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
+
 
 
 /**
@@ -51,6 +53,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
 	private LocationManager locationManager=LocationManager.getLocationManager();
+	
 
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
@@ -75,6 +78,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 	}
 
 	private void processResponse(SIPMutableMessage message) {
+		
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		SipServletRequest request=response.getRequest();
 		//SipServletRequest orequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
@@ -83,11 +87,18 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 			LOG.trace(">> processResponse()");
 			LOG.trace(">> request Coming from host: "+request.getRemoteHost());
 			LOG.trace(">> request Coming from port: "+request.getRemotePort());		
-			
 		}
+		
 		
 		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
 		SipURI contactURI = null;
+		
+		if(isRoutedAddress(request.getRemoteHost())){
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("RouteAddress "+request.getRemoteHost()+" MUST not be fixed "+fromURI.toString());
+			}
+			return;
+		}
 		
 		contactURI = ConfigurationCache.getSipFactory().createSipURI(fromURI.getUser(), request.getRemoteHost());
 		contactURI.setPort(request.getRemotePort());
@@ -122,6 +133,8 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		SipServletRequest request=(SipServletRequest) message.getContent();
 		SipURI toURI 	= (SipURI) request.getTo().getURI();
 		
+		
+		
 		/*
 		 * If the request goes to DMZ and it is not inital
 		 * it means that the original request came from a 
@@ -130,11 +143,18 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		 */
 		if(message.getDirection()==Message.SOURCE_MZ){
 			if(!request.isInitial()) {
+				
 				Location location = null;
 				try {
 					location = locationManager.getLocation(toURI.getUser(), ConfigurationCache.getDomain());
 				} catch (LocationNotFoundException e) {
 					LOG.error("User not found!",e);
+					return;
+				}
+				if(isRoutedAddress(request.getRemoteHost())){
+					if(LOG.isTraceEnabled()) {
+						LOG.trace("RouteAddress "+location.getHost()+" MUST not be fixed "+location.getHost());
+					}
 					return;
 				}
 				toURI.setHost(location.getHost());
@@ -173,6 +193,29 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		if (sm instanceof SipServletResponse) {
 			processResponse(m);
 		}
+		
+	}
+	
+	private boolean isRoutedAddress(String ipAddress) {
+		List<String> localNetworks=ConfigurationCache.getLocalNetworks();
+		
+		for(String localNetwork:localNetworks) {
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("Traversing localNetworks "+localNetwork);
+			}
+			SubnetUtils utils=new SubnetUtils(localNetwork);
+			if(utils.getInfo().isInRange(ipAddress)) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("ipAddress "+ipAddress+" Is in network "+localNetwork);
+				}
+				return true;	
+			}
+			if(LOG.isTraceEnabled()) {
+				LOG.trace("ipAddress "+ipAddress+" Is NOT in network "+localNetwork);
+			}
+		}
+		
+		return false;
 		
 	}
 
