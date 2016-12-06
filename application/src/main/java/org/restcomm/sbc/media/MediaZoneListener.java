@@ -33,4 +33,6 @@ public interface MediaZoneListener extends EventListener {
 	
 	void onRTPTimeout(MediaZone mediaZone, String message);
 
+	void onRTPTerminated(MediaZone mediaZone, String message);
+
 }

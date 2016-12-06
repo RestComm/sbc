@@ -22,11 +22,13 @@ package org.restcomm.sbc.media;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.event.EventListenerList;
-
 import org.apache.log4j.Logger;
+
 
 
 /**
@@ -39,64 +41,92 @@ public class MediaSession implements MediaZoneListener {
 	
 	private static transient Logger LOG = Logger.getLogger(MediaSession.class);
 	private EventListenerList listenerList = new EventListenerList();
-	private HashMap<String, MediaZone> session=new HashMap<String, MediaZone>();
+
 	private State state;
 	private String sessionId;
+	private MediaController offer;
+	private MediaController answer;
+	protected ScheduledExecutorService timeService;
 	
-	public MediaSession(String id) {
+	
+	
+	public MediaSession(String id)   {
 		this.sessionId=id;
 		this.setState(State.INACTIVE);
 		
 	}
 	
-	public void addMediaZone(MediaZone mediaZone) {	
-		/*
-		 * MediaZones can only be added when both legs are already attached
-		 */
-		if(mediaZone.getMediaZonePeer()==null) {
-			throw new IllegalStateException("MediaZone is not already bridged!");
-		}
-		session.put(mediaZone.getMediaType(), mediaZone);
-		mediaZone.addMediaZoneListener(this);
+	private String toPrint() {
+    	return "[MediaSession ("+sessionId+")]";
+    }
+	
+	public void setAnswer(MediaController answer) {
+		this.answer=answer;
 		
 	}
+	
+	public void setOffer(MediaController offer) {
+		this.offer=offer;
+		
+	}
+	
+	public void attach() {
+		answer.attach(offer);
+	}
+	
 	
 	public void addMediaSessionListener(MediaSessionListener listener) {
 	     listenerList.add(MediaSessionListener.class, listener);
 	}
 	
-	protected void fireRTPTimeoutEvent(String mediaType, String message) {
+	protected void fireRTPTimeoutEvent(MediaZone mediaZone, String message) {
 	     // Guaranteed to return a non-null array
 	     Object[] listeners = listenerList.getListenerList();
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==MediaSessionListener.class) {             
-	             ((MediaSessionListener)listeners[i+1]).onRTPTimeout(mediaType, message);
+	             ((MediaSessionListener)listeners[i+1]).onRTPTimeout(this, mediaZone, message);
 	         }
 	         
 	     }
 	 }
 	
-	public void start()  {
-		for(MediaZone mediaZone:session.values()) {
-			try {
-				mediaZone.start();
-			} catch (UnknownHostException e) {
-				LOG.error("Cannot start MediaType "+mediaZone.getMediaType());
-			}
+	protected void fireRTPTerminatedEvent(MediaZone mediaZone, String message) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==MediaSessionListener.class) {             
+	             ((MediaSessionListener)listeners[i+1]).onRTPTerminated(this, mediaZone, message);
+	         }
+	         
+	     }
+	 }
+	
+	public void start() throws UnknownHostException  {
+		if(LOG.isInfoEnabled()) {
+			LOG.info("Starting "+this.toPrint());	
 		}
+		offer.start();
+		answer.start();
+		timeService = Executors.newSingleThreadScheduledExecutor();
+		timeService.scheduleWithFixedDelay(new MediaTimer(), 60, 60, TimeUnit.SECONDS);
 		this.setState(State.ACTIVE);
 	}
 	
-	public void stop() {
-		for(MediaZone mediaZone:session.values()) {
-			try {
-				mediaZone.finalize();
-				
-			} catch (IOException e) {
-				LOG.error("Cannot finalize MediaType "+mediaZone.getMediaType());
-			}
+	public void finalize() throws IOException {
+		if(LOG.isInfoEnabled()) {
+			LOG.info("Finalizing "+this.toPrint());	
+		}
+		if(offer!=null)
+			offer.finalize();
+		if(answer!=null)
+			answer.finalize();
+		if(timeService!=null) {
+			timeService.shutdown();
+			timeService=null;
 		}
 		this.setState(State.CLOSED);
 	}
@@ -141,10 +171,67 @@ public class MediaSession implements MediaZoneListener {
 	public String getSessionId() {
 		return sessionId;
 	}
+	
+	@Override
+	public boolean equals(Object session) {
+		MediaSession otherSession=(MediaSession) session;
+		if (!(session instanceof MediaSession)) {
+			return false;
+		}
+		
+		if (otherSession.sessionId.equals(this.sessionId)) {
+			return true;
+		}
+		return false;
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 1;
+		result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
+		return result;
+
+	}
+	
+	class MediaTimer implements Runnable {
+	    @Override
+	    public void run() {
+	    	MediaZone offerZone =offer.checkStreaming();
+	    	MediaZone answerZone=answer.checkStreaming();
+		    if(offerZone!=null) {
+		    	// either leg is stuck	
+		    	fireRTPTimeoutEvent(offerZone,"Controller detected a media flow stuck!"); 	
+		    }
+		    if(answerZone!=null) {
+		    	// either leg is stuck	
+		    	fireRTPTimeoutEvent(answerZone,"Controller detected a media flow stuck!"); 	
+		    }
+	             
+	    }
+	}
+	
+
+	
+
+	public MediaController getOffer() {
+		return offer;
+	}
+
+	public MediaController getAnswer() {
+		return answer;
+	}
 
 	@Override
-	public void onRTPTimeout(MediaZone mediaZone, String message) {
-		this.fireRTPTimeoutEvent(mediaZone.getMediaType(), message);
+	public void onRTPTerminated(MediaZone mediaZone, String message) {
+		this.fireRTPTerminatedEvent(mediaZone, message);
 		
-	};
+	}
+	
+	@Override
+	public void onRTPTimeout(MediaZone mediaZone, String message) {
+		this.fireRTPTimeoutEvent(mediaZone, message);
+		
+	}
 }
