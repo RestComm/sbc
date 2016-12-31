@@ -28,15 +28,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.channels.DatagramChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.swing.event.EventListenerList;
-
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.crypto.RawPacket;
-import org.restcomm.sbc.call.Call.Direction;
-
 
 
 /**
@@ -47,15 +44,12 @@ import org.restcomm.sbc.call.Call.Direction;
  */
 public class MediaZone  {
 	
-	private static final int BUFFER=1024;
+	protected static final int BUFFER=256;
 	private static transient Logger LOG = Logger.getLogger(MediaZone.class);
 	
-	private EventListenerList listenerList = new EventListenerList();
-	
-	private InetAddress remoteAddress;
-	protected int remotePort;
-	
-	protected int originalPort;
+	protected int originalRtpPort;
+	protected int originalRtcpPort;
+	protected boolean canMux;
 	
 	protected String originalHost;
 	protected String proxyHost;
@@ -64,10 +58,13 @@ public class MediaZone  {
 	private int logCounter=0;
 	
 	protected boolean running;
+	protected boolean ready;
+	protected boolean suspended;
 	
 	protected MediaZone mediaZonePeer;
 	protected ExecutorService executorService;
 	
+	protected DatagramChannel channel;
 	protected DatagramSocket socket;
 	
 	protected int packetsSentCounter=0;
@@ -79,74 +76,86 @@ public class MediaZone  {
 	protected int proxyPort;
 	protected Direction direction;
 	
-	private InetAddress proxyAddress;
+	protected InetAddress proxyAddress;
 	private InetAddress originalAddress;
+	protected MediaController controller;
 	
-	public MediaZone(Direction direction, String mediaType, String originalHost, int originalPort) throws UnknownHostException {
+	public MediaZone(MediaController controller, Direction direction, String mediaType, String originalHost, int originalRtpPort, int originalRtcpPort, boolean canMux, int proxyPort) throws UnknownHostException {
+		this.controller=controller;
 		this.originalHost=originalHost;
-		this.originalPort=originalPort;
+		this.originalRtpPort=originalRtpPort;
+		this.originalRtcpPort=originalRtcpPort;
+		this.canMux=canMux;
 		this.mediaType=mediaType;
 		this.direction=direction;
+		this.proxyPort=proxyPort;
 		originalAddress=InetAddress.getByName(originalHost);
 			
 	}
 	
-	public void setLocalProxy(String proxyHost, boolean create) throws UnknownHostException, SocketException {
+	public void setLocalProxy(String proxyHost) throws UnknownHostException, SocketException {
 		this.proxyHost=proxyHost;
-		if(create) {
-			PortManager portManager=PortManager.getPortManager();
-			this.proxyPort=portManager.getNextAvailablePort();
-		}
-		else {
-			if(!isAttached()) {
-				throw new SocketException("No attached Peer on MediaZone "+this.toPrint());	
-			}
-			this.proxyPort=mediaZonePeer.proxyPort;
-		}
+		
 		InetSocketAddress address = new InetSocketAddress(proxyHost, proxyPort);
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("Opening ProxyPort "+proxyHost+":"+proxyPort+" for "+this.toPrint());
+		
+		try {
+			channel=DatagramChannel.open();
+			channel.bind(address);
+		} catch (IOException e) {
+			throw new SocketException(e.getMessage());
 		}
-		this.socket = new DatagramSocket(address);
+
+		socket = channel.socket();
+		
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("Opened ProxyPort "+socket+" for "+this.toPrint());
+			LOG.trace("Opened socket "+address.toString()+" for "+this.toPrint());
 		}
-		socket.setSoTimeout(1000);
+		
+		//socket.setSoTimeout(60000);	
 		proxyAddress=address.getAddress();
+		
+		// first chance
+		if(!isReady()) {
+			if(ready=checkReady()) {
+				// Ready to start
+				this.fireProxyReadyEvent();
+			}
+		}
+
+		
 	}
 	
-	public void addMediaZoneListener(MediaZoneListener listener) {
-	     listenerList.add(MediaZoneListener.class, listener);
+	private synchronized boolean checkReady() {
+		if(!isAttached())
+			return false;
+		if(originalHost==null || originalRtpPort==0)
+			return false;
+		if(proxyHost==null || proxyPort==0)
+			return false;
+		
+		return true;
 	}
 	
-	protected void fireRTPTimeoutEvent(String message) {
-	     // Guaranteed to return a non-null array
-	     Object[] listeners = listenerList.getListenerList();
-	     // Process the listeners last to first, notifying
-	     // those that are interested in this event
-	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==MediaZoneListener.class) {             
-	             ((MediaZoneListener)listeners[i+1]).onRTPTimeout(this, message);
-	         }
-	         
-	     }
-	 }
+	private boolean isReady() {
+		return ready;
+	}
 	
-	protected void fireRTPTerminatedEvent(String message) {
-	     // Guaranteed to return a non-null array
-	     Object[] listeners = listenerList.getListenerList();
-	     // Process the listeners last to first, notifying
-	     // those that are interested in this event
-	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==MediaZoneListener.class) {             
-	             ((MediaZoneListener)listeners[i+1]).onRTPTerminated(this, message);
-	         }
-	         
-	     }
-	 }
 	
-	public int getOriginalPort() {
-		return originalPort;
+	protected void fireProxyTimeoutEvent() {
+		controller.getMediaSession().fireMediaTimeoutEvent(this);
+	    
+	}
+	
+	protected void fireProxyTerminatedEvent() {
+		controller.getMediaSession().fireMediaTerminatedEvent(this);
+	}
+	
+	protected void fireProxyReadyEvent() {
+		controller.getMediaSession().fireMediaReadyEvent(this);
+	}
+	
+	public int getOriginalRtpPort() {
+		return originalRtpPort;
 	}
 	
 	public String getProxyHost() {
@@ -171,13 +180,13 @@ public class MediaZone  {
 			return;
 		}
 		
-		setRunning(true);
-		
-		if(LOG.isInfoEnabled()) {
-			LOG.info("Starting "+this.toPrint());
-			
+		if(!isReady()) {
+			LOG.warn("Media Zone could not stablish proper routes, should dismiss? "+this.toPrint());
 			
 		}
+		
+		setRunning(true);
+		
 		executorService = Executors.newCachedThreadPool();
 		executorService.execute(new Proxy());
 		
@@ -192,7 +201,20 @@ public class MediaZone  {
 		
 		
 	}
-
+	public void suspend() {
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Suspending mediaZone "+this.toPrint());
+		}
+		suspended=true;
+		
+	}
+	
+	public void resume() {
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Resuming mediaZone "+this.toPrint());
+		}
+		suspended=false;
+	}
 
 	public void finalize() throws IOException {
 		if(LOG.isInfoEnabled()) {
@@ -204,15 +226,16 @@ public class MediaZone  {
 		if(mediaZonePeer!=null) {
 			setRunning(false);
 			if(mediaZonePeer.socket!=null&&!mediaZonePeer.socket.isClosed()) {
-				mediaZonePeer.socket.close();
-				
+				mediaZonePeer.socket.close();	
 				mediaZonePeer.socket=null;
 				
 			}
 			if(mediaZonePeer.executorService!=null) {
 				mediaZonePeer.executorService.shutdown();
 				mediaZonePeer.executorService=null;
+				mediaZonePeer.fireProxyTerminatedEvent(); 
 				mediaZonePeer=null;
+				
 			}	
 			
 		}
@@ -226,76 +249,84 @@ public class MediaZone  {
 		if(executorService!=null) {
 			executorService.shutdown();
 			executorService=null;
+			fireProxyTerminatedEvent(); 
 		}
 		
-        this.fireRTPTerminatedEvent("End");    
+           
     }
 	
 	
 	public String toPrint() {
 		String value;
 		
-		value="("+direction+") "+this.hashCode()+" "+mediaType+", Origin "+originalHost+":"+originalPort+", LocalProxy "+proxyHost+":"+proxyPort;
+		value="(UMZ "+direction+") "+this.hashCode()+" "+mediaType+", Origin "+originalHost+":"+originalRtpPort+", LocalProxy "+proxyHost+":"+proxyPort;
 		if(mediaZonePeer!=null)
-				value+="[("+mediaZonePeer.direction+") "+mediaZonePeer.hashCode()+" "+mediaZonePeer.mediaType+", Origin "+mediaZonePeer.originalHost+":"+mediaZonePeer.originalPort+", LocalProxy "+mediaZonePeer.proxyHost+":"+mediaZonePeer.proxyPort+"]";
+				value+="[("+mediaZonePeer.direction+") "+mediaZonePeer.hashCode()+" "+mediaZonePeer.mediaType+", Origin "+mediaZonePeer.originalHost+":"+mediaZonePeer.originalRtpPort+", LocalProxy "+mediaZonePeer.proxyHost+":"+mediaZonePeer.proxyPort+"]";
 		return value;
 	}
 	
 	public void send(DatagramPacket dgram) throws IOException {
-		if(mediaZonePeer.getRemotePort()==0) {
-			if(logCounter==500){
-				if(LOG.isTraceEnabled()) {
-					LOG.trace("--->Not Ready to send yet to "+mediaZonePeer.toPrint());
-				}
-			}
-			return;
-		}
-		dgram.setAddress(mediaZonePeer.getRemoteAddress());
-		dgram.setPort(mediaZonePeer.getRemotePort());
 		
-		if(logCounter==500){
-			if(LOG.isTraceEnabled()) {
-				RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
-				LOG.trace("--->[Codec "+rtp.getPayloadType()+"]("+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
-				
-			}
+		if(dgram==null)
+			return;
+		
+		dgram.setAddress(mediaZonePeer.getOriginalAddress());
+		dgram.setPort(mediaZonePeer.getOriginalRtpPort());
+		
+		if(dgram.getData().length>8) {	
+			//if(logCounter==300){
+				if(LOG.isTraceEnabled()) {
+					RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
+					LOG.trace("--->[("+MediaZone.this.hashCode()+") PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");		
+				}
+			//}
 		}
 			
-		mediaZonePeer.socket.send(dgram);
+		socket.send(dgram);	
 		
 	}
 	
-	
+	byte[] buffer=new byte[BUFFER];
+	DatagramPacket dgram=new DatagramPacket(buffer, BUFFER);
 	public DatagramPacket receive() throws IOException {
-		byte[] buffer=new byte[BUFFER];
-		DatagramPacket dgram=new DatagramPacket(buffer, BUFFER);
-		
-		if(socket==null) {
+	
+		if(mediaZonePeer.socket==null) {
 			throw new IOException("NULL Socket on "+this.toPrint());
 		}
-		socket.receive(dgram);
+		mediaZonePeer.socket.receive(dgram);
+		if(dgram==null||dgram.getLength()<8){
+			LOG.warn("RTPPacket too short, sending anyway "+this.toPrint());
+			return dgram;		
+		}
 		
-		this.setRemoteAddress(dgram.getAddress());
-		this.setRemotePort(dgram.getPort());
-		
-		//Log 1 of every 500 packets
-		if(logCounter==500){
+		//Log 1 of every 300 packets
+		//if(logCounter==300){
 			if(LOG.isTraceEnabled()) {
 				RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
-				LOG.trace("<---[Codec "+rtp.getPayloadType()+"]("+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
+				LOG.trace("<---[("+MediaZone.this.hashCode()+") PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
 			}
 			logCounter=0;
-		}
+		//}
 		logCounter++;
 		
 		return dgram;
 		
 	}
 	
-	public void attach(MediaZone mediaZone) {
-		setMediaZonePeer(mediaZone);	
-		mediaZone.setMediaZonePeer(this);
-		
+	public final void attach(MediaZone mediaZone) {
+		if(!isAttached()) {
+			setMediaZonePeer(mediaZone);		
+		}
+		if(!mediaZone.isAttached()) {
+			mediaZone.setMediaZonePeer(this);
+		}
+		// first chance
+		if(!isReady()) {
+			if(ready=checkReady()) {
+				// Ready to start
+				this.fireProxyReadyEvent();
+			}
+		}
 	}
 	
 	public boolean isAttached() {
@@ -306,6 +337,14 @@ public class MediaZone  {
 		@Override
 		public void run() {
 			while(isRunning())	{
+				if(isSuspended()){
+					try {
+						Thread.sleep(300);
+					} catch (InterruptedException e) {
+						continue;
+					}
+					continue;
+				}
 				try {
 					send(receive());	
 				} catch (IOException e) {
@@ -316,6 +355,7 @@ public class MediaZone  {
 						LOG.error("Cannot finalize stream!", e1);
 					}
 					break;
+					
 				}		
 			}	
 		}	
@@ -343,24 +383,16 @@ public class MediaZone  {
 		return mediaZonePeer;
 	}
 
-	private void setMediaZonePeer(MediaZone mediaZonePeer) {
+	protected void setMediaZonePeer(MediaZone mediaZonePeer) {
 		this.mediaZonePeer = mediaZonePeer;
 	}
 	
-	public int getRemotePort() {
-		return remotePort;
-	}
-	public void setRemotePort(int remotePort) {
-		this.remotePort = remotePort;
-	}
-	public void setRemoteAddress(InetAddress remoteAddress) {
-		this.remoteAddress = remoteAddress;
-	}
-	public InetAddress getRemoteAddress() {
-		return remoteAddress;
-	}
-	protected boolean isRunning() {
+	public boolean isRunning() {
 		return running;
+	}
+	
+	public boolean isSuspended() {
+		return suspended;
 	}
 	
 	protected synchronized void setRunning(boolean running) {
@@ -386,7 +418,8 @@ public class MediaZone  {
 		}
 		
 		if (otherZone.getOriginalHost().equals(this.getOriginalHost()) &&
-			otherZone.getOriginalPort()==this.getOriginalPort()	&&
+			otherZone.getController().equals(this.getController()) &&
+			otherZone.getOriginalRtpPort()==this.getOriginalRtpPort()	&&
 			otherZone.getMediaType().equals(this.getMediaType())&&
 			otherZone.getDirection().equals(this.getDirection())) {
 			return true;
@@ -399,8 +432,9 @@ public class MediaZone  {
 	public int hashCode() {
 		int prime = 31;
 		int result = 1;
+		result = prime * result + ((controller == null) ? 0 : controller.hashCode());
 		result = prime * result + ((originalHost == null) ? 0 : originalHost.hashCode());
-		result = prime * result + ((originalPort == 0) ? 0 : originalPort);
+		result = prime * result + ((originalRtpPort == 0) ? 0 : originalRtpPort);
 		result = prime * result + ((mediaType == null) ? 0 : mediaType.hashCode());
 		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
 		return result;
@@ -444,6 +478,17 @@ public class MediaZone  {
 	public InetAddress getOriginalAddress() {
 		return originalAddress;
 	}
+
+	public MediaController getController() {
+		return controller;
+	}
+
+	public boolean canMux() {
+		return canMux;
+	}
+
+	
+	
 	
 	
 }

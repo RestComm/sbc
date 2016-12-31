@@ -22,18 +22,14 @@ package org.restcomm.sbc.media;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtcp.RtcpHeader;
-import org.mobicents.media.server.impl.rtp.RTPInput;
 import org.mobicents.media.server.impl.rtp.RtpPacket;
-import org.mobicents.media.server.impl.rtp.rfc2833.DtmfInput;
-import org.mobicents.media.server.impl.rtp.statistics.RtpStatistics;
-import org.mobicents.media.server.impl.srtp.DtlsHandler;
 import org.mobicents.media.server.io.network.channel.PacketHandlerException;
 import org.mobicents.media.server.io.sdp.format.RTPFormat;
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
-import org.mobicents.media.server.scheduler.PriorityQueueScheduler;
+import org.restcomm.sbc.media.dtls.DtlsHandler;
+
 
 /**
  * Handles incoming RTP packets.
@@ -83,7 +79,16 @@ public class RtpHandler implements PacketHandler {
 	public void setReceivable(boolean receivable) {
 		this.receivable = receivable;
 	}
-
+	/**
+	 * Modifies the map between format and RTP payload number
+	 * 
+	 * @param rtpFormats
+	 *            the format map
+	 */
+	public void setFormatMap(final RTPFormats rtpFormats) {
+		this.rtpFormats = rtpFormats;
+		
+	}
 	
 	public RTPFormats getFormatMap() {
 		return this.rtpFormats;

@@ -79,6 +79,10 @@ public class PortManager {
 
 	}
 	
+	public synchronized int getCurrentPort()  {	
+		return currentPort;
+		
+	}
 	
 	
 	

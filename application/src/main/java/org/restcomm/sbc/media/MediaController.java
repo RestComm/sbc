@@ -24,22 +24,21 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-
 import org.apache.log4j.Logger;
-import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
 import org.mobicents.media.server.io.sdp.SdpException;
 import org.mobicents.media.server.io.sdp.SessionDescription;
 import org.mobicents.media.server.io.sdp.SessionDescriptionParser;
-import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
-import org.mobicents.media.server.io.sdp.dtls.attributes.SetupAttribute;
+import org.mobicents.media.server.io.sdp.attributes.RtpMapAttribute;
 import org.mobicents.media.server.io.sdp.fields.ConnectionField;
 import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
 import org.mobicents.media.server.io.sdp.fields.OriginField;
 import org.mobicents.media.server.io.sdp.fields.SessionNameField;
-import org.mobicents.media.server.io.sdp.ice.attributes.IcePwdAttribute;
-import org.mobicents.media.server.io.sdp.ice.attributes.IceUfragAttribute;
-
+import org.mobicents.media.server.io.sdp.format.AVProfile;
+import org.mobicents.media.server.io.sdp.format.RTPFormat;
+import org.mobicents.media.server.io.sdp.format.RTPFormats;
+import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.media.MediaZone.Direction;
 
 
 /**
@@ -65,22 +64,27 @@ public class MediaController {
 	
 	private SessionDescription sdp ;
 	private MediaZone.Direction direction;
+	private MediaSession mediaSession;
 	
 	private HashMap<String, MediaZone> mediaZones=new HashMap<String, MediaZone>();
+
+
+	private SessionDescription secureSdp;
 	
 	public SessionDescription getSdp() {
 		return sdp;
 	}
 
-    public MediaController(MediaZone.Direction  direction, String sdpText) throws SdpException, UnknownHostException {
+    public MediaController(MediaSession session, MediaZone.Direction  direction, String sdpText) throws SdpException, UnknownHostException {
+    	this.mediaSession=session;
     	this.sdp=SessionDescriptionParser.parse(sdpText);
     	this.direction=direction;
     	buildMediaZones();
 		
     }
     
-    private String toPrint() {
-    	return "[MediaController ("+direction+")]";
+    public String toPrint() {
+    	return "[MediaController MS:"+mediaSession.getSessionId()+" ("+direction+")]";
     }
     
     
@@ -91,6 +95,8 @@ public class MediaController {
     			MediaZone mediaZone;
     			String ip;
     			int rtpPort;
+    			int rtcpPort;
+    			boolean canMux;
     			
     			MediaDescriptionField mediaDescription = sdp.getMediaDescription(supportedMediaTypes[type]);
     			
@@ -99,7 +105,14 @@ public class MediaController {
     				continue;
     			}
     			
+    			canMux=mediaDescription.isRtcpMux();
     			rtpPort=mediaDescription.getPort();
+    			rtcpPort=mediaDescription.getRtcpPort();
+    			
+    			// Do not create disabled Mediazones
+    			if(rtpPort==0) {
+    				continue;
+    			}
     			
     			if(sdp.getConnection()!=null) {
     				ip=sdp.getConnection().getAddress();
@@ -108,10 +121,15 @@ public class MediaController {
     				ip=mediaDescription.getConnection().getAddress();
     			}
     			if (mediaDescription.getProtocol().equals("RTP/AVP")) {
-    				mediaZone=new MediaZone(direction, supportedMediaTypes[type], ip, rtpPort);	
+    				mediaZone=new MediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);	
     			}
     			else {
-    				mediaZone=new CryptoMediaZone(direction, supportedMediaTypes[type], ip, rtpPort);
+    				if(supportedMediaTypes[type].equals("audio")) {
+    					mediaZone=new CryptoMediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);
+    				}
+    				else {
+    					continue;
+    				}
     			}
     	   		
     	   		mediaZones.put(supportedMediaTypes[type], mediaZone);
@@ -122,13 +140,20 @@ public class MediaController {
     		
     }
     
-    public boolean isSecure() {
-    	
-    	for(MediaZone zone:mediaZones.values()) {
-    		if(zone instanceof CryptoMediaZone )
-    			return true;
+    public boolean isOffer() {
+    	return direction==MediaZone.Direction.OFFER;
+    }
+    
+    public boolean isSecure(String mediaType) { 
+    	if(sdp.getMediaDescription(mediaType).getProtocol().equals("RTP/AVP")){
+    		return false;
     	}
-    	return false;
+    	return true;
+    	
+    }
+    
+    public boolean isSecure() { 
+    	return isSecure(MEDIATYPE_AUDIO);
     	
     }
     /**
@@ -140,13 +165,13 @@ public class MediaController {
     	for(MediaZone zone:mediaZones.values()) {
     		MediaZone peerZone=peerController.getMediaZone(zone.getMediaType());
     			if(LOG.isTraceEnabled()) {
-    				LOG.trace("Ataching "+zone.toPrint());
-    				LOG.trace("with     "+peerZone.toPrint());
+    				LOG.trace("Attaching "+zone.toPrint());
+    				LOG.trace("with      "+peerZone.toPrint());
     			}
     			zone.attach(peerZone);
     	}   	
     }
-    
+    /*
     public void start() throws UnknownHostException {
     	if(LOG.isInfoEnabled()) {
 			LOG.info("Starting "+this.toPrint());	
@@ -156,7 +181,7 @@ public class MediaController {
     	}
     	
     }
-    
+    */
     public MediaZone checkStreaming()  {	
     	for(MediaZone zone:mediaZones.values()) {
     		if(!zone.isStreaming())
@@ -180,119 +205,130 @@ public class MediaController {
     	return mediaZones.get(mediaType);
     }
     
-    public void setLocalProxy(String proxyHost, boolean create) throws UnknownHostException, SocketException {
+    public void setLocalProxy(String proxyHost) throws UnknownHostException, SocketException {
     	for(MediaZone zone:mediaZones.values()) {
-    		zone.setLocalProxy(proxyHost, create);
+    		zone.setLocalProxy(proxyHost);
     	}
     	
     }
     
+    public String getProxySdp(String proxyHost) throws SdpException {
+    	return patchIPAddressAndPort(false, sdp.toString(), proxyHost);
+    }
     
-    public String patchIPAddressAndPort(String ip) throws SdpException  {
-
+    public String getUnsecureProxySdp(String proxyHost) throws SdpException {
+    	if(ConfigurationCache.isMediaDecodingEnabled())
+    		return patchIPAddressAndPort(true, sdp.toString(), proxyHost);
+    	return patchIPAddressAndPort(false, sdp.toString(), proxyHost);
+    }
+    
+    public String getSecureProxySdp(String proxyHost) throws SdpException {
+    	return this.getSecureSdp().toString().trim().concat("\n");
+    }
+    
+    public String getUnsecureSdp() throws SdpException {
+    	if(ConfigurationCache.isMediaDecodingEnabled())
+    		return patchIPAddressAndPort(true, sdp.toString(), null);
+    	return patchIPAddressAndPort(false, sdp.toString(), null);
+    }
+    
+    
+    public MediaController getOtherParty() {
+    	if(this.direction==Direction.ANSWER) {
+    		return mediaSession.getOffer();
+    	}
+    	else {
+    		return mediaSession.getAnswer();
+    	}
+    }
+    
+    private String patchIPAddressAndPort(boolean unsecure, String sdp2Patch, String ip) throws SdpException  {
    		SessionDescription psdp;
 		
-		psdp = SessionDescriptionParser.parse(sdp.toString());
-		
-   		
+		psdp = SessionDescriptionParser.parse(sdp2Patch);
+	
    		OriginField origin = psdp.getOrigin();
-   		origin.setAddress(ip);
    		
-   		SessionNameField sessionName=new SessionNameField("SBC Call");
+   		if(ip!=null)
+   			origin.setAddress(ip);
+   		psdp.setOrigin(origin);
+   		
+   		SessionNameField sessionName=new SessionNameField("SBC Call "+(unsecure?"unsecure ":"secure "));
 		psdp.setSessionName(sessionName);
    		
    		ConnectionField connection = new ConnectionField();
+   		if(ip!=null)
+   			connection.setAddress(ip);
    		
-   		connection.setAddress(ip);
-   		if(psdp.getConnection()!=null)
+   		if(psdp.getConnection()!=null && ip!=null)
    			psdp.setConnection(connection);
    		
    		for(int type=0;type<supportedMediaTypes.length;type++) {
    			MediaZone zone=mediaZones.get(supportedMediaTypes[type]);
-   			
+   			if(zone==null) {
+   				LOG.warn("skipping MediaZone "+supportedMediaTypes[type]);
+   				continue;
+   			}
 	   		MediaDescriptionField mediaDescription = psdp.getMediaDescription(supportedMediaTypes[type]);
 	   		
 	   		if(mediaDescription!=null) {
-	   			mediaDescription.setConnection(connection);
-	   			mediaDescription.setPort(zone.getProxyPort());
+	   			if(unsecure) {
+		   			mediaDescription.removeAllCandidates();
+		   			mediaDescription.setProtocol("RTP/AVP");
+		   		}
+	   			if(ip!=null)
+	   				mediaDescription.setConnection(connection);
+	   			if(zone.getProxyPort()==0){
+	   				LOG.warn("Cannot Patch ProxyPort == 0 ");
+	   			}
+	   			// Offered mediaPorts == 0 MUST not be patched
+	   			if(mediaDescription.getPort()!=0) {
+	   				mediaDescription.setPort(zone.getProxyPort());
+	   			}
+	   			
+	   			
 	   		}
    		}
    		return psdp.toString().trim().concat("\n");
     	
     }
-      
    
-   public SessionDescription unSecureSdp() throws SdpException  {
+   public RTPFormats getNegociatedFormats() {
+	// Media formats
+	   RTPFormats rtpFormats=new RTPFormats();
 	   
-	   		SessionDescription usdp;
-			
-			usdp = SessionDescriptionParser.parse(sdp.toString());
-			
-			for(int type=0;type<supportedMediaTypes.length;type++) {
-		   		MediaDescriptionField mediaDescription = usdp.getMediaDescription(supportedMediaTypes[type]);
-		   		
-		   		if(mediaDescription!=null) {
-		   			mediaDescription.removeAllCandidates();
-		   			mediaDescription.setProtocol("RTP/AVP");
-		   		}
-	   		}
-			
-	   	
-			return usdp;
-	                  
-	     
+	   MediaDescriptionField description=sdp.getMediaDescription("audio");
+	   RtpMapAttribute[] formats = description.getFormats();
+		for (int index = 0; index < formats.length; index++) {
+			RTPFormat f = AVProfile.audio.find(formats[index].getPayloadType());
+			if(f!=null) {
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("Adding mediaFormat "+f.toString());	
+				}
+				rtpFormats.add(f);
+			}
+		}
+		/*
+		description=sdp.getMediaDescription("video");
+		formats = description.getFormats();
+		for (int index = 0; index < formats.length; index++) {
+			RTPFormat f = AVProfile.video.find(formats[index].getPayloadType());
+			if(f!=null)
+				rtpFormats.add(f);		
+		}
+		*/
+		return rtpFormats;
+	   
+   }
+  
+   public void setSecureSdp(SessionDescription sd) {
+		this.secureSdp=sd;
+		
    }
    
-   
-   public SessionDescription secureSdp() throws SdpException  {
-	    SessionDescription ssdp;
+   public SessionDescription getSecureSdp() {
+		return this.secureSdp;
 		
-		ssdp = SessionDescriptionParser.parse(sdp.toString());
-		
-	    
-	    IceAuthenticatorImpl auth = new IceAuthenticatorImpl();
-	    auth.generateIceCredentials();
-	    
-	    for(int type=0;type<supportedMediaTypes.length;type++) {
-	    	MediaDescriptionField mediaDescription = ssdp.getMediaDescription(supportedMediaTypes[type]);
-	    	
-	    	if(mediaDescription!=null) {
-		   		mediaDescription.setProtocol("RTP/SAVPF");
-		   		
-		   		FingerprintAttribute fp;
-		   		
-		   		fp=mediaDescription.getFingerprint();
-		   		if(fp==null)
-		   			fp=new FingerprintAttribute();
-		   		fp.setFingerprint("E6:CE:47:0E:64:5D:EF:9B:08:B3:34:D1:72:3E:46:48:BD:6E:62:47");
-		   		fp.setHashFunction("sha-1");
-				mediaDescription.setFingerprint(fp);
-				
-				IceUfragAttribute ice_ufrag;
-				IcePwdAttribute ice_pwd;
-				
-				ice_ufrag=mediaDescription.getIceUfrag();
-				ice_pwd=mediaDescription.getIcePwd();
-				
-				if(ice_ufrag==null) {
-					ice_ufrag = new IceUfragAttribute();
-					ice_pwd = new IcePwdAttribute();
-				}
-				ice_ufrag.setUfrag(auth.getUfrag());
-				ice_pwd.setPassword(auth.getPassword());
-				
-				mediaDescription.setIcePwd(ice_pwd);
-				mediaDescription.setIceUfrag(ice_ufrag);
-				
-				SetupAttribute setup=new SetupAttribute("passive");
-				mediaDescription.setSetup(setup);
-	    	}
-   		}
-	    
-		
-	
-      return ssdp;         
-    
    }
    
    @Override
@@ -303,6 +339,7 @@ public class MediaController {
 		}
 		
 		if (otherController.getSdp().equals(this.getSdp()) &&
+			otherController.getMediaSession().equals(this.getMediaSession()) &&
 			otherController.direction.equals(direction)) {
 			return true;
 		}
@@ -314,6 +351,7 @@ public class MediaController {
 	public int hashCode() {
 		int prime = 31;
 		int result = 1;
+		result = prime * result + ((mediaSession == null) ? 0 : mediaSession.hashCode());
 		result = prime * result + ((sdp == null) ? 0 : sdp.hashCode());
 		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
 		return result;
@@ -520,27 +558,85 @@ public class MediaController {
 				*/
 		
 		try {
-			MediaController controller = new MediaController(MediaZone.Direction.OFFER, sdpText);
+			MediaSession session=new MediaSession("ID");
+			String sdpOffer=
+"v=0\n"+ 
+"o=22-jitsi.org 0 0 IN IP4 10.0.0.10\n"+ 
+"s=- \n"+
+"c=IN IP4 10.0.0.10\n"+
+"t=0 0\n"+
+"m=audio 5082 RTP/AVP 8 96 97 98 9 100 102 103 3 104 101\n"+
+"a=rtpmap:8 PCMA/8000\n"+
+"a=rtpmap:96 opus/48000/2\n"+
+"a=fmtp:96 usedtx=1\n"+
+"a=rtpmap:97 SILK/24000\n"+
+"a=rtpmap:98 SILK/16000\n"+
+"a=rtpmap:9 G722/8000\n"+
+"a=rtpmap:100 speex/32000\n"+
+"a=rtpmap:102 speex/16000\n"+
+"a=rtpmap:103 iLBC/8000\n"+
+"a=rtpmap:3 GSM/8000\n"+
+"a=rtpmap:104 speex/8000\n"+
+"a=rtpmap:101 telephone-event/8000\n"+
+"a=extmap:1 urn:ietf:params:rtp-hdrext:csrc-audio-level\n"+
+"a=extmap:2 urn:ietf:params:rtp-hdrext:ssrc-audio-level\n"+
+"a=rtcp-xr:voip-metrics\n"+
+"m=video 5084 RTP/AVP 105 99 106\n"+
+"a=rtpmap:105 H264/90000\n"+
+"a=fmtp:105 profile-level-id=4DE01f;packetization-mode=1\n"+
+"a=imageattr:105 send * recv [x=[0-1680],y=[0-1050]]\n"+
+"a=rtpmap:99 H264/90000\n"+
+"a=fmtp:99 profile-level-id=4DE01f\n"+
+"a=imageattr:99 send * recv [x=[0-1680],y=[0-1050]]\n"+
+"a=rtpmap:106 H263-1998/90000\n"+
+"a=fmtp:106 CUSTOM=1680,1050,2;VGA=2;CIF=1;QCIF=1\n";
+			MediaController offer=session.buildOffer(sdpOffer);
+			String sdpAnswer=
+
+"v=0\n"+
+"o=root 1373078659 1373078659 IN IP4 192.168.120.96\n"+
+"s=eolosCM-2.6\n"+
+"c=IN IP4 192.168.120.96\n"+
+"b=CT:384\n"+
+"t=0 0\n"+
+"m=audio 17252 RTP/AVP 8 3\n"+
+"a=rtpmap:8 PCMA/8000\n"+
+"a=rtpmap:3 GSM/8000\n"+
+"a=ptime:20\n"+
+"a=sendrecv\n"+
+"m=video 14906 RTP/AVP 106 99\n"+
+"a=rtpmap:106 h263-1998/90000\n"+
+"a=rtpmap:99 H264/90000\n"+
+"a=sendrecv\n";
+			MediaController answer = session.buildAnswer(sdpAnswer);
 			
+			offer.setLocalProxy("127.0.0.1");
+			
+			String sdpContent=offer.getProxySdp("1.1.1.1");		
+			
+			session.attach();
+			answer.setLocalProxy("192.168.88.3");	
+			
+			sdpContent=answer.getProxySdp("2.2.2.2");		
+			
+			System.out.println(answer.getMediaZone("audio").toPrint());
+			System.out.println(answer.getMediaZone("video").toPrint());
+			System.out.println(offer.getMediaZone("audio").toPrint());
+			System.out.println(offer.getMediaZone("video").toPrint());
 			
 			System.out.println("---------------original-------------------");
 			//System.out.println(metadata.getSdp());
 			//System.out.println(metadata.mediaType+", "+metadata.getProtocol()+", "+metadata.getIp()+":"+metadata.getRtpPort());
-			System.out.println(controller.getSdp().toString());
+			System.out.println(offer.getSdp().toString());
 			
-			String unsecure = controller.unSecureSdp().toString();
+			String unsecure = offer.getUnsecureSdp();
 			
 			System.out.println("---------------unsecure-------------------");
 			System.out.println(unsecure);
 			
-			
-			String secure   = controller.secureSdp().toString();
-			System.out.println("---------------secure---------------------");
-			System.out.println(secure);
-			
-			String patched   = controller.patchIPAddressAndPort("201.216.233.187");
-			System.out.println("---------------patched---------------------");
-			System.out.println(patched);
+			String upatched   = offer.getUnsecureProxySdp("201.216.233.187");
+			System.out.println("---------------unsecure patched---------------------");
+			System.out.println(upatched);
 			
 			
 			
@@ -551,6 +647,12 @@ public class MediaController {
 		
 		
 	}
+
+public MediaSession getMediaSession() {
+	return mediaSession;
+}
+
+
    
   
 }
