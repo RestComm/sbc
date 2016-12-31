@@ -31,7 +31,9 @@ import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.media.MediaController;
 import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.managers.MessageUtil;
+import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 
 
 
@@ -72,65 +74,46 @@ public abstract class ProtocolAdapter {
 						String host=message.getTargetLocalAddress();
 						
 						if(sm instanceof SipServletResponse) {
-							SipServletResponse smr=(SipServletResponse) sm;
+							//SipServletResponse smr=(SipServletResponse) sm;
 							mediaSession=(MediaSession) m.getMetadata();
 							mediaController=mediaSession.getAnswer();
 							mediaSession.attach();
-							mediaController.setLocalProxy(host, false);
-							
-							//audioZone=(MediaZone) smr.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);	
-							//mediaSession.getAnswer();
-							//audioPort=audioZone.getMediaZonePeer().getRTPPort();
-							//audioControlPort=audioZone.getMediaZonePeer().getRTCPPort();
+							mediaController.setLocalProxy(host);	
 							
 						}
 						else {
-							SipServletRequest smr=(SipServletRequest) sm;
-							SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
-							
+							//SipServletRequest smr=(SipServletRequest) sm;
+							//SipServletRequest oRequest=(SipServletRequest) smr.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);		
 							mediaSession=(MediaSession) m.getMetadata();	
 							mediaController=mediaSession.getOffer();
-							mediaController.setLocalProxy(host, true);
-							//audioZone=(MediaZone) oRequest.getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
-							//audioPort=audioZone.getRTPPort();
-							//audioControlPort=audioZone.getRTCPPort();
-							
+							mediaController.setLocalProxy(host);		
 						}
 						
-							
-						
-							
-							String sdpContent=mediaController.getSdp().toString();
-							
-							
-							if(m.getTarget()==Message.TARGET_MZ) {
-								//always stream plain media to MZ	
-								sdpContent=mediaController.unSecureSdp().toString();
+						String sdpContent=mediaController.getProxySdp(host);
 								
-								
+						if(m.getTarget()==Message.TARGET_MZ) {
+							//always stream plain media to MZ
+							if(ConfigurationCache.isMediaDecodingEnabled()) {
+								sdpContent=mediaController.getUnsecureProxySdp(host);
 							}
-							else if(mediaController.isSecure()) {
+						}
+						else if(getProtocol().equals(ProtocolAdapterFactory.PROTOCOL_WSS)) {
+							// The answer is build upon the previous offer
+							if(!mediaController.isOffer()) {
 								// must reply in secure mode
-							    sdpContent=mediaController.secureSdp().toString();		
+							    sdpContent=mediaController.getSecureProxySdp(host);	
 							}
-							
-							sdpContent=mediaController.patchIPAddressAndPort(host).toString();
-						
-						
+						}		
 						m.setMetadata(mediaSession);
 						
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("MDA "+m.getMetadata());
-							LOG.debug(m.toString());
-							
+							LOG.debug(m.toString());				
 							LOG.debug("patched Content:\n" + sdpContent);
 						}
-						
-						
-						sm.setContent(sdpContent, "application/sdp");
-						
-						m.setContent(sm);
-						
+									
+						sm.setContent(sdpContent, "application/sdp");			
+						m.setContent(sm);			
 
 					} catch (IOException e) {
 						LOG.error("No SDP content!", e);

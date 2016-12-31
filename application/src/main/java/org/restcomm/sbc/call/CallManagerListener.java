@@ -4,7 +4,7 @@ import java.util.EventListener;
 
 import org.restcomm.sbc.call.Call;
 
-public interface CallListener extends EventListener {
+public interface CallManagerListener extends EventListener {
 	
 	void onCallCreated(Call call);
 	void onCallIncoming(Call call);
