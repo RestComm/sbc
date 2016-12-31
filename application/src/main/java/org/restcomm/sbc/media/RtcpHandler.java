@@ -29,8 +29,9 @@ import org.mobicents.media.server.impl.rtcp.RtcpHeader;
 import org.mobicents.media.server.impl.rtcp.RtcpPacket;
 import org.mobicents.media.server.impl.rtcp.RtcpPacketType;
 import org.mobicents.media.server.impl.rtp.RtpPacket;
-import org.mobicents.media.server.impl.srtp.DtlsHandler;
+
 import org.mobicents.media.server.io.network.channel.PacketHandlerException;
+import org.restcomm.sbc.media.dtls.DtlsHandler;
 
 
 /**
@@ -83,11 +84,15 @@ public class RtcpHandler implements PacketHandler {
         // webrtc
         this.secure = false;
         this.dtlsHandler = null;
+        
     }
 
     
 
     public void setChannel(DatagramChannel channel) {
+    	if(logger.isTraceEnabled()) {
+    		logger.trace("Setting Channel connected? "+channel.isConnected());
+    	}
         this.channel = channel;
     }
 

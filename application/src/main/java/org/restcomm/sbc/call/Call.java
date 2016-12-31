@@ -20,9 +20,13 @@
 
 package org.restcomm.sbc.call;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+
+import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -30,6 +34,8 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.CallDetailRecord;
 import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.media.MediaSessionListener;
+import org.restcomm.sbc.media.MediaZone;
 
 
 /**
@@ -38,7 +44,7 @@ import org.restcomm.sbc.media.MediaSession;
  * @class   Call.java
  *
  */
-public class Call  {
+public class Call implements MediaSessionListener {
 	
 	private static transient Logger LOG = Logger.getLogger(Call.class);
 	
@@ -50,6 +56,8 @@ public class Call  {
 	private Direction direction;
 	private String sessionId;
 	
+	private EventListenerList listenerList = new EventListenerList();
+	
 	protected Call(Call parent, final String sessionId, final String to, final String from,    
             final String direction, 
             final String callerName) {
@@ -60,6 +68,9 @@ public class Call  {
 		Sid parentCallSid=Sid.generate(Sid.Type.RANDOM);
 		DateTime dateCreated=DateTime.now();
 		String apiVersion=ConfigurationCache.getApiVersion();
+		
+		mediaSession=new MediaSession(sessionId);
+		mediaSession.addMediaSessionListener(this);
 		
 		URI uri=null;
 		try {
@@ -73,16 +84,13 @@ public class Call  {
 			
 		this.cdr=new CallDetailRecord(sid, "", parentCallSid, dateCreated, dateCreated, to, from, 
                 status.text, dateCreated, dateCreated, 0, new BigDecimal(0), null, direction, null, apiVersion, null,
-                callerName, uri, null, 0, false, false);
-		
-		
-		
+                callerName, uri, null, 0, false, false);	
 	}
 	
-	public void setMediaSession(MediaSession mediaSession) {
-		this.mediaSession=mediaSession;	
+	public void addCallListener(CallListener listener) {
+	     listenerList.add(CallListener.class, listener);
 	}
-
+	
 	public CallDetailRecord getCdr() {
 		return cdr;
 	}
@@ -235,6 +243,40 @@ public class Call  {
 
 	public Call getParent() {
 		return parent;
+	}
+
+	public EventListenerList getListeners() {
+		return listenerList;
+	}
+
+	@Override
+	public void onMediaTimeout(MediaSession session, MediaZone zone) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMediaTerminated(MediaSession mediaSession, MediaZone mediaZone) {
+		try {
+			mediaSession.finalize();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public void onMediaReady(MediaSession mediaSession, MediaZone mediaZone) {
+		try {
+			if(!mediaSession.isActive())
+				mediaSession.start();
+			if(!mediaZone.isRunning())
+				mediaZone.start();
+		} catch (UnknownHostException e) {
+			LOG.error("Cannot start MediaSession/Zone",e);
+		}
+		
 	}
 
 	

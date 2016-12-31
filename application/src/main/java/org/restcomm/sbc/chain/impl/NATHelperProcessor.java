@@ -109,14 +109,16 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		
 		/*
 		 * Replace Contact address from IP/Port the message is coming from
-		 * Used mainly for Registration, Location subsystem pick NATed data
+		 * Used for Registration, Location subsystem pick NATed data
 		 * from here
 		 */
 		try {
-			if(!response.getAddressHeaders("Contact").hasNext())
-				response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
-			else
-				LOG.warn("Contact address exists, CANNOT patch NATed Contact Address to: "+contactURI.toString());
+			if(response.getMethod().equals("REGISTER")) {
+				if(!response.getAddressHeaders("Contact").hasNext())
+					response.setAddressHeader("Contact", ConfigurationCache.getSipFactory().createAddress(contactURI));
+				else
+					LOG.warn("Contact address exists, CANNOT patch NATed Contact Address to: "+contactURI.toString());
+			}
 		} catch (ServletParseException e) {
 				LOG.error("CANNOT Patch NATed Contact Address to: "+contactURI.toString(), e);
 		}

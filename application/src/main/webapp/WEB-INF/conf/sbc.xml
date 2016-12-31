@@ -123,7 +123,25 @@
                 <force-ua-expiration>30</force-ua-expiration>
         </registrar-throttle>
         
-        <media-proxy>
+        <media-proxy>	
+        		<security-policy>
+	        		<!-- SBC Always proxies media, NO Exception!. It is a topology hider,
+		        		so, there is no way to do direct media streaming from DMZ to MZ or 
+		        		viceversa.
+		        		When dealing with secured WEBRTC streams (SRTP/DTLS or so), we can choose
+		        		to do encryption termination.
+		        		false: do not handle encryption, just pass-thru.
+		        		true : does encryption termination, just passes SRTP to DMZ.
+	        	 	-->
+        			<encryption-handle>true</encryption-handle>
+        			<!-- SBC does media & signaling pass-thru per default ((S)RTCP/(S)RTP).
+        				We can enable a decoder in order to stream just plain media RTP to DMZ
+        				false: pass-thru.
+        				true : decode SRTP stream.
+	        	 	-->
+        			<decoding-handle>true</decoding-handle>
+        		</security-policy>
+        		
                 <start-port>10000</start-port>
                 <end-port>20000</end-port>
         </media-proxy>

@@ -73,7 +73,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		MediaSession mediaSession=null;
 		
 		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
-		
+		/*
 		try {
 			mediaSession=(MediaSession) message.getMetadata();
 			mediaSession.getOffer().patchIPAddressAndPort(message.getSourceLocalAddress());
@@ -91,7 +91,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		
 	
 		oRequest.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, mediaSession);
-		
+		*/
 		message.setContent(request);	
 	}
 	
@@ -104,7 +104,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 		if(response.getStatus()==SipServletResponse.SC_OK) {
 			MediaSession mediaSession=(MediaSession) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
-			
+			/*
 			try {
 				
 				mediaSession.getAnswer().patchIPAddressAndPort(message.getSourceLocalAddress());
@@ -126,7 +126,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 			}  
 			
 			response.getSession().setAttribute(MessageUtil.MEDIA_MANAGER, mediaSession);
-			
+			*/
 			message.setContent(response);	
 		}
 		

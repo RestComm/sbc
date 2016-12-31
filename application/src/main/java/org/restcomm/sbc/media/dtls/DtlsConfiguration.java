@@ -29,14 +29,96 @@ import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
  * @author guilherme.jansen@telestax.com
  */
 public class DtlsConfiguration {
-
+	/**
+	ECDSA
+	<dtls>
+		<minVersion>1.0</minVersion>
+		<maxVersion>1.2</maxVersion>
+		<cipherSuites>
+			TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+			TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+			TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+		</cipherSuites>
+		<certificate path="../conf/dtls/x509-server-ecdsa.pem" key="../conf/dtls/x509-server-key-ecdsa.pem" algorithm="ecdsa"/>
+	</dtls>
+	RSA
+	<dtls>
+		<minVersion>1.0</minVersion>
+		<maxVersion>1.2</maxVersion>
+		<cipherSuites>
+			TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+			TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+			TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+			TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,
+			TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
+			TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,
+			TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,
+			TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
+			TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+			TLS_RSA_WITH_AES_256_GCM_SHA384,
+			TLS_RSA_WITH_AES_128_GCM_SHA256,
+			TLS_RSA_WITH_AES_256_CBC_SHA256,
+			TLS_RSA_WITH_AES_128_CBC_SHA256,
+			TLS_RSA_WITH_AES_256_CBC_SHA,
+			TLS_RSA_WITH_AES_128_CBC_SHA
+		</cipherSuites>
+		<certificate path="../conf/dtls/x509-server.pem" key="../conf/dtls/x509-server-key.pem" algorithm="rsa"/>
+	</dtls>
+	 */
     public static final String MIN_VERSION = "1.0";
     public static final String MAX_VERSION = "1.2";
-    public static final String CIPHER_SUITES = "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA";
-    public static final String CERTIFICATE_PATH = "../conf/dtls/x509-server-ecdsa.pem";
-    public static final String KEY_PATH = "../conf/dtls/x509-server-key-ecdsa.pem";
+       
+    
+   
+    
+     public static final String CIPHER_SUITES = 
+    		   "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,"
+    		+ " TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,"
+    		+ " TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,"
+    		+ " TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA";
+    		
+    public static final String CERTIFICATE_PATH = System.getProperty("user.home")
+    		+"/certs/x509-server-ecdsa.pem";	
+    public static final String KEY_PATH = System.getProperty("user.home")
+    		+"/certs/x509-server-key-ecdsa.pem";
+    		
     public static final String ALGORITHM_CERTIFICATE = AlgorithmCertificate.ECDSA.name();
-
+   
+    /*
+    public static final String CIPHER_SUITES = 
+  		  "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,"
+			+" TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,"	
+			+" TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,"
+			+" TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,"
+			+" TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,"
+			+" TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,"
+			+" TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,"
+			+" TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,"
+			+" TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,"
+			+" TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,"
+			+" TLS_DHE_RSA_WITH_AES_256_CBC_SHA,"
+			+" TLS_DHE_RSA_WITH_AES_128_CBC_SHA,"
+			+" TLS_RSA_WITH_AES_256_GCM_SHA384,"
+			+" TLS_RSA_WITH_AES_128_GCM_SHA256,"
+			+" TLS_RSA_WITH_AES_256_CBC_SHA256,"
+			+" TLS_RSA_WITH_AES_128_CBC_SHA256,"
+			+" TLS_RSA_WITH_AES_256_CBC_SHA,"
+			+" TLS_RSA_WITH_AES_128_CBC_SHA";
+    
+    
+    public static final String CERTIFICATE_PATH = System.getProperty("user.home")
+    		+"/certs/x509-server.pem";	
+    public static final String KEY_PATH = System.getProperty("user.home")
+    		+"/certs/x509-server-key.pem";
+    
+    
+    
+    public static final String ALGORITHM_CERTIFICATE = AlgorithmCertificate.RSA.name();
+*/
     private ProtocolVersion minVersion;
     private ProtocolVersion maxVersion;
     private CipherSuite[] cipherSuites;

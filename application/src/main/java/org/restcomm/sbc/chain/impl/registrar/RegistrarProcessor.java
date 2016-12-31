@@ -225,7 +225,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 				
 				
 				if(!locationManager.exists(user, domain)) {
-					location=new Location(uri.getUser(), domain, uri.getHost(), uri.getPort(), uri.getTransportParam());
+					location=new Location(uri.getUser(), domain, uri.getHost(), uri.getPort(), message.getTargetTransport());
 					locationManager.register(location, mzResponse.getRequest().getHeader("User-Agent"), mzResponse.getCallId(), getCSeq(mzResponse.getRequest()) , mzExpires);
 					if(LOG.isDebugEnabled()){
 				          LOG.debug("REGISTER new "+location);

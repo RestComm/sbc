@@ -115,13 +115,13 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				
 				if(sm instanceof SipServletRequest) {
 					mediaSession=CallManager.getCallManager().getMediaSession(sm.getSession().getId());
-					mediaSession.setOffer(new MediaController(MediaZone.Direction.OFFER, new String(sm.getRawContent())));	
+					mediaSession.buildOffer(new String(sm.getRawContent()));	
 				}
 				else {	
 					SipServletResponse response=(SipServletResponse) sm;
 					String callSessionId=getCallSessionId(response.getRequest());
 					mediaSession=CallManager.getCallManager().getMediaSession(callSessionId);
-					mediaSession.setAnswer(new MediaController(MediaZone.Direction.ANSWER, new String(sm.getRawContent())));
+					mediaSession.buildAnswer(new String(sm.getRawContent()));
 				}
 				m.setMetadata(mediaSession);
 				

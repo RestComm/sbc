@@ -68,8 +68,8 @@ public class CallManager  {
 		return callManager;
 	}
 	
-	public void addCallListener(CallListener listener) {
-	     listenerList.add(CallListener.class, listener);
+	public void addCallManagerListener(CallManagerListener listener) {
+	     listenerList.add(CallManagerListener.class, listener);
 	}
 	
 	public Call createCall(final Call parent, final String sessionId,
@@ -79,7 +79,6 @@ public class CallManager  {
 		
 	        
 	    Call call=new Call(parent, sessionId, to, from, direction, callerName);
-	    call.setMediaSession(new MediaSession(sessionId));
 	    
 	    this.fireCallCreatedEvent(call);
 	    
@@ -101,8 +100,8 @@ public class CallManager  {
 	public void changeCallStatus(String sessionId, int statusCode, String reasonPhrase) {
 		if(statusCode>=400 )
 			changeCallStatus(sessionId, Call.Status.FAILED);
-		else if(statusCode>=200)
-			changeCallStatus(sessionId, Call.Status.COMPLETED);
+		else if(statusCode>200)
+			changeCallStatus(sessionId, Call.Status.ALERTING);
 	
 	}
 	
@@ -113,22 +112,40 @@ public class CallManager  {
 		switch(status) {
 			case INITIATING:
 				this.fireCallCreatedEvent(call);
+				this.fireCallInitiatingEvent(call);
 				break;
 			case BRIDGED:
 				this.fireCallAnsweredEvent(call);
+				this.fireCallBridgedEvent(call);
 				break;
 			case COMPLETED:
 				this.fireCallReleasedEvent(call);
+				this.fireCallCompletedEvent(call);
+				try {
+					call.getMediaSession().finalize();
+				} catch (IOException e) {
+					LOG.error("Cannot destory Media on finalization",e);
+				}
 				break;
 			case FAILED:
 				this.fireCallRejectedEvent(call);
+				this.fireCallFailedEvent(call);
+				try {
+					call.getMediaSession().finalize();
+				} catch (IOException e) {
+					LOG.error("Cannot destory Media on finalization",e);
+				}
 				break;
 			case RINGING:
+				this.fireCallRingingEvent(call);
+				break;
 			case ALERTING:	
 				if(call.getDirection()==Direction.INBOUND)
 					this.fireCallIncomingEvent(call);
 				else
 					this.fireCallDialingEvent(call);
+				
+				this.fireCallAlertingEvent(call);
 				break;
 			
 		}
@@ -226,8 +243,8 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallCreated(call);
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallCreated(call);
 	         }
 	         
 	     }
@@ -241,8 +258,8 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallAnswered(call);
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallAnswered(call);
 	         }
 	         
 	     }
@@ -256,8 +273,8 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallReleased(call);
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallReleased(call);
 	         }
 	         
 	     }
@@ -271,8 +288,8 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallRejected(call);
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallRejected(call);
 	         }
 	         
 	     }
@@ -286,8 +303,8 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallIncoming(call);
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallIncoming(call);
 	         }
 	         
 	     }
@@ -301,8 +318,99 @@ public class CallManager  {
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallManagerListener.class) {             
+	             ((CallManagerListener)listeners[i+1]).onCallDialing(call);
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallInitiatingEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==CallListener.class) {             
-	             ((CallListener)listeners[i+1]).onCallDialing(call);
+	             ((CallListener)listeners[i+1]).onCallInitiating();
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallFailedEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallFailed();
+	         }
+	         
+	     }
+	 }
+	
+	
+	/*
+	 */
+	protected void fireCallCompletedEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallCompleted();
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallBridgedEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallBridged();
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallRingingEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallRinging();
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallAlertingEvent(Call call) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallAlerting();
 	         }
 	         
 	     }

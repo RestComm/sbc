@@ -1,6 +1,6 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
- * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * Copyright 2011-2014, Telestax Inc and individual contributors
  * by the @authors tag.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,19 +20,27 @@
 
 package org.restcomm.sbc.media;
 
-import java.util.EventListener;
-
+import org.apache.log4j.Logger;
 
 /**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    25 nov. 2016 5:40:24
- * @class   MediaZoneListener.java
- *
+ * Media channel responsible for audio processing.
+ * 
+ * @author Henrique Rosa (henrique.rosa@telestax.com)
+ * 
  */
-public interface MediaZoneListener extends EventListener {
+public class AudioChannel extends MediaChannel {
+	private static final Logger logger = Logger.getLogger(AudioChannel.class);
 	
-	void onRTPTimeout(MediaZone mediaZone, String message);
+	public static final String MEDIA_TYPE = "audio";
 
-	void onRTPTerminated(MediaZone mediaZone, String message);
+	public AudioChannel(String originalHost, int originalPort) {
+		super(MEDIA_TYPE, originalHost, originalPort);
+		if(logger.isTraceEnabled()) {
+			logger.trace("Creating AudioChannel on "+originalHost+":"+originalPort);
+		}
+		
+	}
 
+	
+	
 }

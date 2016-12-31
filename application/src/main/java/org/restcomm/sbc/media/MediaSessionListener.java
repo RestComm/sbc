@@ -31,8 +31,10 @@ import java.util.EventListener;
  */
 public interface MediaSessionListener extends EventListener {
 	
-	void onRTPTimeout(MediaSession session, MediaZone zone, String message);
+	void onMediaTimeout(MediaSession session, MediaZone zone);
 
-	void onRTPTerminated(MediaSession mediaSession, MediaZone mediaZone, String message);
+	void onMediaTerminated(MediaSession mediaSession, MediaZone mediaZone);
+	
+	void onMediaReady(MediaSession mediaSession, MediaZone mediaZone);
 
 }

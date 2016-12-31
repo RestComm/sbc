@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.event.EventListenerList;
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 
 
 
@@ -37,7 +38,7 @@ import org.apache.log4j.Logger;
  * @class   MediaSession.java
  *
  */
-public class MediaSession implements MediaZoneListener {
+public class MediaSession  {
 	
 	private static transient Logger LOG = Logger.getLogger(MediaSession.class);
 	private EventListenerList listenerList = new EventListenerList();
@@ -47,8 +48,17 @@ public class MediaSession implements MediaZoneListener {
 	private MediaController offer;
 	private MediaController answer;
 	protected ScheduledExecutorService timeService;
+	private PortManager portManager=PortManager.getPortManager();
 	
+	public final int MEDIATYPE_AUDIO   = portManager.getNextAvailablePort();
+	public final int MEDIATYPE_VIDEO   = portManager.getNextAvailablePort();
+	public final int MEDIATYPE_MESSAGE = portManager.getNextAvailablePort();
 	
+	public final int[] proxyPorts = { 
+			MEDIATYPE_AUDIO,
+			MEDIATYPE_VIDEO,
+			MEDIATYPE_MESSAGE
+	};
 	
 	public MediaSession(String id)   {
 		this.sessionId=id;
@@ -60,17 +70,21 @@ public class MediaSession implements MediaZoneListener {
     	return "[MediaSession ("+sessionId+")]";
     }
 	
-	public void setAnswer(MediaController answer) {
-		this.answer=answer;
-		
+	public MediaController buildOffer(String sdpOffer) throws UnknownHostException, SdpException {
+		this.offer=new MediaController(this, MediaZone.Direction.OFFER, sdpOffer);
+		return this.offer;
 	}
 	
-	public void setOffer(MediaController offer) {
-		this.offer=offer;
-		
+	public MediaController buildAnswer(String sdpAnswer) throws UnknownHostException, SdpException {
+		this.answer=new MediaController(this, MediaZone.Direction.ANSWER, sdpAnswer);
+		return this.answer;
 	}
 	
 	public void attach() {
+		if(answer==null || offer==null) {
+			throw new IllegalStateException("Cannot attach uninitialized MediaControllers!");
+		}
+		// Attach the offer to the answer only
 		answer.attach(offer);
 	}
 	
@@ -79,27 +93,40 @@ public class MediaSession implements MediaZoneListener {
 	     listenerList.add(MediaSessionListener.class, listener);
 	}
 	
-	protected void fireRTPTimeoutEvent(MediaZone mediaZone, String message) {
+	protected void fireMediaTimeoutEvent(MediaZone mediaZone) {
 	     // Guaranteed to return a non-null array
 	     Object[] listeners = listenerList.getListenerList();
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==MediaSessionListener.class) {             
-	             ((MediaSessionListener)listeners[i+1]).onRTPTimeout(this, mediaZone, message);
+	             ((MediaSessionListener)listeners[i+1]).onMediaTimeout(this, mediaZone);
 	         }
 	         
 	     }
 	 }
 	
-	protected void fireRTPTerminatedEvent(MediaZone mediaZone, String message) {
+	protected void fireMediaTerminatedEvent(MediaZone mediaZone) {
 	     // Guaranteed to return a non-null array
 	     Object[] listeners = listenerList.getListenerList();
 	     // Process the listeners last to first, notifying
 	     // those that are interested in this event
 	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==MediaSessionListener.class) {             
-	             ((MediaSessionListener)listeners[i+1]).onRTPTerminated(this, mediaZone, message);
+	             ((MediaSessionListener)listeners[i+1]).onMediaTerminated(this, mediaZone);
+	         }
+	         
+	     }
+	 }
+	
+	protected void fireMediaReadyEvent(MediaZone mediaZone) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==MediaSessionListener.class) {             
+	             ((MediaSessionListener)listeners[i+1]).onMediaReady(this, mediaZone);
 	         }
 	         
 	     }
@@ -109,21 +136,26 @@ public class MediaSession implements MediaZoneListener {
 		if(LOG.isInfoEnabled()) {
 			LOG.info("Starting "+this.toPrint());	
 		}
-		offer.start();
-		answer.start();
+		// MediaZones are started atomically
+		// while mediaTypes are ready
+		
 		timeService = Executors.newSingleThreadScheduledExecutor();
 		timeService.scheduleWithFixedDelay(new MediaTimer(), 60, 60, TimeUnit.SECONDS);
 		this.setState(State.ACTIVE);
 	}
 	
 	public void finalize() throws IOException {
+		// MediaZones are finalized globally
+		
 		if(LOG.isInfoEnabled()) {
 			LOG.info("Finalizing "+this.toPrint());	
 		}
+		
 		if(offer!=null)
 			offer.finalize();
 		if(answer!=null)
 			answer.finalize();
+		
 		if(timeService!=null) {
 			timeService.shutdown();
 			timeService=null;
@@ -202,18 +234,16 @@ public class MediaSession implements MediaZoneListener {
 	    	MediaZone answerZone=answer.checkStreaming();
 		    if(offerZone!=null) {
 		    	// either leg is stuck	
-		    	fireRTPTimeoutEvent(offerZone,"Controller detected a media flow stuck!"); 	
+		    	fireMediaTimeoutEvent(offerZone); 	
 		    }
 		    if(answerZone!=null) {
 		    	// either leg is stuck	
-		    	fireRTPTimeoutEvent(answerZone,"Controller detected a media flow stuck!"); 	
+		    	fireMediaTimeoutEvent(answerZone); 	
 		    }
 	             
 	    }
 	}
-	
 
-	
 
 	public MediaController getOffer() {
 		return offer;
@@ -223,15 +253,5 @@ public class MediaSession implements MediaZoneListener {
 		return answer;
 	}
 
-	@Override
-	public void onRTPTerminated(MediaZone mediaZone, String message) {
-		this.fireRTPTerminatedEvent(mediaZone, message);
-		
-	}
 	
-	@Override
-	public void onRTPTimeout(MediaZone mediaZone, String message) {
-		this.fireRTPTimeoutEvent(mediaZone, message);
-		
-	}
 }

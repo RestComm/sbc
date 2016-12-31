@@ -2,15 +2,14 @@ package org.restcomm.sbc.call;
 
 import java.util.EventListener;
 
-import org.restcomm.sbc.call.Call;
 
 public interface CallListener extends EventListener {
 	
-	void onCallCreated(Call call);
-	void onCallIncoming(Call call);
-	void onCallDialing(Call call);
-	void onCallAnswered(Call call);
-	void onCallReleased(Call call);
-	void onCallRejected(Call call);
+	void onCallInitiating();
+	void onCallCompleted();
+	void onCallFailed();
+	void onCallRinging();
+	void onCallAlerting();
+	void onCallBridged();
 	
 }

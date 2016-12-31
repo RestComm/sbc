@@ -47,6 +47,8 @@ public class ConfigurationCache {
 	private static int regThrottleUATTL;
 	private static int mediaStartPort;
 	private static int mediaEndPort;
+	private static boolean mediaDecryptionEnabled;
+	private static boolean mediaDecodingEnabled;
 	private static String ipOfDomain;
 	private static String apiVersion;
 	private static List<String> localNetworks;
@@ -58,17 +60,21 @@ public class ConfigurationCache {
 	private ConfigurationCache(SipFactory factory, Configuration configuration) {
 		sipFactory=factory;
 		
-		apiVersion=configuration.getString		("runtime-settings.api-version");	
-		domain=configuration.getString		("runtime-settings.domain");	
-	    targetHost=configuration.getString		("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
-	    targetHAHost=configuration.getString	("runtime-settings.routing-policy.militarized-zone-target.failover-ip-address");	
+		apiVersion=configuration.getString			("runtime-settings.api-version");	
+		domain=configuration.getString				("runtime-settings.domain");	
+	    targetHost=configuration.getString			("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
+	    targetHAHost=configuration.getString		("runtime-settings.routing-policy.militarized-zone-target.failover-ip-address");	
 		regThrottleEnabled=configuration.getBoolean ("registrar-throttle.enable");  
         regThrottleMZTTL=configuration.getInt		("registrar-throttle.force-mz-expiration");
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
-        mediaStartPort=configuration.getInt		("media-proxy.start-port");
-        mediaEndPort=configuration.getInt		("media-proxy.end-port");
+        mediaStartPort=configuration.getInt			("media-proxy.start-port");
+        mediaEndPort=configuration.getInt			("media-proxy.end-port");
+        mediaDecryptionEnabled=configuration.getBoolean	
+        											("media-proxy.security-policy.encryption-handle");
+        mediaDecodingEnabled=configuration.getBoolean	
+													("media-proxy.security-policy.decoding-handle");
         ipOfDomain="";
-        localNetworks=configuration.getList("runtime-settings.nat-helper.local-networks.local-address");
+        localNetworks=configuration.getList			("runtime-settings.nat-helper.local-networks.local-address");
 		
 		try {
 			ipOfDomain=InetAddress.getByName(domain).getHostAddress();
@@ -76,8 +82,8 @@ public class ConfigurationCache {
 			LOG.fatal("Cannot resolve IP Address of "+domain);
 			System.exit(100);
 		}
-        	
-        
+		
+
 	}
 	
 	
@@ -140,6 +146,16 @@ public class ConfigurationCache {
 
 	public static List<String> getLocalNetworks() {
 		return localNetworks;
+	}
+
+
+	public static boolean isMediaDecryptionEnabled() {
+		return mediaDecryptionEnabled;
+	}
+
+
+	public static boolean isMediaDecodingEnabled() {
+		return mediaDecodingEnabled;
 	}
 
 
