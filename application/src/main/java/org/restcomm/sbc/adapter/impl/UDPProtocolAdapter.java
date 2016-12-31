@@ -30,7 +30,6 @@ import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 
 
-
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    30 ago. 2016 13:30:19

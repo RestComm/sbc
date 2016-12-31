@@ -30,6 +30,7 @@ import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 
 
+
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    14 nov. 2016 12:59:59
@@ -55,7 +56,6 @@ public class WSSProtocolAdapter extends ProtocolAdapter {
 		}
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("o Transport "+sourceTransport);
-			//LOG.trace("o Message follows:\n"+message.toString());
 			LOG.trace(">> adapt() Adapting protocol [->WSS]");
 		}
 		adaptMedia(message);
@@ -67,5 +67,7 @@ public class WSSProtocolAdapter extends ProtocolAdapter {
 	public String getProtocol() {
 		return ProtocolAdapterFactory.PROTOCOL_WSS;
 	}
+	
+	
 
 }
