@@ -1,0 +1,28 @@
+== Media Proxy
+
+One of the most important challenges of an SBC, is it ability to preserve sensible data hidden from a prospect attacker.
+This feature is known as _Topology hiding_.
+Topology hiding task is not only realted to the signalling path
+ but to the entire data interchange between both sides of the SBC.
+ 
+In order to meet this purpose, media flow has to be proxied, allowing
+the SBC to always remain in the media path.
+
+=== CallManager
+
+
+=== MediaSession
+
+A MediaSession is responsible to control all the Call lifecycle.
+
+
+=== MediaController
+
+A MediaController is responsible to wrap each leg of a Call.
+A MediaController object is made of an _offer_ and an _answer_.
+This abstraction controls all sort of media types involved in the call.
+
+=== MediaZone
+
+
+----

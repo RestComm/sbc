@@ -1,6 +1,5 @@
 == The Notification Sub-system Framework
 
-
 As the _Chain subsystem_ is responsible to deal with message analysis in order to detect any SBC business rule violation, a _Notification subsystem_ is responsible to report some tracking information of events detected to other actors on the system.
 
 There exists many kinds of notifications that an SBC would need to perform its whole task. the _Notification subsystem_ considers three main types:
@@ -13,18 +12,18 @@ There exists many kinds of notifications that an SBC would need to perform its w
 [source,java]
 ----
 public interface Notifiable {
-	
+
 	/**
 	 * Gets Threat timestamp
 	 * @return timestamp
 	 */
 	long getTimestamp();
-	
+
 	/**
 	 * Sends notification
 	 */
 	void send();
-	
+
 	/**
 	 * Notification was sent already
 	 * @return boolean
@@ -47,16 +46,17 @@ Usually related to instant notification of potential _Threat_ arising. For insta
 [source,java]
 ----
 public interface Alertable extends Notifiable {
-	
+
 	/**
 	 * Gets Threat
 	 * @return Threat
 	 */
 	Threat getThreat();
-	
+
 }
 ----
 
 === Tracking
 
 TODO
+----
