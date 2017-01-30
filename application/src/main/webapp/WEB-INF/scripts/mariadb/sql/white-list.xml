@@ -5,87 +5,82 @@
 -->
 <mapper namespace="org.restcomm.sbc.dao.WhiteListDao">
   <insert id="addEntry" parameterType="map">
-    INSERT INTO restcomm_whitelist (date_created, date_expires, account_sid, ip_address, reason, monitor_action)
+    INSERT INTO "restcomm_whitelist" ("date_created", "date_expires", "account_sid", "ip_address", "reason", "monitor_action")
     VALUES(#{date_created}, #{date_expires}, #{account_sid}, #{ip_address}, #{reason}, #{monitor_action});
   </insert>
   
   <select id="getEntry" parameterType="string" resultType="hashmap">
-    SELECT * FROM restcomm_whitelist WHERE ip_address=#{ip_address};
+    SELECT * FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
   </select>
   
   <select id="getEntryByIpAddress" parameterType="string" resultType="hashmap">
-    SELECT * FROM restcomm_whitelist WHERE ip_address=#{ip_address};
+    SELECT * FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
   </select>
   
     <select id="getEntryByReason" parameterType="string" resultType="hashmap">
-    SELECT * FROM restcomm_whitelist WHERE reason=#{reason};
+    SELECT * FROM "restcomm_whitelist" WHERE "reason"=#{reason};
   </select>
   
   <select id="getEntries" parameterType="string" resultType="hashmap">
-    SELECT * FROM restcomm_whitelist;
+    SELECT * FROM "restcomm_whitelist";
   </select>
   
   <delete id="removeEntry" parameterType="map">
-    DELETE FROM restcomm_whitelist WHERE ip_address=#{ip_address};
+    DELETE FROM "restcomm_whitelist" WHERE "ip_address"=#{ip_address};
   </delete>
   
   <update id="updateEntry" parameterType="map">
-		UPDATE restcomm_whitelist SET monitor_action=#{monitor_action}
-		WHERE ip_address=#{ip_address};
+		UPDATE "restcomm_whitelist" SET "monitor_action"=#{monitor_action}
+		WHERE "ip_address"=#{ip_address};
  </update>
   
  <select id="getTotalBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="int">
-		SELECT COUNT(*) FROM restcomm_whitelist where true
+		SELECT COUNT(*) FROM "restcomm_whitelist" where true
 
-		<if test="instanceid != null">
-			AND instanceid like #{instanceid}
-		</if>
+		
 		<if test="ipAddress != null">
-			AND ip_address like #{ipAddress}
+			AND "ip_address" like #{ipAddress}
 		</if>
 		
 		<if test="reason != null">
-			AND reason like #{reason}
+			AND "reason" like #{reason}
 		</if>
 		<if test="accountSid != null">
-			AND account_sid like #{accountSid}
+			AND "account_sid" like #{accountSid}
 		</if>
 		
 		<!-- select * from "restcomm_call_detail_records" where "start_time" >= '2013-08-23' order by "start_time" ; -->
 		<if test="dateCreated != null">
-		    AND date_created &gt;= #{dateCreated}
+		    AND "date_created" &gt;= #{dateCreated}
 		</if>
 
 		<if test="dateExpires != null">
-			AND date_expires &lt;= DATE_ADD(#{dateExpires},INTERVAL 1 DAY) order by date_expires
+			AND "date_expires" &lt;= DATE_ADD(#{dateExpires},INTERVAL 1 DAY) order by "date_expires"
 		</if>
 	</select>
   
 
 	<select id="getBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="hashmap">
-		SELECT * FROM restcomm_whitelist AS restcomm_whitelist where true
+		SELECT * FROM "restcomm_whitelist" AS "restcomm_whitelist" where true
 
-		<if test="instanceid != null">
-			AND instanceid like #{instanceid}
-		</if>
 		<if test="ipAddress != null">
-			AND ip_address like #{ipAddress}
+			AND "ip_address" like #{ipAddress}
 		</if>
 		
 		<if test="reason != null">
-			AND reason like #{reason}
+			AND "reason" like #{reason}
 		</if>
 		<if test="accountSid != null">
-			AND account_sid like #{accountSid}
+			AND "account_sid" like #{accountSid}
 		</if>
 		
 		<!-- select * from "restcomm_call_detail_records" where "start_time" >= '2013-08-23' order by "start_time" ; -->
 		<if test="dateCreated != null">
-		    AND date_created &gt;= #{dateCreated}
+		    AND "date_created" &gt;= #{dateCreated}
 		</if>
 
 		<if test="dateExpires != null">
-			AND date_expires &lt;= DATE_ADD(#{dateExpires},INTERVAL 1 DAY) order by date_expires
+			AND "date_expires" &lt;= DATE_ADD(#{dateExpires},INTERVAL 1 DAY) order by "date_expires"
 		</if>
 		
 		LIMIT #{limit} OFFSET #{offset}
