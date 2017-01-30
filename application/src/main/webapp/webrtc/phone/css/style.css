@@ -1,0 +1,591 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(../font/UyBMtLsHKBKXelqf4x7VRQ.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(../font/1YwB1sO8YE1Lyjf12WNiUA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(../font/ObQr5XYcoH0WBoUxiaYK3_Y6323mHUZFJMgTvxaG2iE.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(../font/H2DMvhDLycM56KNuAtbJYA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Lato Italic'), local('Lato-Italic'), url(../font/YMOYVM-eg6Qs9YzV9OSqZfesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Lato Italic'), local('Lato-Italic'), url(../font/PLygLKRVCQnA5fhu3qk5fQ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+}
+
+body {
+  background-color: #2196F2;
+  font-family: Lato;
+  font-weight: 400;
+  letter-spacing: 1px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.pad {
+  width: 400px;
+  height: 700px;
+  background-color: #232323;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  box-shadow: 0 30px 35px -25px black;
+  animation: showPad 1s ease forwards 1;
+}
+.pad .dial-pad .contact {
+  width: 60%;
+  position: relative;
+  margin-left: 20%;
+  margin-top: 40px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.pad .dial-pad .contact.showContact {
+  opacity: 1;
+}
+.pad .dial-pad .contact .avatar {
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  background-position: center center;
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  box-shadow: 0 15px 30px -10px black;
+  position: absolute;
+  left: 0px;
+  top: 8px;
+}
+.pad .dial-pad .contact .contact-info {
+  border-radius: 8px;
+  width: 85%;
+  margin-left: 15%;
+  background-color: #2D2D2D;
+  height: 76px;
+  overflow: hidden;
+}
+.pad .dial-pad .contact .contact-info > div {
+  width: 80%;
+  margin-left: 20%;
+  font-size: 12px;
+  margin-top: 3px;
+}
+.pad .dial-pad .contact .contact-info .contact-name {
+  color: #FDFDFD;
+  margin-top: 12px;
+}
+.pad .dial-pad .contact .contact-info .contact-position {
+  font-style: italic;
+  color: #AEAEAE;
+}
+.pad .dial-pad .contact .contact-info .contact-number {
+  color: white;
+}
+.pad .dial-pad .contact .contact-info .contact-number span {
+  color: #3DE066;
+  display: inline;
+}
+.pad .dial-pad .contact .contact-buttons {
+  position: absolute;
+  right: -5px;
+  top: 0px;
+  width: 40px;
+  height: 76px;
+}
+.pad .dial-pad .contact .contact-buttons button {
+  border: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 100%;
+  box-shadow: 0 12px 25px -5px black;
+  display: block;
+  position: absolute;
+  right: 0px;
+  background-size: 75% auto;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.pad .dial-pad .contact .contact-buttons button:focus {
+  outline: none;
+}
+.pad .dial-pad .contact .contact-buttons button.icon-message {
+  background-color: #FFC44E;
+  top: 5px;
+}
+.pad .dial-pad .contact .contact-buttons button.icon-video {
+  background-color: #A529F9;
+  bottom: 5px;
+}
+.pad .dial-pad .phoneString {
+  width: 100%;
+  height: 80px;
+  background-color: #2D2D2D;
+  margin-top: 40px;
+}
+.pad .dial-pad .phoneString input {
+  background-color: transparent;
+  width: 60%;
+  margin-left: 20%;
+  height: 80px;
+  border: none;
+  font-size: 30px;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.pad .dial-pad .phoneString input:focus {
+  outline: none;
+}
+.pad .dial-pad .digits {
+  overflow: hidden;
+  width: 60%;
+  margin-left: 20%;
+  margin-top: 20px;
+}
+.pad .dial-pad .digits .dig-spacer {
+  width: 60px;
+  margin: 10px calc(50% - 90px);
+  float: left;
+}
+.pad .dial-pad .digits .dig {
+  color: white;
+  font-size: 30px;
+  float: left;
+  background-color: #2D2D2D;
+  text-align: center;
+  width: 60px;
+  height: 56px;
+  border-radius: 100%;
+  margin: 10px 0px;
+  padding-top: 4px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pad .dial-pad .digits .dig.clicked {
+  animation: pulse-gray linear 0.5s 1;
+}
+.pad .dial-pad .digits .dig:nth-child(3n-1) {
+  margin: 10px calc(50% - 90px);
+}
+.pad .dial-pad .digits .dig.astrisk {
+  padding-top: 17px;
+  height: 43px;
+}
+.pad .dial-pad .digits .dig.pound {
+  padding-top: 10px;
+  height: 50px;
+}
+.pad .dial-pad .digits .dig .sub-dig {
+  font-size: 8px;
+  font-weight: 300;
+  position: relative;
+  top: -2px;
+}
+.pad .dial-pad .digits .dig.addPerson, .pad .dial-pad .digits .dig.goBack {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 55% auto;
+  margin-bottom: 25px;
+  box-shadow: 0px  25px 30px -15px black;
+}
+.pad .dial-pad .digits .dig.addPerson {
+  background-color: #285EFA;
+  background-image: url(../img/add_Person.png);
+}
+.pad .dial-pad .digits .dig.addPerson.clicked {
+  animation: pulse-blue linear 0.5s 1;
+}
+.pad .dial-pad .digits .dig.goBack {
+  background-color: #FA4A5D;
+  background-image: url(../img/back_Arrow.png);
+}
+.pad .dial-pad .digits .dig.goBack.clicked {
+  animation: pulse-red linear 0.5s 1;
+}
+.pad .call-pad {
+  opacity: 0;
+  height: 0px;
+  pointer-events: none;
+  background-image: url(../img/call_Background.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  width: 100%;
+  left: 0px;
+  top: 0px;
+  transition: opacity 0.3s ease;
+}
+.pad .call-pad.in-call {
+  height: 100%;
+  opacity: 1;
+  pointer-events: all;
+}
+.pad .call-pad .pulsate {
+  opacity: 0;
+  width: 150px;
+  height: 0px;
+  overflow: visible;
+  position: relative;
+  display: block;
+  margin: 0 auto 0;
+  top: 120px;
+  transition: opacity 0.5s ease;
+}
+.pad .call-pad .pulsate.active-call {
+  animation: pulsator 2s ease infinite;
+  opacity: 1;
+}
+.pad .call-pad .pulsate div {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 100%;
+  margin: auto;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+.pad .call-pad .pulsate div:nth-child(1) {
+  width: 110px;
+  height: 110px;
+}
+.pad .call-pad .pulsate div:nth-child(2) {
+  width: 122px;
+  height: 122px;
+}
+.pad .call-pad .pulsate div:nth-child(3) {
+  width: 134px;
+  height: 134px;
+}
+.pad .call-pad .ca-avatar {
+  width: 100px;
+  height: 100px;
+  margin: 70px auto;
+  margin-bottom: 30px;
+  display: block;
+  background-color: #111111;
+  border-radius: 100%;
+  box-shadow: 0px 20px 25px -10px rgba(0, 0, 0, 0.8);
+  background-position: center center;
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  transition: opacity 1s ease, transform 1s ease;
+  opacity: 0.5;
+  transform: scale(0.5, 0.5);
+}
+.pad .call-pad .ca-avatar.in-call {
+  transform: scale(1, 1);
+  opacity: 1;
+}
+.pad .call-pad .ca-name, .pad .call-pad .ca-number, .pad .call-pad .ca-status {
+  width: 60%;
+  margin-left: 20%;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+.pad .call-pad .ca-name {
+  font-size: 18px;
+}
+.pad .call-pad .ca-number {
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+.pad .call-pad .ca-status {
+  font-size: 30px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+.pad .call-pad .ca-status:after {
+  content: attr(data-dots);
+  position: absolute;
+}
+.pad .call-pad .ca-buttons {
+  width: 70%;
+  margin-left: 15%;
+}
+.pad .call-pad .ca-buttons .ca-b-single {
+  float: left;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 100%;
+  position: relative;
+  margin-bottom: 40px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 55% auto;
+}
+.pad .call-pad .ca-buttons .ca-b-single:nth-child(3n-1) {
+  margin-left: calc(100% - 230px);
+  margin-right: calc(100% - 230px);
+}
+.pad .call-pad .ca-buttons .ca-b-single:after {
+  content: attr(data-label);
+  color: white;
+  position: absolute;
+  text-align: center;
+  font-size: 10px;
+  width: 100px;
+  bottom: -20px;
+  left: -18px;
+  letter-spacing: 2px;
+}
+
+.call {
+  color: white;
+  font-size: 30px;
+  text-align: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  margin: 10px 0px;
+  font-weight: 700;
+  cursor: pointer;
+  position: absolute;
+  left: calc(50% - 30px);
+  bottom: 25px;
+  box-shadow: 0px  25px 30px -15px black;
+  background-color: #3DE066;
+}
+.call .call-icon {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background-size: 60% auto;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url(../img/call.png);
+  transition: transform 0.3s ease;
+}
+.call .call-icon.in-call {
+  -ms-transform: rotate(134deg);
+  -webkit-transform: rotate(134deg);
+  transform: rotate(134deg);
+}
+.call .call-change {
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  overflow: hidden;
+}
+.call .call-change span {
+  width: 70px;
+  height: 67px;
+  display: block;
+  background-color: #FA4A5D;
+  position: relative;
+  top: 70px;
+  left: 70px;
+  border-radius: 100%;
+  transition: left 0.3s ease, top 0.3s ease;
+}
+.call .call-change.in-call span {
+  top: -5px;
+  left: -5px;
+}
+.call.clicked {
+  animation: pulse-green linear 0.5s 1 forwards;
+}
+
+@keyframes pulse-gray {
+  0% {
+    box-shadow: inset 0 0 0px 30px #2D2D2D, inset 0 0 0px 30px white;
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+  10% {
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  30% {
+    box-shadow: inset 0 0 0px 10px #2D2D2D, inset 0 0 0px 30px white;
+  }
+  60% {
+    box-shadow: inset 0 0 0px 0px #2D2D2D, inset 0 0 0px 0px white;
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  100% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+@keyframes pulse-blue {
+  0% {
+    box-shadow: inset 0 0 0px 30px #285EFA, inset 0 0 0px 30px white;
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+  10% {
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  30% {
+    box-shadow: inset 0 0 0px 10px #285EFA, inset 0 0 0px 30px white;
+  }
+  60% {
+    box-shadow: inset 0 0 0px 0px #285EFA, inset 0 0 0px 0px white;
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  100% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+@keyframes pulse-green {
+  0% {
+    box-shadow: inset 0 0 0px 30px #3DE066, inset 0 0 0px 30px white;
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+  10% {
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  30% {
+    box-shadow: inset 0 0 0px 10px #3DE066, inset 0 0 0px 30px white;
+  }
+  60% {
+    box-shadow: inset 0 0 0px 0px #3DE066, inset 0 0 0px 0px white;
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  100% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+@keyframes pulse-red {
+  0% {
+    box-shadow: inset 0 0 0px 30px #FA4A5D, inset 0 0 0px 30px white;
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+  10% {
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  30% {
+    box-shadow: inset 0 0 0px 10px #FA4A5D, inset 0 0 0px 30px white;
+  }
+  60% {
+    box-shadow: inset 0 0 0px 0px #FA4A5D, inset 0 0 0px 0px white;
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  100% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+@keyframes pulsator {
+  0% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+  40% {
+    -ms-transform: scale(0.8, 0.8);
+    -webkit-transform: scale(0.8, 0.8);
+    transform: scale(0.8, 0.8);
+  }
+  100% {
+    -ms-transform: scale(1, 1);
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+@keyframes showPad {
+  0% {
+    top: 50px;
+    opacity: 0;
+  }
+  100% {
+    top: 0px;
+    opacity: 1;
+  }
+}
+p {
+  position: fixed;
+  bottom: 0px;
+  left: 15px;
+  color: white;
+  font-family: Lato;
+  font-weight: 300;
+  overflow: hidden;
+}
+p a:link, p a:visited {
+  color: white;
+}
+p a:hover {
+  opacity: 0.5;
+}
+p img {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  top: 6px;
+}
