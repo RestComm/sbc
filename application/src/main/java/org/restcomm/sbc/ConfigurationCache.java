@@ -51,7 +51,9 @@ public class ConfigurationCache {
 	private static boolean mediaDecodingEnabled;
 	private static String ipOfDomain;
 	private static String apiVersion;
+	private static int rtpLog;
 	private static List<String> localNetworks;
+	private static String home;
 	
 	private static transient Logger LOG = Logger.getLogger(ConfigurationCache.class);
 	
@@ -59,7 +61,7 @@ public class ConfigurationCache {
 	@SuppressWarnings("unchecked")
 	private ConfigurationCache(SipFactory factory, Configuration configuration) {
 		sipFactory=factory;
-		
+		home=configuration.getString				("runtime-settings.home-directory");
 		apiVersion=configuration.getString			("runtime-settings.api-version");	
 		domain=configuration.getString				("runtime-settings.domain");	
 	    targetHost=configuration.getString			("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
@@ -69,6 +71,7 @@ public class ConfigurationCache {
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
         mediaStartPort=configuration.getInt			("media-proxy.start-port");
         mediaEndPort=configuration.getInt			("media-proxy.end-port");
+        rtpLog=configuration.getInt					("media-proxy.rtp-log");
         mediaDecryptionEnabled=configuration.getBoolean	
         											("media-proxy.security-policy.encryption-handle");
         mediaDecodingEnabled=configuration.getBoolean	
@@ -156,6 +159,16 @@ public class ConfigurationCache {
 
 	public static boolean isMediaDecodingEnabled() {
 		return mediaDecodingEnabled;
+	}
+
+
+	public static int getRtpCountLog() {
+		return rtpLog;
+	}
+
+
+	public static String getHome() {
+		return home;
 	}
 
 

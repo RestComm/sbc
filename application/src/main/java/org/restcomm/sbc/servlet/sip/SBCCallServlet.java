@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.sip.SipApplicationSessionEvent;
+import javax.servlet.sip.SipApplicationSessionListener;
 import javax.servlet.sip.SipServlet;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
@@ -51,7 +53,7 @@ import org.restcomm.sbc.managers.RouteManager;
  * @class   SBCCallServlet.java
  *
  */
-public class SBCCallServlet extends SipServlet  {	
+public class SBCCallServlet extends SipServlet implements SipApplicationSessionListener {	
 	private static final long serialVersionUID = 1L;	
 	
 	
@@ -78,6 +80,7 @@ public class SBCCallServlet extends SipServlet  {
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamInviteProcessorChain();
 		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());	
+		
 		
 	}
 	
@@ -121,6 +124,8 @@ public class SBCCallServlet extends SipServlet  {
 				request.getFrom().getDisplayName());
 			
 		}
+		// Controls expiration time of this leg
+		request.getApplicationSession().setExpires(0);
 		
 		request.getSession().setAttribute(MessageUtil.CALL_MANAGER, call);
 		
@@ -206,7 +211,9 @@ public class SBCCallServlet extends SipServlet  {
 		
 		String callSessionId=getCallSessionId(request);
 				
-		Call call=callManager.getCall(callSessionId);
+		Call call=null;
+		if(callSessionId!=null)
+			call=callManager.getCall(callSessionId);
 		if(call!=null) {
 			callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);
 				
@@ -225,6 +232,8 @@ public class SBCCallServlet extends SipServlet  {
 		} catch (IllegalStateException e) {
 			LOG.warn(e.getMessage()+" not forwarding message");
 		}	
+		
+		
 				
 	}
 	
@@ -234,11 +243,15 @@ public class SBCCallServlet extends SipServlet  {
 	 */
 	@Override
 	protected void doAck(SipServletRequest request) throws ServletException, IOException {
+		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("CALL ACK SES:"+request.getSession());	
 			LOG.debug("Got Request ACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 			LOG.debug("RTP Session might start");				
 		}
+		// Get control of session expiration
+		
+		
 		
 		String callSessionId=request.getSession().getId();	
 		Call call=callManager.getCall(callSessionId);
@@ -287,8 +300,38 @@ public class SBCCallServlet extends SipServlet  {
 	}
 	
 	private String getCallSessionId(SipServletRequest currentRequest) {
+		if(!currentRequest.getSession().isValid())
+			return null;
 		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		return oRequest.getSession().getId();
+	}
+
+
+	@Override
+	public void sessionCreated(SipApplicationSessionEvent ev) {
+		LOG.info("Session Created ");	
+		
+	}
+
+
+	@Override
+	public void sessionDestroyed(SipApplicationSessionEvent ev) {
+		LOG.info("Session Destroyed");	
+		
+	}
+
+
+	@Override
+	public void sessionExpired(SipApplicationSessionEvent ev) {
+		LOG.info("Session Expired ");	
+		
+	}
+
+
+	@Override
+	public void sessionReadyToInvalidate(SipApplicationSessionEvent ev) {
+		LOG.info("Session Ready to invalidate ");	
+		
 	}
 
 

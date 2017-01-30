@@ -188,7 +188,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         	return status(PRECONDITION_FAILED).entity("Cannot unbind SIP Connector").build();
         }
         if(LOG.isDebugEnabled()) {
-        	LOG.debug("Unbinding SIP Connector on "+point.getName()+" "+point.getAddress().getHostAddress()+":"+ connector.getPort()+"/"+connector.getTransport().toString());
+        	LOG.debug("Unbinding SIP Connector on "+point.getDescription()+" "+point.getAddress().getHostAddress()+":"+ connector.getPort()+"/"+connector.getTransport().toString());
         }
         dao.removeConnector(sid);
 

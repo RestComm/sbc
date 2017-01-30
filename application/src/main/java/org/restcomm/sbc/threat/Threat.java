@@ -29,6 +29,7 @@ package org.restcomm.sbc.threat;
 public class Threat {
 	
 	public enum Type {
+		BAD_UA,
 		DOS_ATTACK,
 		DDOS_ATTACK,
 		DIAL_SPOOF,
@@ -97,6 +98,34 @@ public class Threat {
 	}
 	public void setAction(long action) {
 		this.action = action;
-	}	
+	}
+	
+	@Override
+	public boolean equals(Object threat) {
+		Threat otherThreat=(Threat) threat;
+		if (!(threat instanceof Threat)) {
+			return false;
+		}
+		
+		if (otherThreat.host.equals(host) && otherThreat.user.equals(user)) {
+			return true;
+		}
+		return false;
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 1;
+		result = prime * result + ((host == null) ? 0 : host.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((userAgent == null) ? 0 : userAgent.hashCode());
+		result = prime * result + ((transport == null) ? 0 : transport.hashCode());
+		result = prime * result + port ;
+		return result;
+
+	}
+
 	
 }

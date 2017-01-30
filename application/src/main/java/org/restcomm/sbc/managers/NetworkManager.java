@@ -168,7 +168,6 @@ public class NetworkManager  {
 		        	NetworkPoint point=new NetworkPoint(netIf.getName()+"-"+id);
 		        	
 		        	point.setGroup(group);
-		        	point.setName(netIf.getName());
 		        	point.setDescription(netIf.getDisplayName());
 		        	point.setMacAddress(mac);
 		        	point.setAddress(inetAddress.getAddress());

@@ -20,7 +20,13 @@
 
 package org.restcomm.sbc.chain.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+
 import javax.servlet.sip.SipServletMessage;
+import javax.servlet.sip.SipServletRequest;
+import javax.servlet.sip.SipServletResponse;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
@@ -29,6 +35,8 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.managers.ThreatManager;
+import org.restcomm.sbc.threat.Threat;
 
 
 /**
@@ -39,9 +47,31 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
  */
 public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
 
-	private String name="Simple ACL UA Processor";
+	private String name="ACL UA Processor";
 	private static transient Logger LOG = Logger.getLogger(UserAgentACLDPIProcessor.class);
+	
+	private static String[] a= {	
+			"sipcli",
+			"sipvicious",
+			"sip-scan",
+			"sipsak",
+			"sundayddr",
+			"friendly-scanner",
+			"iWar",
+			"CSipSimple",
+			"SIVuS",
+			"Gulp",
+			"sipv",
+			"smap",
+			"friendly-request",
+			"VaxIPUserAgent",
+			"VaxSIPUserAgent",
+			"siparmyknife",
+			"Test Agent"
+	};
 
+	private static ArrayList<String> attackers=new ArrayList<String>(Arrays.asList(a));
+	
 	public UserAgentACLDPIProcessor(ProcessorChain processorChain) {
 			super(processorChain);
 	}
@@ -65,8 +95,28 @@ public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements Pro
 		SipServletMessage m=(SipServletMessage) message.getContent();
 		
 		String userAgent=m.getHeader("User-Agent");
-		if (userAgent.contains("friendly")) {
-			message.unlink();
+		
+		userAgent=(userAgent==null||"".equals(userAgent.trim()))?"Anonymous":userAgent;
+		
+		if (userAgent.equals("Anonymous")||isAttacker(userAgent)) {
+			if(LOG.isInfoEnabled()){
+		          LOG.info("THREAT: Forbidden access to threat-candidate UA "+userAgent);
+		    }
+			ThreatManager threatManager=ThreatManager.getThreatManager();
+			threatManager.create(Threat.Type.BAD_UA,
+					m.getFrom().getDisplayName(),
+					m.getRemoteAddr(),
+					0, 
+					userAgent,
+					m.getTransport());
+			
+			if(m instanceof SipServletRequest) {
+				SipServletRequest request=(SipServletRequest) m;
+				SipServletResponse response = request.createResponse(405, "Method not allowed");
+				message.setContent(response);	
+				message.unlink();
+				
+			}
 			
 		}
 		return m;
@@ -91,6 +141,16 @@ public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements Pro
 	@Override
 	public String getVersion() {
 		return "1.0.0";
+	}
+	
+	private boolean isAttacker(String ua) {
+		
+		for(String attackerUA:attackers) {
+			if(ua.contains(attackerUA)){
+				return true;
+			}	
+		}
+		return false;
 	}
 
 }

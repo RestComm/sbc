@@ -1,10 +1,26 @@
+/*******************************************************************************
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
+ * by the @authors tag.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ *******************************************************************************/
 package org.restcomm.sbc.bo;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
-
-import org.mobicents.servlet.sip.restcomm.util.IPUtils;
-
 
 
 /**
@@ -17,7 +33,6 @@ public class NetworkPoint {
 	
 	private String id;
 	private int group;
-	private String name;
 	private String description;
 	private InetAddress address;
 	private String macAddress;
@@ -68,12 +83,7 @@ public class NetworkPoint {
 	public void setGroup(int group) {
 		this.group = group;
 	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
+	
 	public String getDescription() {
 		return description;
 	}
@@ -107,14 +117,12 @@ public class NetworkPoint {
 	
 	public String toPrint() {
 		return
-				"id: "+id+
-				" group: "+group+
-				" MAC: "+macAddress+
-				" name: "+name+
-				" description: "+description+
-				" IP : "+address.getHostAddress()+
-				" Routable? "+IPUtils.isRoutableAddress(address.getHostAddress())+
-				" IPV6 ?" +(address instanceof Inet6Address);
+				"id="+id+
+				", group="+group+
+				", mac="+macAddress+
+				", description="+description+
+				", ip="+address.getHostAddress()+
+				", ipv6 ?" +(address instanceof Inet6Address);
 	}
 	
 	public enum Tag {
