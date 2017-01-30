@@ -22,21 +22,18 @@
 package org.restcomm.sbc.media.dtls;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.tls.DTLSServerProtocol;
-import org.bouncycastle.crypto.tls.DatagramTransport;
+import org.bouncycastle.crypto.tls.UDPTransport;
 import org.mobicents.media.server.impl.rtp.crypto.PacketTransformer;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPPolicy;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPTransformEngine;
@@ -50,7 +47,7 @@ import org.restcomm.sbc.media.PacketHandler;
  * @author Henrique Rosa (henrique.rosa@telestax.com)
  *
  */
-public class DtlsHandler implements PacketHandler, DatagramTransport {
+public class DtlsHandler  {
 
     private static final AtomicLong THREAD_COUNTER = new AtomicLong(0);
 
@@ -58,25 +55,20 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
 
     public static final int DEFAULT_MTU = 1500;
 
-    private final static int MIN_IP_OVERHEAD = 20;
-    private final static int MAX_IP_OVERHEAD = MIN_IP_OVERHEAD + 64;
-    private final static int UDP_OVERHEAD = 8;
-    public final static int MAX_DELAY = 60000;
+    public final static int MAX_DELAY = 10000;
 
 
     // Network properties
     private int mtu;
-    private final int receiveLimit;
-    private final int sendLimit;
+
 
     // DTLS Handshake properties
     private DtlsSrtpServer server;
     private DatagramChannel channel;
-    private final Queue<ByteBuffer> rxQueue;
     private volatile boolean handshakeComplete;
     private volatile boolean handshakeFailed;
     private volatile boolean handshaking;
-    private Thread worker;
+   // private Thread worker;
     private String localHashFunction;
     private String remoteHashFunction;
     private String remoteFingerprint;
@@ -99,12 +91,10 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
 
         // Network properties
         this.mtu = DEFAULT_MTU;
-        this.receiveLimit = Math.max(0, mtu - MIN_IP_OVERHEAD - UDP_OVERHEAD);
-        this.sendLimit = Math.max(0, mtu - MAX_IP_OVERHEAD - UDP_OVERHEAD);
+        
 
         // Handshake properties
         this.server = tlsServerProvider.provide();
-        this.rxQueue = new ConcurrentLinkedQueue<>();
         this.handshakeComplete = false;
         this.handshakeFailed = false;
         this.handshaking = false;
@@ -251,6 +241,9 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
      * @return The decoded RTP packet. Returns null is packet is not valid.
      */
     public byte[] decodeRTP(byte[] packet, int offset, int length) {
+    	if(this.handshaking||srtpDecoder==null) {
+    		return packet;
+    	}
         return this.srtpDecoder.reverseTransform(packet, offset, length);
     }
 
@@ -261,6 +254,9 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
      * @return The encoded RTP packet
      */
     public byte[] encodeRTP(byte[] packet, int offset, int length) {
+    	if(this.handshaking||srtpEncoder==null) {
+    		return packet;
+    	}
         return this.srtpEncoder.transform(packet, offset, length);
     }
 
@@ -288,8 +284,7 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
         if (!handshaking && !handshakeComplete) {
             this.handshaking = true;
             this.startTime = System.currentTimeMillis();
-            this.worker = new Thread(new HandshakeWorker(), "DTLS-Server-" + THREAD_COUNTER.incrementAndGet());
-            this.worker.start();
+            handshaker();        
         }
     }
 
@@ -329,121 +324,38 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
         this.listeners.clear();
     }
 
-    @Override
-    public int compareTo(PacketHandler o) {
-        if (o == null) {
-            return 1;
-        }
-        return o.compareTo(this);
-    }
-
-    @Override
+   
     public boolean canHandle(byte[] packet) {
         return canHandle(packet, packet.length, 0);
     }
 
-    @Override
+   
     public boolean canHandle(byte[] packet, int dataLength, int offset) {
         // https://tools.ietf.org/html/rfc5764#section-5.1.2
         int contentType = packet[offset] & 0xff;
         return (contentType > 19 && contentType < 64);
     }
 
-    @Override
-    public byte[] handle(byte[] packet, InetSocketAddress localPeer, InetSocketAddress remotePeer)
-            throws PacketHandlerException {
-        return this.handle(packet, packet.length, 0, localPeer, remotePeer);
-    }
-
-    @Override
-    public byte[] handle(byte[] packet, int dataLength, int offset, InetSocketAddress localPeer, InetSocketAddress remotePeer)
-            throws PacketHandlerException {
-        this.rxQueue.offer(ByteBuffer.wrap(packet, offset, dataLength));
-        return null;
-    }
-
-   
-    @Override
-    public int getReceiveLimit() throws IOException {
-        return this.receiveLimit;
-    }
-
-    @Override
-    public int getSendLimit() throws IOException {
-        return this.sendLimit;
-    }
-
-    @Override
-    public int receive(byte[] buf, int off, int len, int waitMillis) throws IOException {
-        // MEDIA-48: DTLS handshake thread does not terminate
-        // https://telestax.atlassian.net/browse/MEDIA-48
-        if (this.hasTimeout()) {
-            close();
-            throw new IllegalStateException("Handshake is taking too long! (>" + MAX_DELAY + "ms");
-        }
-        logger.info(">> receive(offset="+off+", len="+len+")");
-
-        int attempts = waitMillis;
-        do {
-            ByteBuffer data = this.rxQueue.poll();
-            if (data != null) {
-                data.get(buf, off, data.limit());
-                return data.limit();
-            }
-
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                logger.warn("Could not sleep thread to receive DTLS data.");
-            } finally {
-                attempts--;
-            }
-        } while (attempts > 0);
-
-        // Throw IO exception if no data was received in this interval. Restarts outbound flight.
-        throw new SocketTimeoutException("Could not receive DTLS packet in " + waitMillis);
-    }
-
-    @Override
-    public void send(byte[] buf, int off, int len) throws IOException {
-        if (!hasTimeout()) {
-            if (this.channel != null && this.channel.isOpen() && this.channel.isConnected()) {
-            	logger.info("("+len+" bytes) Handler send operation on channel is happening.");
-                this.channel.send(ByteBuffer.wrap(buf, off, len), channel.getRemoteAddress());
-            } else {
-                logger.warn("Handler skipped send operation because channel is not open or connected.");
-            }
-        } else {
-            logger.warn("Handler has timed out so send operation will be skipped.");
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        this.rxQueue.clear();
-        this.startTime = 0L;
-        this.channel = null;
-    }
-
+    
     private boolean hasTimeout() {
         return (System.currentTimeMillis() - this.startTime) > MAX_DELAY;
     }
 
-    private class HandshakeWorker implements Runnable {
+    public void handshaker() {
 
-        public void run() {
-            DtlsHandler.this.rxQueue.clear();
-      
+        
+        	
             SecureRandom secureRandom = new SecureRandom();
             DTLSServerProtocol serverProtocol = new DTLSServerProtocol(secureRandom);
-           
+            
             
             if(logger.isTraceEnabled()) {
-            	logger.trace("DTLSHandler worker started");
+            	logger.trace("DTLSHandler handshake started");
             }
             try {
+            	UDPTransport transport = new UDPTransport(channel.socket(), mtu);
                 // Perform the handshake in a non-blocking fashion
-                serverProtocol.accept(server, DtlsHandler.this);
+                serverProtocol.accept(server, transport);
 
                 // Prepare the shared key to be used in RTP streaming
                 server.prepareSrtpSharedSecret();
@@ -472,8 +384,7 @@ public class DtlsHandler implements PacketHandler, DatagramTransport {
                 // Warn listeners handshake completed
                 fireHandshakeFailed(e);
             }
-        }
-
+        
     }
 
 }

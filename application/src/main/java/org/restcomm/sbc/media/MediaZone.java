@@ -32,8 +32,10 @@ import java.nio.channels.DatagramChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.crypto.RawPacket;
+import org.restcomm.sbc.ConfigurationCache;
 
 
 /**
@@ -44,18 +46,18 @@ import org.mobicents.media.server.impl.rtp.crypto.RawPacket;
  */
 public class MediaZone  {
 	
-	protected static final int BUFFER=256;
+	protected static final int BUFFER=1500;
 	private static transient Logger LOG = Logger.getLogger(MediaZone.class);
 	
 	protected int originalRtpPort;
 	protected int originalRtcpPort;
 	protected boolean canMux;
-	
+	protected int rtpCountLog=ConfigurationCache.getRtpCountLog();
 	protected String originalHost;
 	protected String proxyHost;
 	
 	protected String mediaType;
-	private int logCounter=0;
+	protected int logCounter=0;
 	
 	protected boolean running;
 	protected boolean ready;
@@ -265,6 +267,24 @@ public class MediaZone  {
 		return value;
 	}
 	
+	public byte[] encodeRTP(byte[] data, int offset, int length) {
+		/*
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("VOID Decoding "+length+" bytes");
+		}
+		*/
+		return ArrayUtils.subarray(data, offset, length);			
+	}
+	
+	public byte[] decodeRTP(byte[] data, int offset, int length) {
+		/*
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("VOID Encoding "+length+" bytes");
+		}
+		*/
+		return ArrayUtils.subarray(data, offset, length);		
+	}
+	
 	public void send(DatagramPacket dgram) throws IOException {
 		
 		if(dgram==null)
@@ -272,17 +292,23 @@ public class MediaZone  {
 		
 		dgram.setAddress(mediaZonePeer.getOriginalAddress());
 		dgram.setPort(mediaZonePeer.getOriginalRtpPort());
+		//dgram.setData(mediaZonePeer.encodeRTP(dgram.getData(), 0, dgram.getLength()), 0, dgram.getLength() );	
 		
-		if(dgram.getData().length>8) {	
-			//if(logCounter==300){
-				if(LOG.isTraceEnabled()) {
+		
+		if(dgram.getData().length>8) {
+				if(logCounter==rtpCountLog){
 					RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
-					LOG.trace("--->[("+MediaZone.this.hashCode()+") PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");		
-				}
-			//}
+					LOG.trace("--->[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
+					logCounter=0;
+				}	
 		}
-			
+		else {
+			LOG.warn("--->[PayloadType ?]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
+		}
+		
+					
 		socket.send(dgram);	
+		
 		
 	}
 	
@@ -294,21 +320,21 @@ public class MediaZone  {
 			throw new IOException("NULL Socket on "+this.toPrint());
 		}
 		mediaZonePeer.socket.receive(dgram);
+		
 		if(dgram==null||dgram.getLength()<8){
-			LOG.warn("RTPPacket too short, sending anyway "+this.toPrint());
+			LOG.warn("RTPPacket too short, sending anyway "+dgram);
 			return dgram;		
 		}
 		
-		//Log 1 of every 300 packets
-		//if(logCounter==300){
-			if(LOG.isTraceEnabled()) {
-				RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
-				LOG.trace("<---[("+MediaZone.this.hashCode()+") PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
-			}
-			logCounter=0;
-		//}
+		dgram.setData(mediaZonePeer.encodeRTP(dgram.getData(), 0, dgram.getLength()));
+			
 		logCounter++;
 		
+		if(logCounter==rtpCountLog){	
+			RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
+			LOG.trace("<---[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");		
+		}
+			
 		return dgram;
 		
 	}
@@ -340,6 +366,7 @@ public class MediaZone  {
 				if(isSuspended()){
 					try {
 						Thread.sleep(300);
+						Thread.yield();
 					} catch (InterruptedException e) {
 						continue;
 					}
@@ -347,12 +374,13 @@ public class MediaZone  {
 				}
 				try {
 					send(receive());	
-				} catch (IOException e) {
-					LOG.error("("+MediaZone.this.toPrint()+") "+e.getMessage());
+				} catch (Exception e) {
+					LOG.warn("("+MediaZone.this.toPrint()+") "+e.getMessage());
+					
 					try {
 						finalize();
 					} catch (Throwable e1) {
-						LOG.error("Cannot finalize stream!", e1);
+						LOG.error("Cannot finalize stream!");
 					}
 					break;
 					

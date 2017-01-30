@@ -230,6 +230,9 @@ public class MediaSession  {
 	class MediaTimer implements Runnable {
 	    @Override
 	    public void run() {
+	    	if(LOG.isDebugEnabled()) {
+				LOG.debug("MediaTimer Watchdog active on "+MediaSession.this.toPrint());	
+			}
 	    	MediaZone offerZone =offer.checkStreaming();
 	    	MediaZone answerZone=answer.checkStreaming();
 		    if(offerZone!=null) {

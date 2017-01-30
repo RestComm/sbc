@@ -139,6 +139,9 @@ public class DtlsSrtpServer extends DefaultTlsServer {
             if (Arrays.contains(this.offeredCipherSuites, cipherSuite)
                     && (eccCipherSuitesEnabled || !TlsECCUtils.isECCCipherSuite(cipherSuite))
                     && org.bouncycastle.crypto.tls.TlsUtils.isValidCipherSuiteForVersion(cipherSuite, serverVersion)) {
+	            	if(LOGGER.isTraceEnabled()) {
+	        			LOGGER.trace("> SelectedCipherSuite="+cipherSuite);
+	        		}
                 return this.selectedCipherSuite = cipherSuite;
             }
         }
@@ -196,7 +199,7 @@ public class DtlsSrtpServer extends DefaultTlsServer {
     protected TlsSignerCredentials getECDSASignerCredentials() throws IOException {
     	if(LOGGER.isTraceEnabled()) {
 			LOGGER.trace("> getECDSASignerCredentials()");
-			LOGGER.trace("> context        ="+context.toString());
+			LOGGER.trace("> context        ="+context.getServerVersion());
 			LOGGER.trace("> CERT resources ="+certificateResources.length);
 			LOGGER.trace("> KEY  resource  ="+keyResource);
 			
