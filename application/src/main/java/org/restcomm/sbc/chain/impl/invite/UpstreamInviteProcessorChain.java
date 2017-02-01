@@ -37,6 +37,7 @@ import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
 import org.restcomm.sbc.chain.impl.SanityCheckProcessor;
+import org.restcomm.sbc.chain.impl.UserAgentACLDPIProcessor;
 import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
 
 
@@ -58,17 +59,19 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 		c1.addProcessorListener(this);
 		Processor c2 = new InviteDPIProcessor(this);
 		c2.addProcessorListener(this);
-		Processor c3 = new B2BUABuilderProcessor(this);
+		Processor c3 = new UserAgentACLDPIProcessor(this);
 		c3.addProcessorListener(this);
-		Processor c4 = new SanityCheckProcessor(this);
+		Processor c4 = new B2BUABuilderProcessor(this);
+		c3.addProcessorListener(this);
+		Processor c5 = new SanityCheckProcessor(this);
 		c4.addProcessorListener(this);	
-		Processor c5 = new InviteProcessor(this);
+		Processor c6 = new InviteProcessor(this);
 		c5.addProcessorListener(this);
-		Processor c6 = new ProtocolAdaptProcessor(this);
+		Processor c7 = new ProtocolAdaptProcessor(this);
 		c6.addProcessorListener(this);
-		Processor c7 = new NATHelperProcessor(this);
+		Processor c8 = new NATHelperProcessor(this);
 		c7.addProcessorListener(this);
-		Processor c8 = new DispatchDPIProcessor("Dispatch", this);
+		Processor c9 = new DispatchDPIProcessor("Dispatch", this);
 		c8.addProcessorListener(this);
 		
 		// set the chain of responsibility
@@ -81,6 +84,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			link(c5, c6);
 			link(c6, c7);
 			link(c7, c8);
+			link(c8, c9);
 			
 		} catch (MalformedProcessorChainException e) {
 			LOG.error("ERROR",e);

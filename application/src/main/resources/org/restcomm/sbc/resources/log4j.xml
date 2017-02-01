@@ -1,25 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-	<appender name="Stdout" class="org.apache.log4j.ConsoleAppender">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="rolling-file" class="org.apache.log4j.RollingFileAppender">
+		<param name="file" value="logs/sip-server.log" />
+		<param name="MaxFileSize" value="2000KB" />
+		<!-- Keep one backup file -->
+		<param name="MaxBackupIndex" value="20" />
+		<param name="append" value="false"/>
 		<layout class="org.apache.log4j.PatternLayout">
-			<!-- Pattern to output the caller's file name and line number -->
-			<param name="ConversionPattern"
-				value="%d [%F:%L] %-5p - %m%n" />
+			<param name="ConversionPattern" value="%p %t %l - %m%n" />
 		</layout>
 	</appender>
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%p %t %l - %m%n" />
+		</layout>
+	</appender>
+	
+	<logger name="org.mobicents.servlet.sip.catalina.SipStandardService">    
+		<level value="WARN" />
+	</logger>
+	
+	<logger name="org.mobicents.servlet.sip.core.session">
+		<level value="ERROR" />
+	</logger>
 
+	<logger name="org.mobicents.servlet.sip.annotations">
+		<level value="INFO" />
+	</logger>
+	<logger name="org.restcomm.sbc">
+		<level value="ALL" />
+	</logger>
 	<root>
-		<level value="TRACE" />
-		<appender-ref ref="Stdout" />		
+		<priority value="INFO" />
+		<appender-ref ref="console" />
+		<appender-ref ref="rolling-file" />
 	</root>
 	
-	<Loggers>
-		<Logger name="org.restcomm.sbc.chain.impl" level="trace">
-  		<AppenderRef ref="Console"/>
-	</Logger>
-	</Loggers>
-
-	
+	<root>
+		<priority value="DEBUG" />
+		<appender-ref ref="console" />
+		<appender-ref ref="rolling-file" />
+	</root>
 </log4j:configuration>

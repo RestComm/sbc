@@ -12,9 +12,11 @@ import javax.swing.event.EventListenerList;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.bo.BanList.Reason;
 import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.bo.Sid.Type;
 import org.restcomm.sbc.bo.Statistics;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.BlackListDao;
@@ -28,6 +30,7 @@ import org.restcomm.sbc.notification.AlertListener;
 import org.restcomm.sbc.notification.NotificationListener;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
 import org.restcomm.sbc.notification.impl.SuspectActivityCache;
+import org.restcomm.sbc.threat.Threat;
 
 
 
@@ -51,9 +54,10 @@ public class Monitor {
 	private DaoManager daoManager;
 	private JMXProvider jmxManager;
 	private CallManager callManager;
+	private ThreatManager threatManager;
 	
 	private Monitor() {
-		
+		threatManager=ThreatManager.getThreatManager();
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		try {
@@ -113,6 +117,16 @@ public class Monitor {
 	         
 	     }
 	 }
+	
+	private synchronized void  applyThreatsToBlackList() {
+		BlackListDao blackListDao = daoManager.getBlackListDao();
+		
+		for(Threat threat:threatManager.getThreats()) {
+			BanList entry=new BanList(DateTime.now(), DateTime.now().plusHours(24), threat.getHost(), Sid.generate(Type.ACCOUNT), Reason.THREAT, Monitor.Action.APPLY);
+			blackListDao.addBanList(entry);
+		}
+	}
+		
 	
 	private synchronized void  applyBanningRules() {
 		BlackListDao blackListDao = daoManager.getBlackListDao();
@@ -260,7 +274,7 @@ public class Monitor {
 			try {
 				
 				synchronizeCDR();
-			
+				applyThreatsToBlackList();
 				applyBanningRules();
 				
 				writeStats();

@@ -101,8 +101,7 @@
                 <routing-policy>
                         <!-- Parameters for static routing policiy provider -->
                         <militarized-zone-target>
-	                        <ip-address>192.168.120.96</ip-address>
-	                        
+	                        <ip-address>201.216.233.187</ip-address>    
 	                        <failover-ip-address>192.168.120.6</failover-ip-address>
 
 	                        <!-- Allow failover to backup target -->
@@ -141,7 +140,10 @@
 	        	 	-->
         			<decoding-handle>true</decoding-handle>
         		</security-policy>
-        		
+        		<!-- log every 500 packet 
+        		<rtp-log>500</rtp-log> -->
+        		-->
+        		<rtp-log>300</rtp-log>
                 <start-port>10000</start-port>
                 <end-port>20000</end-port>
         </media-proxy>

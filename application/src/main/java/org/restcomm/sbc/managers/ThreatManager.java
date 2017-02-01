@@ -20,24 +20,28 @@
 
 package org.restcomm.sbc.managers;
 
-import java.util.HashMap;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
+import org.infinispan.Cache;
 import org.restcomm.sbc.threat.Threat;
 
  /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    14/5/2016 12:42:49
  * @class   ThreatManager.java
- * @project Servlet2.5SBC
  *
  */
 public class ThreatManager {
 	
-	private HashMap<String, Threat> threats=new HashMap<String, Threat>();
-	
+	private Cache<String, Threat> threats;
 	private static ThreatManager threatManager;
 	
 	private ThreatManager() {
+		threats = CacheManager.getCacheManager().getCache("threats");
+		threats.start();
 		
 	}
 	
@@ -57,7 +61,7 @@ public class ThreatManager {
 		threat.setTransport(transport);
 		threat.setUser(user);
 		threat.setType(type);
-		threats.put(host, threat);
+		threats.put(host, threat, 90L, TimeUnit.SECONDS);
 		
 		return threat;
 			
@@ -65,6 +69,13 @@ public class ThreatManager {
 	
 	public Threat getThreat(String host) {
 		return threats.get(host);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Collection<Threat> getThreats() {	
+		ArrayList al=new ArrayList(threats.values());
+		//Collections.sort(al);
+		return al;
 	}
 	
 	

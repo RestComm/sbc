@@ -31,15 +31,12 @@
   
   <update id="updateEntry" parameterType="map">
 		UPDATE "restcomm_blacklist" SET "monitor_action"=#{monitor_action}
-		WHERE ip_address=#{ip_address};
+		WHERE "ip_address"=#{ip_address};
  </update>
   
  <select id="getTotalBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="int">
-		SELECT COUNT(*) FROM "restcomm_blacklist" where "true"
+		SELECT COUNT(*) FROM "restcomm_blacklist" where true
 
-		<if test="instanceid != null">
-			AND instanceid like #{instanceid}
-		</if>
 		<if test="ipAddress != null">
 			AND "ip_address" like #{ipAddress}
 		</if>
@@ -63,11 +60,8 @@
   
 
 	<select id="getBanListByUsingFilters" parameterType="org.restcomm.sbc.bo.BanListFilter" resultType="hashmap">
-		SELECT * FROM "restcomm_blacklist" AS "restcomm_blacklist" where "true"
+		SELECT * FROM "restcomm_blacklist" AS "restcomm_blacklist" where true
 
-		<if test="instanceid != null">
-			AND instanceid like #{instanceid}
-		</if>
 		<if test="ipAddress != null">
 			AND "ip_address" like #{ipAddress}
 		</if>

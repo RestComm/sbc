@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>SBC WebRTC</title>
+  
+  
+  
+      <link rel="stylesheet" href="css/style.css">
+      <!-- Include adapter.js to handle WebRTC differences between browsers -->
+	
+	<script src="../scripts/adapter.js"></script>
+	<!-- Include the JAIN SIP lib -->
+	<script src="../scripts/jain-sip.js"></script>
+	<!-- Include the low level WebRTComm lib that sits on top of JAIN SIP and provides WebRTC media and SIP signaling facilities  -->
+	<script src="../scripts/WebRTComm.js"></script>
+	<!-- Include the high level Restcomm Web library that sits on top of WebRTComm.js and provides an easy to use, a Twilio compatible API -->
+	<script src="../scripts/RestCommWebClient.js"></script>
+
+  
+</head>
+
+<body>
+  <div class="pad">
+  <div class="dial-pad">
+    <div class="contact">
+      <div class="avatar" style="background-image: url(img/osky.png)"></div>
+       <div class="contact-info">
+        <div class="contact-name">Osky Carriles</div>
+        <div class="contact-position">SBC</div>
+        <div class="contact-number">
+          (123) 456 - 7890
+        </div>
+      </div>
+      <div class="contact-buttons">
+        <button class="icon-message" style="background-image: url(img/comment_Bubble.png)"></button>
+        <button class="icon-video" style="background-image: url(img/camera.png)"></button>
+      </div>
+    </div>
+    <div class="phoneString">
+      <input type="text" disabled>
+    </div>
+    <div class="digits">
+      <div class="dig pound number-dig" name="1">1</div>
+      <div class="dig number-dig" name="2">2
+        <div class="sub-dig">ABC</div>
+      </div>
+      <div class="dig number-dig" name="3">3
+        <div class="sub-dig">DEF</div>
+      </div>
+      <div class="dig number-dig" name="4">4
+        <div class="sub-dig">GHI</div>
+      </div>
+      <div class="dig number-dig" name="5">5
+        <div class="sub-dig">JKL</div>
+      </div>
+      <div class="dig number-dig" name="6">6
+        <div class="sub-dig">MNO</div>
+      </div>
+      <div class="dig number-dig" name="7">7
+        <div class="sub-dig">PQRS</div>
+      </div>
+      <div class="dig number-dig" name="8">8
+        <div class="sub-dig">TUV</div>
+      </div>
+      <div class="dig number-dig" name="9">9
+        <div class="sub-dig">WXYZ</div>
+      </div>
+      <div class="dig number-dig astrisk" name="*">*</div>
+      <div class="dig number-dig pound" name="0">0</div>
+      <div class="dig number-dig pound" name="#">#</div>
+    </div>
+    <div class="digits">
+      <div class="dig addPerson action-dig"></div>
+      <div class="dig-spacer"></div>
+      <div class="dig goBack action-dig"></div>
+    </div>
+  </div>
+  <div class="call-pad">
+    <div class='pulsate'>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div class="ca-avatar" style="background-image: url(img/osky.png)"></div>
+    <div class="ca-name">Osky Carriles</div>
+    <div class="ca-number">123 456 7890</div>
+    <div class="ca-status" data-dots="...">Calling</div>
+    <div class="ca-buttons">
+      <div class="ca-b-single" data-label="Add Contact" style="background-image: url(img/add_People.png)">
+      </div>
+      <div class="ca-b-single" data-label="Mute" style="background-image: url(img/mic.png)">
+      </div>
+      <div class="ca-b-single" data-label="Speaker" style="background-image: url(img/speaker.png)"></div>
+      <div class="ca-b-single" data-label="Face to Face" style="background-image: url(img/facetoface.png)">
+      </div>
+      <div class="ca-b-single" data-label="Chat" style="background-image: url(img/message_Bubble.png)">
+      </div>
+      <div class="ca-b-single" data-label="Keypad" style="background-image: url(img/keypad.png)">
+      </div>
+    </div>
+
+
+  </div>
+
+  <div class="call action-dig">
+    <div class="call-change"><span></span></div>
+    <div class="call-icon"></div>
+  </div>
+</div>
+	<script>
+		var localMedia = document.getElementById("localMedia");
+		var remoteMedia = document.getElementById("remoteMedia");
+		var callButton = document.getElementById("callButton");
+		var hangupButton = document.getElementById("hangupButton");
+		var currentConnection;
+
+		callButton.onclick = call;
+		hangupButton.onclick = hangup;
+
+		var parameters = {
+			'debug': true,
+			'username': '21',
+			'password': 'Demo1088',
+			'registrar':'wss://10.0.0.10:5083',
+			'domain':   '10.0.0.10'
+		};
+
+		// In order to use RestCommWebClient you first to setup the Device with parameters set above
+		RestCommClient.Device.setup(parameters);
+
+		// Pass a callback to get notified when RestCommWebClient is ready
+		RestCommClient.Device.ready(function(device) {
+			$("#log").text("Ready");
+		});
+
+		// Pass a callback to get notified if a Device error occurs
+		RestCommClient.Device.error(function(error) {
+			$("#log").text("Error: " + error.message);
+		});
+
+		// Pass a callback to get notified when a connection is established successfuly
+		RestCommClient.Device.connect(function(connection) {
+			$("#log").text("Successfully established call");
+		});
+
+		// When user presses Dial, this function is called that makes the actuall call
+		function call() {
+			var parameters = {
+				'username': '1000@10.0.0.10',  // CHANGEME: update the IP address to your Restcomm instance 
+				'video-enabled': true,  // should we use WebRTC video or WebRTC audio only?
+				'local-media': localMedia,
+				'remote-media': remoteMedia,
+			};
+
+			// Make the actual call, using the parameters above
+			currentConnection = RestCommClient.Device.connect(parameters);
+
+			// Pass a callback to get notified when the connection is disconnected
+			currentConnection.disconnect(function(connection) {
+				$("#log").text("Connection ended");
+			});
+
+			// Pass a callback to get notified if a Connetion error occurs
+			currentConnection.error(function(error) {
+				$("#log").text("Connection error: " + error);
+			});
+		}
+
+		// When user presses Hangup, this function is called that makes the actuall call
+		function hangup() {
+			RestCommClient.Device.disconnectAll();
+		}
+
+		</script>
+
+<!--CREDITS-->
+<p>Based on a work by Giovanni XU</p>
+  <script src="js/jquery-min.js"></script>
+
+  <script src="js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,573 @@
+
+@import url(https://fonts.googleapis.com/css?family=Lato:400,400italic,700);
+
+$lightGray: #2D2D2D;
+$blue: #285EFA;
+$green: #3DE066;
+$red: #FA4A5D;
+
+$pulseDuration: 0.5s;
+
+body{
+  background-color: #2196F2;
+  font-family: Lato;
+  font-weight: 400;
+  letter-spacing: 1px;
+  
+  -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.pad{
+  width: 400px;
+  height: 700px;
+  background-color: #232323;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto; 
+  box-shadow: 0 30px 35px -25px black;
+  
+  animation: showPad 1s ease forwards 1;
+  
+  .dial-pad{
+    .contact{
+      width: 60%;
+      position: relative;
+      margin-left: 20%;
+      margin-top: 40px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+
+      &.showContact{
+        opacity: 1;
+      }
+      .avatar{
+        background-repeat: no-repeat;
+        background-size: auto 100%;
+        background-position: center center;
+        width: 60px;
+        height: 60px;
+        border-radius: 100%;
+        box-shadow: 0 15px 30px -10px black;
+        position: absolute;
+        left: 0px;
+        top: 8px;
+      }
+      .contact-info{
+        border-radius: 8px;
+        width: 85%;
+        margin-left: 15%;
+        background-color: $lightGray;
+        height: 76px;
+        overflow: hidden;
+
+        & > div{
+          width: 80%;
+          margin-left: 20%;
+          font-size: 12px;
+          margin-top: 3px;
+        }
+        .contact-name{
+          color: #FDFDFD;
+          margin-top: 12px;
+        }
+        .contact-position{
+          font-style: italic;
+          color: #AEAEAE;
+        }
+        .contact-number{
+          color: white;
+          span{
+            color: $green;
+            display: inline;
+          }
+        }
+      }
+      .contact-buttons{
+        position: absolute;
+        right: -5px;
+        top: 0px;
+        width: 40px;
+        height: 76px; 
+        button{
+          border:none;
+          width: 25px;
+          height: 25px;
+          border-radius: 100%;
+          box-shadow: 0 12px 25px -5px black;
+          display: block;
+          position: absolute;
+          right: 0px;
+          background-size: 75% auto;
+          background-position: center center;
+          background-repeat: no-repeat;
+          &:focus{
+            outline:none;
+          }
+          &.icon-message{
+            background-color: #FFC44E;
+            top: 5px;
+          }
+          &.icon-video{
+            background-color: #A529F9;
+            bottom: 5px; 
+          }
+        }
+      }
+    }
+    .phoneString{
+      width: 100%;
+      height: 80px;
+      background-color: $lightGray;
+      margin-top: 40px;
+      input{
+        background-color: transparent;
+        width: 60%;
+        margin-left: 20%;
+        height: 80px;
+        border: none;
+        font-size: 30px;
+        color: white;
+        font-weight: 700;
+        letter-spacing: 2px;
+        &:focus{
+          outline:none;
+        }
+      }
+    }
+    .digits{
+      overflow: hidden;
+      width: 60%;
+      margin-left: 20%;
+      margin-top: 20px;
+      .dig-spacer{
+        width: 60px;
+        margin: 10px calc(50% - 90px);
+        float: left;
+      }
+      .dig{
+        color:white;
+        font-size: 30px;
+        float: left;
+        background-color: $lightGray;
+        text-align:center;
+        width: 60px;
+        height: 56px;
+        border-radius: 100%;
+        margin: 10px 0px;
+        padding-top: 4px;
+        font-weight: 700;
+        cursor: pointer;
+
+        &.clicked{
+           animation: pulse-gray linear $pulseDuration 1;
+        }
+
+        &:nth-child(3n-1){
+          margin: 10px calc(50% - 90px);
+        }
+        &.astrisk{
+          padding-top: 17px;
+          height: 43px;
+        }
+        &.pound{
+          padding-top: 10px;
+          height: 50px;
+        }
+        .sub-dig{
+          font-size: 8px;
+          font-weight: 300;
+          position: relative;
+          top: -2px;
+        }
+        &.addPerson, &.goBack{
+          background-repeat: no-repeat;
+          background-position: center center;
+          background-size: 55% auto;
+          margin-bottom: 25px;
+          box-shadow: 0px  25px 30px -15px black;
+        }
+        &.addPerson{
+          background-color: #285EFA;
+          background-image: url(../img/add_Person.png);
+          &.clicked{
+             animation: pulse-blue linear $pulseDuration 1;
+          }
+        }
+        &.goBack{
+          background-color: #FA4A5D;
+          background-image: url(../img/back_Arrow.png);
+          &.clicked{
+             animation: pulse-red linear $pulseDuration 1;
+          }
+        }
+      }
+    }
+  }
+  
+  .call-pad{
+    opacity: 0;
+    height: 0px;
+    pointer-events: none;
+    background-image: url(../img/call_Background.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    transition: opacity 0.3s ease;
+    position: absolute; 
+    width: 100%;
+    
+    left: 0px;
+    top: 0px;
+    transition: opacity 0.3s ease;
+    
+    &.in-call{
+      height: 100%;
+      opacity: 1;
+      pointer-events: all;
+    }
+    .pulsate{
+      opacity: 0;
+      width: 150px;
+      height: 0px;
+      overflow: visible;
+      position: relative;
+      display:block;
+      margin: 0 auto 0;
+      top: 120px;
+      transition: opacity 0.5s ease;
+      &.active-call{
+        animation: pulsator 2s ease infinite;
+        opacity: 1;
+      }
+      div{
+        position: absolute;
+        background-color: rgba(255,255,255,0.06);
+        border-radius: 100%;
+        margin: auto;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        
+        &:nth-child(1){
+          width: 110px;
+          height: 110px;
+        }
+        &:nth-child(2){
+          width: 122px;
+          height: 122px;
+        }
+        &:nth-child(3){
+          width: 134px;
+          height: 134px;
+        }
+      }
+    }
+    .ca-avatar{
+      width: 100px;
+      height: 100px;
+      margin: 70px auto;
+      margin-bottom: 30px;
+      display:block;
+      background-color: #111111;
+      border-radius: 100%;
+      box-shadow: 0px 20px 25px -10px rgba(0,0,0,0.8);
+      background-position: center center;
+      background-size: 100% auto;
+      background-repeat: no-repeat;
+      transition: opacity 1s ease,
+                  transform 1s ease;
+      opacity: 0.5;
+      transform: scale(0.5,0.5);
+      &.in-call{
+        transform: scale(1,1);
+        opacity: 1;
+      }
+    }
+    .ca-name, .ca-number, .ca-status{
+      width: 60%;
+      margin-left: 20%;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .ca-name{
+      font-size: 18px;
+    }
+    .ca-number{
+      font-size: 28px;
+      letter-spacing: 2px;
+    }
+    .ca-status{
+      font-size: 30px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      &:after{
+        content: attr(data-dots);
+        position: absolute;
+      }
+    }
+    .ca-buttons{
+      width: 70%;
+      margin-left: 15%;
+      
+      .ca-b-single{
+        float: left;
+        width: 60px;
+        height: 60px;
+        background-color: rgba(255,255,255,0.3);
+        border-radius: 100%;
+        position: relative;
+        margin-bottom: 40px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: 55% auto;
+        &:nth-child(3n-1){
+          margin-left: calc(100% - 230px);
+          margin-right: calc(100% - 230px);
+        }
+        &:after{
+          content: attr(data-label);
+          color: white;
+          position: absolute;
+          text-align: center;
+          font-size: 10px;
+          width: 100px;
+          bottom: -20px;
+          left: -18px;
+          letter-spacing: 2px;
+          
+        }
+      }
+    }
+  }
+  
+}
+
+.call{
+  color: white;
+  font-size: 30px;
+  text-align:center;
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  margin: 10px 0px;
+  font-weight: 700;
+  cursor: pointer;
+  position: absolute;
+  left: calc(50% - 30px);
+  bottom: 25px;
+  box-shadow: 0px  25px 30px -15px black;
+  background-color: #3DE066;
+  .call-icon{
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-image: url(../img/call.png);
+    transition: transform 0.3s ease;
+    &.in-call{
+      -ms-transform: rotate(134deg);
+      -webkit-transform: rotate(134deg);
+      transform: rotate(134deg);
+    }
+  }
+  .call-change{
+    width: 60px;
+    height: 60px;
+    border-radius: 100%;
+    overflow: hidden;
+    
+    span{
+      width: 70px;
+      height: 67px;
+      display:block;
+      background-color: $red;
+      position: relative;
+      top: 70px;
+      left: 70px;
+      border-radius: 100%;
+      transition: left 0.3s ease, top 0.3s ease;
+    }
+    &.in-call span{
+      top: -5px;
+      left: -5px;
+    }
+  }
+  
+  &.clicked{
+    animation: pulse-green linear $pulseDuration 1 forwards;
+  }
+}
+
+@keyframes pulse-gray {
+      0% {
+        box-shadow: inset 0 0 0px 30px $lightGray, inset 0 0 0px 30px white;
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+      10%{
+        -ms-transform: scale(0.8,0.8);
+            -webkit-transform: scale(0.8,0.8);
+            transform: scale(0.8,0.8);
+      }
+      30% {
+        box-shadow: inset 0 0 0px 10px $lightGray, inset 0 0 0px 30px white;
+      }
+      60% {
+        box-shadow: inset 0 0 0px 0px $lightGray, inset 0 0 0px 0px white;
+        -ms-transform: scale(0.8,0.8);
+        -webkit-transform: scale(0.8,0.8);
+        transform: scale(0.8,0.8);
+      }
+      100% {
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+    }
+@keyframes pulse-blue {
+      0% {
+        box-shadow: inset 0 0 0px 30px $blue, inset 0 0 0px 30px white;
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+      10%{
+        -ms-transform: scale(0.8,0.8);
+            -webkit-transform: scale(0.8,0.8);
+            transform: scale(0.8,0.8);
+      }
+      30% {
+        box-shadow: inset 0 0 0px 10px $blue, inset 0 0 0px 30px white;
+      }
+      60% {
+        box-shadow: inset 0 0 0px 0px $blue, inset 0 0 0px 0px white;
+        -ms-transform: scale(0.8,0.8);
+        -webkit-transform: scale(0.8,0.8);
+        transform: scale(0.8,0.8);
+      }
+      100% {
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+    }
+@keyframes pulse-green {
+      0% {
+        box-shadow: inset 0 0 0px 30px $green, inset 0 0 0px 30px white;
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+      10%{
+        -ms-transform: scale(0.8,0.8);
+            -webkit-transform: scale(0.8,0.8);
+            transform: scale(0.8,0.8);
+      }
+      30% {
+        box-shadow: inset 0 0 0px 10px $green, inset 0 0 0px 30px white;
+      }
+      60% {
+        box-shadow: inset 0 0 0px 0px $green, inset 0 0 0px 0px white;
+        -ms-transform: scale(0.8,0.8);
+        -webkit-transform: scale(0.8,0.8);
+        transform: scale(0.8,0.8);
+      }
+      100% {
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+       
+      }
+    }
+@keyframes pulse-red {
+      0% {
+        box-shadow: inset 0 0 0px 30px $red, inset 0 0 0px 30px white;
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+      10%{
+        -ms-transform: scale(0.8,0.8);
+            -webkit-transform: scale(0.8,0.8);
+            transform: scale(0.8,0.8);
+      }
+      30% {
+        box-shadow: inset 0 0 0px 10px $red, inset 0 0 0px 30px white;
+      }
+      60% {
+        box-shadow: inset 0 0 0px 0px $red, inset 0 0 0px 0px white;
+        -ms-transform: scale(0.8,0.8);
+        -webkit-transform: scale(0.8,0.8);
+        transform: scale(0.8,0.8);
+      }
+      100% {
+        -ms-transform: scale(1,1);
+        -webkit-transform: scale(1,1);
+        transform: scale(1,1);
+      }
+    }
+@keyframes pulsator {
+  0%{
+    -ms-transform: scale(1,1);
+    -webkit-transform: scale(1,1);
+    transform: scale(1,1);
+  }
+  40%{
+    -ms-transform: scale(0.8,0.8);
+    -webkit-transform: scale(0.8,0.8);
+    transform: scale(0.8,0.8);
+  }
+  100%{
+    -ms-transform: scale(1,1);
+    -webkit-transform: scale(1,1);
+    transform: scale(1,1);
+  }
+}
+@keyframes showPad {
+  0%{
+    top: 50px;
+    opacity: 0;
+  }
+  100%{
+    top: 0px;
+    opacity: 1;
+  }
+}
+
+p{
+  position: fixed;
+  bottom: 0px;
+  left: 15px;
+  color: white;
+  font-family: Lato;
+  font-weight: 300;
+  overflow: hidden;
+  
+  a:link, a:visited{
+    color: white;
+  }
+  a:hover{
+    opacity: 0.5;
+  }
+  img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    top: 6px;
+  }
+}

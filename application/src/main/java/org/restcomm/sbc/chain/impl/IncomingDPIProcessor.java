@@ -107,7 +107,7 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
-		m.setSourceTransport(sm.getTransport().toUpperCase());
+		m.setSourceTransport(sm.getTransport()==null?"UDP":sm.getTransport().toUpperCase());
 		
 		if(sm.getContentLength()>0 &&
 			sm.getContentType().equals("application/sdp")) {

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<!--
+/*
+ * TeleStax, Open Source Cloud Communications
+ * Copyright 2011-2015, Telestax Inc and individual contributors
+ * by the @authors tag.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+-->
+
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="keywords" content="JavaScript, WebRTC" />
+	<meta name="description" content="RestComm WebRTC SDK" />
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+	<title>Restcomm Web SDK Hello World</title>
+
+	<link href="css/styles.css" type="text/css" rel="stylesheet" />
+	<!-- Include adapter.js to handle WebRTC differences between browsers -->
+	
+	<script src="scripts/adapter.js"></script>
+	<!-- Include the JAIN SIP lib -->
+	<script src="scripts/jain-sip.js"></script>
+	<!-- Include the low level WebRTComm lib that sits on top of JAIN SIP and provides WebRTC media and SIP signaling facilities  -->
+	<script src="scripts/WebRTComm.js"></script>
+	<!-- Include the high level Restcomm Web library that sits on top of WebRTComm.js and provides an easy to use, a Twilio compatible API -->
+	<script src="scripts/RestCommWebClient.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+</head>
+<body>
+	<!-- html elements for local and remote media (audio and video if applicable -->
+	<video id="localMedia" autoplay muted style="display: none;"></video>
+	<video id="remoteMedia" autoplay style="display: none;"></video>
+
+	<div>
+		<img id="callButton" src="img/call-button.png"></img>
+		<img id="hangupButton" src="img/hangup-button.png"></img>
+		<div class="logContainer">
+			
+			<div id="consoleHeader">console></div>
+			<div id="log">Loading RestComm client...</div>
+		</div>
+		<img id="logoImage" src="img/telestax.png"></img>
+	</div>
+
+	<script>
+		var localMedia = document.getElementById("localMedia");
+		var remoteMedia = document.getElementById("remoteMedia");
+		var callButton = document.getElementById("callButton");
+		var hangupButton = document.getElementById("hangupButton");
+		var currentConnection;
+
+		callButton.onclick = call;
+		hangupButton.onclick = hangup;
+
+		var parameters = {
+			'debug': true,
+			'username': '15',
+			'password': 'Demo1088',
+			'registrar':'wss://10.0.0.10:5083',
+			'domain':   '10.0.0.10'
+		};
+
+		// In order to use RestCommWebClient you first to setup the Device with parameters set above
+		RestCommClient.Device.setup(parameters);
+
+		// Pass a callback to get notified when RestCommWebClient is ready
+		RestCommClient.Device.ready(function(device) {
+			$("#log").text("Ready");
+		});
+
+		// Pass a callback to get notified if a Device error occurs
+		RestCommClient.Device.error(function(error) {
+			$("#log").text("Error: " + error.message);
+		});
+
+		// Pass a callback to get notified when a connection is established successfuly
+		RestCommClient.Device.connect(function(connection) {
+			$("#log").text("Successfully established call");
+		});
+
+		// When user presses Dial, this function is called that makes the actuall call
+		function call() {
+			var parameters = {
+				'username': '2002@10.0.0.10',  // CHANGEME: update the IP address to your Restcomm instance 
+				'video-enabled': true,  // should we use WebRTC video or WebRTC audio only?
+				'local-media': localMedia,
+				'remote-media': remoteMedia,
+			};
+
+			// Make the actual call, using the parameters above
+			currentConnection = RestCommClient.Device.connect(parameters);
+
+			// Pass a callback to get notified when the connection is disconnected
+			currentConnection.disconnect(function(connection) {
+				$("#log").text("Connection ended");
+			});
+
+			// Pass a callback to get notified if a Connetion error occurs
+			currentConnection.error(function(error) {
+				$("#log").text("Connection error: " + error);
+			});
+		}
+
+		// When user presses Hangup, this function is called that makes the actuall call
+		function hangup() {
+			RestCommClient.Device.disconnectAll();
+		}
+
+		</script>
+
+</body>
+</html>

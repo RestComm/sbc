@@ -221,11 +221,15 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				if(usedRequest!=null&&usedRequest.getSession().isValid()) {
 					LOG.trace("REUSING SESSION REQ "+usedRequest.getCallId()+":"+usedRequest.getHeader("CSeq"));
 					newRequest = helper.createRequest(usedRequest.getSession(), request, headers);
+					// Controls expiration time of this leg
+					newRequest.getApplicationSession().setExpires(0);
 					
 					
 				}
 				else {
 					newRequest = helper.createRequest(request, true, headers);
+					// Controls expiration time of this leg
+					newRequest.getApplicationSession().setExpires(0);
 					aSession = sipFactory.createApplicationSession();
 					aSession.setAttribute(request.getSession().getCallId(), newRequest);
 					
@@ -268,9 +272,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				} 
 				else if (request.getMethod().equals("ACK")) {
 					newRequest = linkedSession.createRequest("ACK");		
-				} 
-				else if (request.getMethod().equals("PRACK")) {
-					newRequest = linkedSession.createRequest("PRACK");		
 				} 
 				else if (request.getMethod().equals("INFO")) {
 					newRequest = linkedSession.createRequest("INFO");

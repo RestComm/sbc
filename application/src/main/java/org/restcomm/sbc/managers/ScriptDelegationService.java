@@ -25,6 +25,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.log4j.Logger;
+import org.restcomm.sbc.ConfigurationCache;
 
 
  /**
@@ -37,7 +38,7 @@ public class ScriptDelegationService {
     static int iExitValue=-1;
     static String sCommandString;
     
-    public static final String SCRIPT_BAN = "sh /usr/local/bin/RestComm-sbc/ban.sh";
+    public static final String SCRIPT_BAN = "sh "+ConfigurationCache.getHome()+"/WEB-INF/scripts/ban.sh";
     
     
     private static transient Logger LOG = Logger.getLogger(ScriptDelegationService.class);
