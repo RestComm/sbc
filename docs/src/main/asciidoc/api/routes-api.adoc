@@ -3,7 +3,9 @@
 [[Routes]]
 == Routes
 
-Connectors represents SIP services. Connectors are bound/unbound all over tagged Network Points.
+Routes are paths from a DMZ connector service to an MZ connector service.
+A Route links a connector giving service on a Network point to another connector giving service on Network point of the counterpath zone.
+
 
 .Routes example, multiple Connector forwarding
 [ditaa,routes,png]
@@ -21,6 +23,8 @@ Connectors represents SIP services. Connectors are bound/unbound all over tagged
 
 
 NOTE: Routes have nothing to do with IP Addresses. They are assigned from the NetworkPoint/Connector they belong to at run-time.
+
+WARNING: Routes are allways created with a DMZ origin and an MZ target.
 
 A Route is a DMZ entity. Similar to firewall rules that allow to forward traffic from public interfaces to private ones.
 
@@ -60,46 +64,55 @@ A Route is a DMZ entity. Similar to firewall rules that allow to forward traffic
 ....
 curl -X GET  http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes
 ....
-
-
-
+The above commands will print an output similar to the one below:
 ....
-curl -X GET  http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes/{Sid}
+<RestcommResponse>
+  <Routes>
+    <Route>
+      <Sid>RTae6e420f425248d6a26948c17a9e2aaa</Sid>
+      <SourceConnectorSid>CNae6e420f425248d6a26948c17a9e2aaa</SourceConnectorSid>
+      <TargetConnectorSid>CNae6e420f425248d6a26948c17a9e2bbb</TargetConnectorSid>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Route>
+    <Route>
+      <Sid>RTae6e420f425248d6a26948c17a9e2bbb</Sid>
+      <SourceConnectorSid>CNae6e420f425248d6a26948c17a9e2ccc</SourceConnectorSid>
+      <TargetConnectorSid>CNae6e420f425248d6a26948c17a9e2bbb</TargetConnectorSid>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Route>
+  </Routes>
+</RestcommResponse>
+....
+....
+curl -X GET  http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes/RTae6e420f425248d6a26948c17a9e2aaa
 ....
 
 The above commands will print an output similar to the one below:
 
 ----
 <RestcommResponse>
-    <Connector>
-       <IpAddress>192.168.88.2</IpAddress>
-       <Sid>CNedc0bce80638e78ee20d68dc748d905f</Sid>
-       <Port>5060</Port>
-       <NetworkPointId>eth1-1</NetworkPointId>
-       <Transport>UDP</Transport>
-       <State>UP</State>
-       <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
-     </Connector>
- </RestcommResponse>
+    <Route>
+      <Sid>RTae6e420f425248d6a26948c17a9e2aaa</Sid>
+      <SourceConnectorSid>CNae6e420f425248d6a26948c17a9e2aaa</SourceConnectorSid>
+      <TargetConnectorSid>CNae6e420f425248d6a26948c17a9e2bbb</TargetConnectorSid>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Route>
+</RestcommResponse>
 
 ----
 
-[[Connectors_List]]
-== Connectors List Resource
+[[Routes_List]]
+== Routes List Resource
 
-* Connectors List Resource URI. */2012-04-24/Connectors*
+* Routes List Resource URI. */2012-04-24/Routes*
 
 === Supported Operations
 
-**HTTP GET**. Returns the list representation of all the *Connectors* resources.
+**HTTP GET**. Returns the list representation of all the *Routes* resources.
 
-**HTTP POST**. Adds a *Connector* resource.
+**HTTP POST**. Adds a *Route* resource.
 
-**HTTP POST**. Plug an unplugged *Connector* resource.
-
-**HTTP POST**. UnPlug a plugged *Connector* resource.
-
-**HTTP DELETE**. Deletes a *Connector* resource.
+**HTTP DELETE**. Deletes a *Route* resource.
 
 === Request Parameters
 
@@ -110,10 +123,10 @@ The above commands will print an output similar to the one below:
 |==============================================================================================================================================================================================================================
 
 
-=== Get a list of all current connectors
+=== Get a list of all current routes
 
 ----
-curl -X GET http://[primarySid]:[primaryAuthToken]@127.0.0.1:8080/restcomm-sbc/2012-04-24/Connectors/
+curl -X GET http://[primarySid]:[primaryAuthToken]@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes/
 ----
 
 
@@ -134,38 +147,19 @@ curl -X GET http://[primarySid]:[primaryAuthToken]@127.0.0.1:8080/restcomm-sbc/2
  </RestcommResponse>
 
 ----
-[[add-connectors]]
-=== Add a Connector
+[[add-routes]]
+=== Add a Route
 
-.XML Connector adding
+.XML Route adding
 ----
-curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/ -d "NetworkPointId=eth0-0" -d "Transport=UDP" -d "Port=5060"
-----
-
-
-NOTE: Connectors are first created in DOWN State. Yo have to plug it to put it on service (UP State).
-
-[[plug-connectors]]
-=== Plug a Connector
-
-.XML Connector plugging
-----
-curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/ -d "Sid=CNedc0bce80638e78ee20d68dc748d905f" -d "State=UP"
-----
-
-[[unplug-connectors]]
-=== Unplug a Connector
-
-.XML Connector unplugging
-----
-curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/ -d "Sid=CNedc0bce80638e78ee20d68dc748d905f" -d "State=DOWN"
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Routes/ -d "SourceConnectorSid=CNedc0bce80638e78ee20d68dc748d905f" -d "TargetConnectorSid=CNb65727e434f182b7215ea95105b66ed9" 
 ----
 
 
-[[delete-connectors]]
-=== Delete Connector
+[[delete-routes]]
+=== Delete Route
 
-.XML Connector delete
+.XML Route delete
 ----
-curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/<Sid>
+curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Routes/<Sid>
 ----
