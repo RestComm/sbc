@@ -118,11 +118,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 				LOG.error("Cannot bind Channel", e);
 			}
 		    dtlsHandler.addListener(this);
-		    
-		    // Suspend mediaZonePeer till dtls handshake finishes
-		    mediaZonePeer.suspend();
-		   
-		    
+	    
 		}
 	    
 	    
@@ -178,15 +174,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("Handshake completed");
 		}
-		
-		try {
-			// free connection to allow talking different targets
-			channel.disconnect();
-			mediaZonePeer.channel.disconnect();
-		} catch (IOException e) {
-			LOG.error(e);
-		}
-		
+		controller.getMediaSession().fireMediaReadyEvent(this);
 		mediaZonePeer.resume();
 		
 	}
@@ -200,13 +188,10 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		if(LOG.isTraceEnabled()) {
 			LOG.error("Handshake failed");			
 		}
-		try {
-			finalize();
-		} catch (IOException e) {
-			LOG.error("",e);
-		}
-		
+		controller.getMediaSession().fireMediaFailedEvent(this);
+		finalize();		
 	}
+	
 	@Override
 	public void onRtpFailure(Throwable e) {
 		LOG.error("RTP Failure ",e);
@@ -289,7 +274,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 			}
 		}
 		
-					
+		packetsSentCounter++;			
 		socket.send(dgram);	
 		
 	}
@@ -326,6 +311,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 			RawPacket rtp=new RawPacket(dgram.getData(), 0, dgram.getLength());
 			LOG.trace("<++-"+packetType+"[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");	
 		}
+		packetsRecvCounter++;
 		return dgram;
 		
 	}
@@ -362,6 +348,11 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 					
 					
 				} catch (IOException e) {
+					if(!isRunning()||!mediaZonePeer.isRunning())
+						return;
+					//LOG.error("("+CryptoMediaZone.this.toPrint()+") "+e.getMessage());
+					continue;
+					/*
 					LOG.warn("("+CryptoMediaZone.this.toPrint()+") "+e.getMessage());
 					try {
 						finalize();
@@ -369,7 +360,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 						LOG.error("Cannot finalize stream!");
 					}
 					break;
-					
+					*/
 				}		
 			}	
 		}	

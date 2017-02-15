@@ -20,7 +20,6 @@
 
 package org.restcomm.sbc.call;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -251,18 +250,25 @@ public class Call implements MediaSessionListener {
 
 	@Override
 	public void onMediaTimeout(MediaSession session, MediaZone zone) {
-		// TODO Auto-generated method stub
+		if(LOG.isInfoEnabled()) {
+			LOG.warn("Force ending media on "+zone.toPrint());
+		}
+		
 		
 	}
 
 	@Override
 	public void onMediaTerminated(MediaSession mediaSession, MediaZone mediaZone) {
-		try {
+		if(mediaSession.isActive())
 			mediaSession.finalize();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+	}
+	
+	@Override
+	public void onMediaFailed(MediaSession mediaSession, MediaZone mediaZone) {
+		LOG.error("MediaSession/Zone Failed!");
+		if(mediaSession.isActive())
+			mediaSession.finalize();
 		
 	}
 

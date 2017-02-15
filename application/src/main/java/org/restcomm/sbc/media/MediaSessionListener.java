@@ -37,4 +37,6 @@ public interface MediaSessionListener extends EventListener {
 	
 	void onMediaReady(MediaSession mediaSession, MediaZone mediaZone);
 
+	void onMediaFailed(MediaSession mediaSession, MediaZone mediaZone);
+
 }

@@ -21,9 +21,6 @@
 
 package org.restcomm.sbc.media.dtls;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -38,8 +35,7 @@ import org.mobicents.media.server.impl.rtp.crypto.PacketTransformer;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPPolicy;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPTransformEngine;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
-import org.mobicents.media.server.io.network.channel.PacketHandlerException;
-import org.restcomm.sbc.media.PacketHandler;
+
 
 /**
  * Handler to process DTLS packets.
@@ -56,6 +52,8 @@ public class DtlsHandler  {
     public static final int DEFAULT_MTU = 1500;
 
     public final static int MAX_DELAY = 10000;
+    
+    private UDPTransport transport;
 
 
     // Network properties
@@ -342,9 +340,7 @@ public class DtlsHandler  {
     }
 
     public void handshaker() {
-
-        
-        	
+         	
             SecureRandom secureRandom = new SecureRandom();
             DTLSServerProtocol serverProtocol = new DTLSServerProtocol(secureRandom);
             
@@ -353,10 +349,10 @@ public class DtlsHandler  {
             	logger.trace("DTLSHandler handshake started");
             }
             try {
-            	UDPTransport transport = new UDPTransport(channel.socket(), mtu);
+            	transport = new UDPTransport(channel.socket(), mtu);
                 // Perform the handshake in a non-blocking fashion
                 serverProtocol.accept(server, transport);
-
+                
                 // Prepare the shared key to be used in RTP streaming
                 server.prepareSrtpSharedSecret();
 
@@ -386,5 +382,9 @@ public class DtlsHandler  {
             }
         
     }
+
+	public UDPTransport getTransport() {
+		return transport;
+	}
 
 }

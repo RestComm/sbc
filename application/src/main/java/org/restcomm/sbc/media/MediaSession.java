@@ -20,7 +20,6 @@
 
 package org.restcomm.sbc.media;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -132,6 +131,19 @@ public class MediaSession  {
 	     }
 	 }
 	
+	protected void fireMediaFailedEvent(MediaZone mediaZone) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==MediaSessionListener.class) {             
+	             ((MediaSessionListener)listeners[i+1]).onMediaFailed(this, mediaZone);
+	         }
+	         
+	     }
+	 }
+	
 	public void start() throws UnknownHostException  {
 		if(LOG.isInfoEnabled()) {
 			LOG.info("Starting "+this.toPrint());	
@@ -144,11 +156,11 @@ public class MediaSession  {
 		this.setState(State.ACTIVE);
 	}
 	
-	public void finalize() throws IOException {
+	public void finalize()  {
 		// MediaZones are finalized globally
 		
-		if(LOG.isInfoEnabled()) {
-			LOG.info("Finalizing "+this.toPrint());	
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Finalizing "+this.toPrint());	
 		}
 		
 		if(offer!=null)
@@ -160,6 +172,8 @@ public class MediaSession  {
 			timeService.shutdown();
 			timeService=null;
 		}
+		
+		answer=offer=null;
 		this.setState(State.CLOSED);
 	}
 	
@@ -235,13 +249,16 @@ public class MediaSession  {
 			}
 	    	MediaZone offerZone =offer.checkStreaming();
 	    	MediaZone answerZone=answer.checkStreaming();
-		    if(offerZone!=null) {
+		    
+	    	if(offerZone!=null) {
 		    	// either leg is stuck	
-		    	fireMediaTimeoutEvent(offerZone); 	
+		    	fireMediaTimeoutEvent(offerZone);
+		    	offer.finalize(offerZone);
 		    }
 		    if(answerZone!=null) {
 		    	// either leg is stuck	
-		    	fireMediaTimeoutEvent(answerZone); 	
+		    	fireMediaTimeoutEvent(answerZone);
+		    	answer.finalize(offerZone);
 		    }
 	             
 	    }

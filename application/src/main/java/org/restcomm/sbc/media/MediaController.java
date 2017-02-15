@@ -20,10 +20,10 @@
 
 package org.restcomm.sbc.media;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
 import org.mobicents.media.server.io.sdp.SdpException;
@@ -66,7 +66,7 @@ public class MediaController {
 	private MediaZone.Direction direction;
 	private MediaSession mediaSession;
 	
-	private HashMap<String, MediaZone> mediaZones=new HashMap<String, MediaZone>();
+	private ConcurrentHashMap<String, MediaZone> mediaZones=new ConcurrentHashMap<String, MediaZone>();
 
 
 	private SessionDescription secureSdp;
@@ -191,13 +191,20 @@ public class MediaController {
     	
     }
     
-    public void finalize() throws IOException {
-    	if(LOG.isInfoEnabled()) {
-			LOG.info("Finalizing "+this.toPrint());	
+    public synchronized void finalize()  {
+    	if(LOG.isTraceEnabled()) {
+			LOG.trace("Finalizing "+this.toPrint());	
 		}
     	for(MediaZone zone:mediaZones.values()) {
-    		zone.finalize();
+    		finalize(zone);
     	}
+    	mediaZones.clear();
+    	
+    }
+    
+    public synchronized void finalize(MediaZone zone)  {
+    	zone.finalize();	
+    	mediaZones.remove(zone.getMediaType());
     	
     }
     
@@ -653,6 +660,5 @@ public MediaSession getMediaSession() {
 }
 
 
-   
   
 }
