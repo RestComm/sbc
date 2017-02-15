@@ -70,7 +70,9 @@ public abstract class ProtocolAdapter {
 				
 				if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
 					try {
-						
+						if(LOG.isDebugEnabled()) {
+							LOG.debug(sm.getMethod()+" adapting SDP");
+						}
 						String host=message.getTargetLocalAddress();
 						
 						if(sm instanceof SipServletResponse) {
@@ -124,6 +126,11 @@ public abstract class ProtocolAdapter {
 						return m;
 					} 
 
+				}
+				else {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug(sm.getMethod()+" without SDP");
+					}
 				}
 			
 		return m;

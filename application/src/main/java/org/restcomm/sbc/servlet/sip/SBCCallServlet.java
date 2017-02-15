@@ -22,14 +22,12 @@
 package org.restcomm.sbc.servlet.sip;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.sip.SipApplicationSessionEvent;
 import javax.servlet.sip.SipApplicationSessionListener;
 import javax.servlet.sip.SipServlet;
-import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipURI;
@@ -39,9 +37,7 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
-import org.restcomm.sbc.media.MediaZone;
-import org.restcomm.sbc.media.MediaSession;
-import org.restcomm.sbc.media.MediaSessionListener;
+
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
@@ -98,32 +94,23 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		
 		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
 		SipURI toURI 	= (SipURI) request.getTo().  getURI();
+		String displayName=request.getFrom().getDisplayName();
 		
 		Call call=callManager.getCall(request.getSession().getId());
 		/*
 		 * By now reuse the call in a Re-INVITE
 		 */
-		if(call==null) {
-			call=callManager.createCall(
-				null,
-				request.getSession().getId(),
-				toURI.getUser(),
-				fromURI.getUser(),
-				direction,
-				null,
-				request.getFrom().getDisplayName());
-		}
-		else {
-			call=callManager.createCall(
+		
+		call=callManager.createCall(
 				call,
 				request.getSession().getId(),
 				toURI.getUser(),
 				fromURI.getUser(),
 				direction,
 				null,
-				request.getFrom().getDisplayName());
+				displayName==null?"Unknown":displayName);
 			
-		}
+		
 		// Controls expiration time of this leg
 		request.getApplicationSession().setExpires(0);
 		
@@ -187,8 +174,9 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		
 		try {
 			dwChain.process(new SIPMutableMessage(response));
-		} catch (IllegalStateException e) {
-			LOG.warn(e.getMessage()+" not forwarding message");
+		} catch (IllegalStateException e) {	
+			LOG.warn("===========\nNot forwarding message:\n"+response.toString());
+			LOG.warn("===========\nNot forwarded  message===");
 			return;
 		}
 		super.doResponse(response);
@@ -206,8 +194,8 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 			LOG.debug("Got Request BYE: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 			LOG.debug("RTP Session might end");				
 		}
-		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
-		response.send();
+		//SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
+		//response.send();
 		
 		String callSessionId=getCallSessionId(request);
 				
@@ -230,7 +218,9 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		try {
 			upChain.process(new SIPMutableMessage(request));
 		} catch (IllegalStateException e) {
-			LOG.warn(e.getMessage()+" not forwarding message");
+			LOG.warn("===========\nNot forwarding message:\n"+request.toString());
+			LOG.warn("===========\nNot forwarded  message===");
+			
 		}	
 		
 		
@@ -243,24 +233,16 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	 */
 	@Override
 	protected void doAck(SipServletRequest request) throws ServletException, IOException {
-		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("CALL ACK SES:"+request.getSession());	
 			LOG.debug("Got Request ACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 			LOG.debug("RTP Session might start");				
 		}
 		// Get control of session expiration
-		
-		
-		
+			
 		String callSessionId=request.getSession().getId();	
-		Call call=callManager.getCall(callSessionId);
 		callManager.changeCallStatus(callSessionId, Call.Status.BRIDGED);	
-		
-		MediaSession mediaSession=call.getMediaSession();
-		
-		//mediaSession.start();
-		
+				
 	}
 	
 	/**
@@ -274,6 +256,8 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 			LOG.debug("Got Request PRACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 					
 		}
+		//SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
+		//response.send();
 		upChain.process(new SIPMutableMessage(request));
 
 	}
@@ -286,15 +270,15 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 			LOG.debug("Got Request CANCEL: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
 			LOG.debug("RTP Session might end");				
 		}
-		SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
-		response.send();
-		response = request.createResponse(SipServletResponse.SC_REQUEST_TERMINATED);
-		response.send();
+		
+		//SipServletResponse response = request.createResponse(SipServletResponse.SC_OK);
+		//response.send();
+		//response = request.createResponse(SipServletResponse.SC_REQUEST_TERMINATED);
+		//response.send();
 			
 		upChain.process(new SIPMutableMessage(request));
 		
 		String callSessionId=request.getSession().getId();	
-		Call call=callManager.getCall(callSessionId);
 		callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);	
 		
 	}

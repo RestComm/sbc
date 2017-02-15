@@ -39,8 +39,11 @@ import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TooManyHopsException;
+import javax.sip.header.ViaHeader;
+import javax.sip.message.Request;
 
 import org.apache.log4j.Logger;
+import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
@@ -107,11 +110,14 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		}
 		SipServletRequest request=(SipServletRequest) message.getContent();
 		
+		
+		
 		B2buaHelper helper = request.getB2buaHelper();
 		SipServletRequest newRequest = null;
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		
 		SipURI fromURI 	= (SipURI) request.getFrom().getURI();
+		
 		SipURI toURI 	= (SipURI) request.getTo().  getURI();
 		SipURI newSipToUri = toURI;
 		SipURI contactURI = null;
@@ -127,14 +133,15 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			message.setTarget(Message.TARGET_MZ);
 			// Must create Leg to MZ based on router info
 			try {
+				
 				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
-						request.getTransport());
+						request.getInitialTransport());
 				outBoundInterface = connector.getOutboundInterface();
-				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
+				contactURI = routeManager.getContactAddress(fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
 				contactURI.setTransportParam(connector.getTransport().toString());
 				
 
-			} catch (NoRouteToHostException e) {
+			} catch (Exception e) {
 				LOG.error("ERROR", e);
 			}
 
@@ -159,7 +166,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			try {
 				location = locationManager.getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
 				outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
-				contactURI = routeManager.getContactAddress(fromURI.getUser(), outBoundInterface);
+				contactURI = routeManager.getContactAddress(fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
 				contactURI.setTransportParam(location.getTransport());
 		
 				message.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
@@ -248,13 +255,16 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				
 				
 			} else {
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("NOT Initial Request " + request.getMethod());
-				}
+				
 				
 				SipSession session = request.getSession();
 				SipSession linkedSession = helper.getLinkedSession(session);
-
+				
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("NOT Initial Request " + request.getMethod());
+					LOG.trace("SES " + session.toString());
+					LOG.trace("LNK " + linkedSession.toString());
+				}
 				if(linkedSession==null) {
 					// what else can I do?
 					LOG.warn("No linked session for request "+request.getMethod());
@@ -262,7 +272,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				}
 				
 				if (request.getMethod().equals("BYE")) {		
-					newRequest = linkedSession.createRequest("BYE");		
+					newRequest = linkedSession.createRequest("BYE");
+					
 				} 
 				/*
 				 * Reinvites

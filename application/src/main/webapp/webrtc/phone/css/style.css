@@ -48,7 +48,7 @@
 }
 
 body {
-  background-color: #2196F2;
+  background-color: #a9ff53;
   font-family: Lato;
   font-weight: 400;
   letter-spacing: 1px;
@@ -72,7 +72,16 @@ body {
   margin: auto;
   box-shadow: 0 30px 35px -25px black;
   animation: showPad 1s ease forwards 1;
+  pointer-events: all;
+  
 }
+
+.pad.disable {
+  pointer-events: none;
+  background-color: #232000
+
+}
+
 .pad .dial-pad .contact {
   width: 60%;
   position: relative;
@@ -114,6 +123,19 @@ body {
   color: #FDFDFD;
   margin-top: 12px;
 }
+.pad .log {	
+  text-align: center;
+  font-size: 10px;
+  color: #FDFDFD;
+  margin-top: 2px;
+}
+.pad .call-pad .log {	
+  text-align: center;
+  font-size: 10px;
+  color: #FDFDFD;
+  margin-top: 2px;
+}
+
 .pad .dial-pad .contact .contact-info .contact-position {
   font-style: italic;
   color: #AEAEAE;
@@ -216,6 +238,7 @@ body {
   height: 50px;
 }
 .pad .dial-pad .digits .dig .sub-dig {
+  
   font-size: 8px;
   font-weight: 300;
   position: relative;
@@ -245,8 +268,7 @@ body {
 .pad .call-pad {
   opacity: 0;
   height: 0px;
-  pointer-events: none;
-  background-image: url(../img/call_Background.png);
+  background-image: url(../img/background.png);
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-position: center center;
@@ -256,11 +278,13 @@ body {
   left: 0px;
   top: 0px;
   transition: opacity 0.3s ease;
+  pointer-events: all;
+
 }
 .pad .call-pad.in-call {
   height: 100%;
   opacity: 1;
-  pointer-events: all;
+  
 }
 .pad .call-pad .pulsate {
   opacity: 0;
@@ -344,6 +368,7 @@ body {
   position: absolute;
 }
 .pad .call-pad .ca-buttons {
+  pointer-events: none;
   width: 70%;
   margin-left: 15%;
 }
@@ -352,13 +377,19 @@ body {
   width: 60px;
   height: 60px;
   background-color: rgba(255, 255, 255, 0.3);
+#  background-color: #3DE066;
   border-radius: 100%;
   position: relative;
   margin-bottom: 40px;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 55% auto;
+cursor: pointer;
 }
+.pad .call-pad .ca-buttons .ca-b-single.clicked {
+  animation: pulse-green linear 0.5s 1;
+}
+
 .pad .call-pad .ca-buttons .ca-b-single:nth-child(3n-1) {
   margin-left: calc(100% - 230px);
   margin-right: calc(100% - 230px);

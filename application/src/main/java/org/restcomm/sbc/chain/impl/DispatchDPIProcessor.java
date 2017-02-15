@@ -76,13 +76,19 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 						return r;
 					} catch (Rel100Exception e) {
 						LOG.error("rel100 not supported!");
+						
+					} catch (RuntimeException e) {
+						LOG.error("!"+ e.getMessage());
 					}
 				}
 				
 			}
 			m.send();
 		} catch (IOException e) {
-			LOG.error(e.getMessage());
+			LOG.error(e.getMessage(), e);
+		
+		} catch (RuntimeException e) {
+			LOG.error("!"+e.getMessage());
 		}
 		
 		return m;

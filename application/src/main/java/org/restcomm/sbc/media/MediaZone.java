@@ -60,7 +60,6 @@ public class MediaZone  {
 	protected int logCounter=0;
 	
 	protected boolean running;
-	protected boolean ready;
 	protected boolean suspended;
 	
 	protected MediaZone mediaZonePeer;
@@ -116,15 +115,12 @@ public class MediaZone  {
 		//socket.setSoTimeout(60000);	
 		proxyAddress=address.getAddress();
 		
-		// first chance
-		if(!isReady()) {
-			if(ready=checkReady()) {
-				// Ready to start
-				this.fireProxyReadyEvent();
-			}
+		if(checkReady()) {	
+			this.fireProxyReadyEvent();	
 		}
-
-		
+		else {
+			this.fireProxyFailedEvent();
+		}
 	}
 	
 	private synchronized boolean checkReady() {
@@ -136,10 +132,6 @@ public class MediaZone  {
 			return false;
 		
 		return true;
-	}
-	
-	private boolean isReady() {
-		return ready;
 	}
 	
 	
@@ -154,6 +146,10 @@ public class MediaZone  {
 	
 	protected void fireProxyReadyEvent() {
 		controller.getMediaSession().fireMediaReadyEvent(this);
+	}
+	
+	protected void fireProxyFailedEvent() {
+		controller.getMediaSession().fireMediaFailedEvent(this);
 	}
 	
 	public int getOriginalRtpPort() {
@@ -182,7 +178,7 @@ public class MediaZone  {
 			return;
 		}
 		
-		if(!isReady()) {
+		if(!checkReady()) {
 			LOG.warn("Media Zone could not stablish proper routes, should dismiss? "+this.toPrint());
 			
 		}
@@ -218,12 +214,14 @@ public class MediaZone  {
 		suspended=false;
 	}
 
-	public void finalize() throws IOException {
-		if(LOG.isInfoEnabled()) {
-			LOG.info("Finalizing mediaZone "+this.toPrint());
-		}
+	public void finalize()  {
 		//ensure not traffic
 		setRunning(false);
+				
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Finalizing mediaZone "+this.toPrint());
+		}
+		
 		
 		if(mediaZonePeer!=null) {
 			setRunning(false);
@@ -306,6 +304,7 @@ public class MediaZone  {
 			LOG.warn("--->[PayloadType ?]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
 		}
 		
+		packetsSentCounter++;
 					
 		socket.send(dgram);	
 		
@@ -334,6 +333,8 @@ public class MediaZone  {
 			RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
 			LOG.trace("<---[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");		
 		}
+		
+		packetsRecvCounter++;
 			
 		return dgram;
 		
@@ -347,12 +348,12 @@ public class MediaZone  {
 			mediaZone.setMediaZonePeer(this);
 		}
 		// first chance
-		if(!isReady()) {
-			if(ready=checkReady()) {
-				// Ready to start
-				this.fireProxyReadyEvent();
-			}
+		
+		if(checkReady()) {
+			// Ready to start
+			this.fireProxyReadyEvent();
 		}
+		
 	}
 	
 	public boolean isAttached() {
@@ -365,8 +366,7 @@ public class MediaZone  {
 			while(isRunning())	{
 				if(isSuspended()){
 					try {
-						Thread.sleep(300);
-						Thread.yield();
+						Thread.sleep(50);
 					} catch (InterruptedException e) {
 						continue;
 					}
@@ -375,26 +375,36 @@ public class MediaZone  {
 				try {
 					send(receive());	
 				} catch (Exception e) {
-					LOG.warn("("+MediaZone.this.toPrint()+") "+e.getMessage());
-					
+					if(!isRunning()||!mediaZonePeer.isRunning())
+						return;
+					//LOG.error("("+MediaZone.this.toPrint()+") "+e.getMessage());
+					continue;
+					/*
 					try {
 						finalize();
 					} catch (Throwable e1) {
 						LOG.error("Cannot finalize stream!");
 					}
 					break;
-					
+					*/
 				}		
 			}	
 		}	
 	}
 	
 	public boolean isStreaming() {
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("Packets stats on "+this.toPrint());
+			LOG.trace("Packets total/sent "+packetsSentCounter+"/"+lastPacketsSentCounter);
+			LOG.trace("Packets total/recv "+packetsRecvCounter+"/"+lastPacketsRecvCounter);
+		}
 		if(packetsSentCounter>lastPacketsSentCounter &&
-		   packetsRecvCounter>lastPacketsRecvCounter) {
+		   packetsRecvCounter>lastPacketsRecvCounter &&
+		   packetsSentCounter>0 &&
+		   packetsRecvCounter>0) {
 				lastPacketsSentCounter=packetsSentCounter;
 				lastPacketsRecvCounter=packetsRecvCounter;	
-    	    return true; 	
+				return true; 	
        }
        else {
     	   return false;   

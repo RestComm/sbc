@@ -121,20 +121,12 @@ public class CallManager  {
 			case COMPLETED:
 				this.fireCallReleasedEvent(call);
 				this.fireCallCompletedEvent(call);
-				try {
-					call.getMediaSession().finalize();
-				} catch (IOException e) {
-					LOG.error("Cannot destory Media on finalization",e);
-				}
+				call.getMediaSession().finalize();	
 				break;
 			case FAILED:
 				this.fireCallRejectedEvent(call);
-				this.fireCallFailedEvent(call);
-				try {
-					call.getMediaSession().finalize();
-				} catch (IOException e) {
-					LOG.error("Cannot destory Media on finalization",e);
-				}
+				this.fireCallFailedEvent(call);	
+				call.getMediaSession().finalize();	
 				break;
 			case RINGING:
 				this.fireCallRingingEvent(call);

@@ -94,6 +94,19 @@ public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements Pro
 	    }
 		SipServletMessage m=(SipServletMessage) message.getContent();
 		
+		/*
+		 * Check just initial requests
+		 */
+		
+		if(m instanceof SipServletRequest) {
+			if(!((SipServletRequest) m).isInitial()) {
+				return m;
+			}
+		}
+		else {
+			return m;
+		}
+		
 		String userAgent=m.getHeader("User-Agent");
 		
 		userAgent=(userAgent==null||"".equals(userAgent.trim()))?"Anonymous":userAgent;
@@ -115,6 +128,7 @@ public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements Pro
 				SipServletResponse response = request.createResponse(405, "Method not allowed");
 				message.setContent(response);	
 				message.unlink();
+				
 				
 			}
 			

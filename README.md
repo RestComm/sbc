@@ -18,6 +18,7 @@ SBCs commonly maintain full session state and offer the following functions:
   * Protocol translations between SIP, SIP Over WebSockets
 * Quality of service – the QoS policy of a network and prioritization of flows is usually implemented by the SBC. It can include such functions as:
   * Traffic policing
+  * Registration throttling
   * Resource allocation
   * Rate limiting
   * Call admission control
@@ -26,6 +27,8 @@ SBCs commonly maintain full session state and offer the following functions:
   * emergency calls prioritization and
   * lawful interception
 * Media services – many of the new generation of SBCs also provide built-in digital signal processors (DSPs) to enable them to offer border-based media control and services such as:
+  * Media encoding/decoding (SRTP/RTP)
+  * WEBRTC termination and pass-thru
   * DTMF relay and interworking
   * Media transcoding
   * Tones and announcements
@@ -38,7 +41,7 @@ Architecture
 
 Java based and Follows RFC 5853 and built upon a B2BUA architecture (NAT & internal topology hiding)
 
-SBC is built on [RestComm SIP Servlets](https://github.com/RestComm/sip-servlets) and [RestComm Media Server](https://github.com/RestComm/mediaserver).
+SBC is built on [RestComm SIP Servlets](https://github.com/RestComm/sip-servlets).
 
 Downloads
 ========
