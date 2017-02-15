@@ -138,8 +138,10 @@ public class Monitor {
 				case APPLY:
 					status=ScriptDelegationService.runBanScript(entry.getIpAddress());
 					if(status==0) {
-						entry.setAction(Action.NONE);
+						
+						entry=entry.setAction(Action.NONE);
 						blackListDao.updateBanList(entry);		
+						
 					}
 					else {
 						LOG.error("Cannot execute BlackList adding!, operation rollback");
@@ -170,7 +172,7 @@ public class Monitor {
 				case APPLY:
 					status=ScriptDelegationService.runAllowScript(entry.getIpAddress());
 					if(status==0) {
-						entry.setAction(Action.NONE);
+						entry=entry.setAction(Action.NONE);
 						whiteListDao.updateBanList(entry);		
 					}
 					else {
