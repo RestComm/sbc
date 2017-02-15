@@ -206,7 +206,7 @@ public class Connector {
 	}
 
 	public String toPrint() {
-		return "["+NetworkManager.getIpAddress(point)+":"+transport+":"+port+"]"+point+"/"+outboundInterface.toString()+":"+state;
+		return "["+NetworkManager.getIpAddress(point)+":"+transport+":"+port+"] "+point+"/"+outboundInterface.toString()+":"+state;
 	}
 
 	public InetSocketAddress getOutboundInterface() {

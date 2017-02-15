@@ -108,20 +108,39 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 	
 	private void processByeRequest(SIPMutableMessage message)  {
 		SipServletRequest request=(SipServletRequest) message.getContent();
+		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Got Request BYE: "	+ request.getMethod());	
 		}
+		/*
 		SipServletResponse response = request.createResponse(200);
 		try {
 			response.send();
 		} catch (IOException e) {
 			LOG.error("",e);
 		}
-		
+		*/
 		
 	}
 	
 	private void processAckRequest(SIPMutableMessage message)  {
+		
+		
+	}
+	
+	private void processPrackRequest(SIPMutableMessage message)  {	
+		SipServletRequest request=(SipServletRequest) message.getContent();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Got Request PRACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());	
+		}
+				
+		SipServletResponse ok = request.createResponse(SipServletResponse.SC_OK);
+		
+		try {
+			ok.send();
+		} catch (IOException e) {
+			LOG.error("",e);
+		}	
 		
 		
 	}
@@ -210,7 +229,6 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
 		
-		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> doProcess()");
 	    }
@@ -222,6 +240,8 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 				processByeRequest(m);
 			else if(sm.getMethod().equals("ACK"))
 				processAckRequest(m);
+			else if(sm.getMethod().equals("PRACK"))
+				processPrackRequest(m);
 			else if(sm.getMethod().equals("CANCEL"))
 				processCancelRequest(m);
 			else if(sm.getMethod().equals("INFO"))

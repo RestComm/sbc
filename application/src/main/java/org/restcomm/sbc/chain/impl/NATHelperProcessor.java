@@ -39,7 +39,6 @@ import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.managers.LocationManager;
 import org.apache.commons.net.util.SubnetUtils;
-import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 
 
 
@@ -136,37 +135,37 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		SipURI toURI 	= (SipURI) request.getTo().getURI();
 		
 		
-		
-		/*
-		 * If the request goes to DMZ and it is not inital
-		 * it means that the original request came from a 
-		 * previously registered user.
-		 * has to patch NATed routes to reach the endpoint.
-		 */
-		if(message.getDirection()==Message.SOURCE_MZ){
-			if(!request.isInitial()) {
+		if(!request.isInitial()) {
+			/*
+			 * If the request goes to DMZ and it is not inital
+			 * it means that the original request came from a 
+			 * previously registered user.
+			 * has to patch NATed routes to reach the endpoint.
+			 */
+			if(message.getDirection()==Message.SOURCE_MZ) {
 				
-				Location location = null;
-				try {
-					location = locationManager.getLocation(toURI.getUser(), ConfigurationCache.getDomain());
-				} catch (LocationNotFoundException e) {
-					LOG.error("User not found!",e);
-					return;
-				}
-				if(isRoutedAddress(request.getRemoteHost())){
-					if(LOG.isTraceEnabled()) {
-						LOG.trace("RouteAddress "+location.getHost()+" MUST not be fixed "+location.getHost());
+					Location location = null;
+					try {
+						location = locationManager.getLocation(toURI.getUser(), ConfigurationCache.getDomain());
+					} catch (LocationNotFoundException e) {
+						LOG.error("User not found!",e);
+						return;
 					}
-					return;
-				}
-				toURI.setHost(location.getHost());
-				toURI.setPort(location.getPort());
-				request.setRequestURI(toURI);
-				if(LOG.isTraceEnabled()){ 
-					LOG.trace("Patching NATed Contact requestURI       : "+toURI.toString());
-				}
+					if(isRoutedAddress(request.getRemoteHost())){
+						if(LOG.isTraceEnabled()) {
+							LOG.trace("RouteAddress "+location.getHost()+" MUST not be fixed "+location.getHost());
+						}
+						return;
+					}
+					toURI.setHost(location.getHost());
+					toURI.setPort(location.getPort());
+					toURI.setTransportParam(location.getTransport());
+					request.setRequestURI(toURI);
+					if(LOG.isTraceEnabled()){ 
+						LOG.trace("Patching NATed Contact requestURI: "+toURI.toString());
+					}
 			}
-		
+			
 		}
 
 		message.setContent(request);		

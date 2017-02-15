@@ -108,12 +108,16 @@ public class RouteManager {
 		return sipFactory.createAddress(contactUri);
 	}
 	
-	public SipURI getContactAddress(String user, InetSocketAddress address) throws NoRouteToHostException {
+	public SipURI getContactAddress(String user, String transport, InetSocketAddress address) throws NoRouteToHostException {
 		
 		SipFactory sipFactory = ConfigurationCache.getSipFactory();
 		SipURI contactUri = sipFactory.createSipURI(user, address.getHostString());
+		if(transport!=null&&!"".equals(transport.trim())) {
+			contactUri.setTransportParam(transport);
+		}
 		
 		contactUri.setPort(address.getPort());
+		
 		
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("from-Outbound-Intf  "+address.toString());
@@ -168,105 +172,16 @@ public class RouteManager {
 		return connector;
 	}
 	
-	/*
-	
-	public Connector getRouteToDMZ(SipServletMessage sourceMessage) throws NoRouteToHostException {
-		String sourceHost=sourceMessage.getLocalAddr();
-		String sourceTransport=sourceMessage.getTransport();
-		int sourcePort=sourceMessage.getLocalPort();
-		if(sourceTransport==null) {
-			// implicit transport
-			sourceTransport="UDP";
-		}
-		if(sourcePort<0) {
-			// implicit port
-			sourcePort=5060;
-		}
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("oo Getting DMZ Connector for host="+sourceHost+" transport="+sourceTransport+" port="+sourcePort);
-		}
-		Connector connector=mzTable.get(sourceHost+":"+sourceTransport.toUpperCase()+":"+sourcePort);
-		if(connector==null)
-			throw new NoRouteToHostException("No target Connector for "+sourceHost+":"+sourceTransport+":"+sourcePort);
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("ooo "+connector.toPrint());
-		}
-		return connector;
-	}
-	*/
-	
-	/*
-	public String getTargetTransport(SipServletMessage sourceMessage) throws NoRouteToHostException, LocationNotFoundException {
-		String user=sourceMessage.getHeader("To");
-		int sourcePort=sourceMessage.getLocalPort();
-		String sourceTransport=sourceMessage.getTransport();
-		
-		if(isFromDMZ(sourceMessage)) {
-			// Ought to find a route
-			Connector connector=dmzTable.get(sourceTransport.toUpperCase()+":"+sourcePort);
-			
-			SipURI sipUri = ConfigurationCache.getSipFactory().createSipURI(user, ConfigurationCache.getTargetHost());
-			sipUri.setTransportParam(connector.getTransport().toString());
-			sipUri.setPort(connector.getPort());
-			return connector.getTransport().toString();
-		}
-		// MZ messages are routed via Location data
-		SipURI uri;
-		Location location=null;
-		try {
-			uri = (SipURI) sourceMessage.getAddressHeader("To").getURI();
-			location=locationManager.getLocation(user, uri.getHost());
-		} catch (ServletParseException e) {
-			LOG.error("ERROR", e);
-		} 
-		
-		return location.getTransport();
-		
-	}
-	
-	public SipURI getTargetUri(SipServletMessage sourceMessage) throws NoRouteToHostException, LocationNotFoundException {
-		
-		String user=sourceMessage.getHeader("To");
-		int sourcePort=sourceMessage.getLocalPort();
-		String sourceTransport=sourceMessage.getTransport();
-		
-		if(isFromDMZ(sourceMessage)) {
-			// Ought to find a route
-			Connector connector=dmzTable.get(sourceTransport+":"+sourcePort);
-			
-			SipURI sipUri = ConfigurationCache.getSipFactory().createSipURI(user, ConfigurationCache.getTargetHost());
-			sipUri.setTransportParam(connector.getTransport().toString());
-			sipUri.setPort(connector.getPort());
-			return sipUri;
-		}
-		// MZ messages are routed via Location data
-		SipURI uri;
-		Location location=null;
-		try {
-			uri = (SipURI) sourceMessage.getAddressHeader("To").getURI();
-			location=locationManager.getLocation(user, uri.getHost());
-		} catch (ServletParseException e) {
-			LOG.error("ERROR", e);
-		} 
-		SipURI sipUri = ConfigurationCache.getSipFactory().createSipURI(user, location.getHost());
-		sipUri.setTransportParam(location.getTransport());
-		return sipUri;
-		
-	}
-	*/
-	
-	
 	public static boolean isFromDMZ(SipServletMessage message) {
 		
 		String host =message.getLocalAddr();
-		int port =message.getLocalPort();
-		String transport=message.getTransport();
+		boolean isFromDMZ=NetworkManager.getTag(host)==Tag.DMZ?true:false;
 		
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("Message "+message.getMethod()+" comming from "+host+":"+port+"/"+transport);		
+			LOG.trace("Message "+message.getMethod()+" comming from "+(isFromDMZ?"DMZ":"MZ")+"@"+host);		
 		}
 		
-		return NetworkManager.getTag(host)==Tag.DMZ?true:false;	
+		return isFromDMZ;	
 		
 	}
 	
