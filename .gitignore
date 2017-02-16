@@ -4,7 +4,13 @@
 # Class files
 *.class
 
+# Log files
+*.log
+
 # Eclipse settings
+.classpath
+docs/.classpath
+
 .settings
 .project
 
@@ -12,6 +18,10 @@
 *.jar
 *.war
 *.ear
+*.zip
+
+# Exceptions Files #
+!release/*.jar
 
 # Class files
 *.class
