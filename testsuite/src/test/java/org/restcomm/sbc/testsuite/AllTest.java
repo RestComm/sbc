@@ -36,7 +36,8 @@ import org.restcomm.sbc.testsuite.rest.CallsEndpointTest;
 				SuspectActivityCacheTest.class,
 				AccountsEndpointTest.class,
 				CallsEndpointTest.class,
-				BanListsEndpointTest.class})
+				BanListsEndpointTest.class
+				})
 
 public class AllTest {
 

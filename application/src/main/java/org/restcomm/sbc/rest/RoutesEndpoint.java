@@ -23,11 +23,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.configuration.Configuration;
-import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.RoutesDao;
-import org.restcomm.sbc.managers.NetworkManager;
 import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
@@ -82,7 +80,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
 	protected RouteListConverter listConverter;
 	protected Provider jmxManager;
 
-	private static transient Logger LOG = Logger.getLogger(RoutesEndpoint.class);
+	//private static transient Logger LOG = Logger.getLogger(RoutesEndpoint.class);
     public RoutesEndpoint() {
         super();
     }

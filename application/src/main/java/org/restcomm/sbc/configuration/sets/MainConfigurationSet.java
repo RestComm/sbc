@@ -44,7 +44,7 @@ public class MainConfigurationSet extends ConfigurationSet {
     private final SslMode sslMode;
     private final int responseTimeout;
     private static final String USE_HOSTNAME_TO_RESOLVE_RELATIVE_URL_KEY = "http-client.use-hostname-to-resolve-relative-url";
-    private static final String HOSTNAME_TO_USE_FOR_RELATIVE_URLS_KEY = "http-client.hostname";
+   // private static final String HOSTNAME_TO_USE_FOR_RELATIVE_URLS_KEY = "http-client.hostname";
     private static final boolean RESOLVE_RELATIVE_URL_WITH_HOSTNAME_DEFAULT = true;
     private final boolean useHostnameToResolveRelativeUrls;
     private final String hostname;

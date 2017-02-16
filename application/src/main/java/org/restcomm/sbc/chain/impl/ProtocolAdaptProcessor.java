@@ -67,7 +67,7 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	
 	
 	private void processResponse(Message message) {
-		SipServletResponse response=(SipServletResponse) message.getContent();
+		//SipServletResponse response=(SipServletResponse) message.getContent();
 		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processResponse()");
@@ -88,7 +88,7 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	}
 
 	private void processRequest(Message message) {
-		SipServletRequest request=(SipServletRequest) message.getContent();
+		//SipServletRequest request=(SipServletRequest) message.getContent();
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processRequest()");
 	          LOG.trace(message.toString());

@@ -5,7 +5,7 @@ If you don't use the hosted version of Restcomm, then you will need to install R
 
 == Binary Installation and Start
 
-* <<SBC - Installing from GitHub.adoc#restcomm-github-install,Installing SBC from GitHub>>
+
 * <<Running SBC Binary on a Linux Server.adoc#restcomm-linux,Running SBC Binary on a Linux Server>>
 * <<Starting SBC.adoc#start-sbc,Starting SBC>>
 

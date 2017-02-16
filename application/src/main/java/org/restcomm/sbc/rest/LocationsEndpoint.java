@@ -228,9 +228,8 @@ public abstract class LocationsEndpoint extends SecuredEndpoint {
     	Account account=userIdentityContext.getEffectiveAccount();
         secure(account, "RestComm:Delete:Locations");
         
-        Location location;
 		try {
-			location = locationManager.getLocation(aor);
+			locationManager.getLocation(aor);
 		} catch (LocationNotFoundException e) {
 			return status(NOT_FOUND).build();
 

@@ -21,7 +21,6 @@
 package org.restcomm.sbc.media;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.DatagramChannel;
@@ -33,9 +32,7 @@ import org.mobicents.media.io.ice.IceHandler;
 import org.mobicents.media.io.ice.events.IceEventListener;
 import org.mobicents.media.io.ice.events.SelectedCandidatesEvent;
 import org.mobicents.media.server.impl.rtp.RtpListener;
-import org.mobicents.media.server.impl.rtp.statistics.RtpStatistics;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
-import org.mobicents.media.server.io.network.UdpManager;
 import org.mobicents.media.server.io.network.channel.MultiplexedChannel;
 import org.mobicents.media.server.utils.Text;
 import org.restcomm.sbc.media.dtls.DtlsHandler;
@@ -57,9 +54,9 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 
 	// Protocol handler pipeline
 	private static final int STUN_PRIORITY = 3; // a packet each 400ms
-	private static final int RTCP_PRIORITY = 2; // a packet each 5s
-	private static final int DTLS_PRIORITY = 1; // only for a handshake
-	private final static int PORT_ANY = -1;
+//	private static final int RTCP_PRIORITY = 2; // a packet each 5s
+//	private static final int DTLS_PRIORITY = 1; // only for a handshake
+//	private final static int PORT_ANY = -1;
 	
 	private RtcpHandler rtcpHandler;
 	private DtlsHandler dtlsHandler;

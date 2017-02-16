@@ -23,7 +23,6 @@ package org.restcomm.sbc.adapter;
 import java.io.IOException;
 import java.net.NoRouteToHostException;
 import javax.servlet.sip.SipServletMessage;
-import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.io.sdp.SdpException;
@@ -32,11 +31,7 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.media.MediaController;
 import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
-
-
-
 
 
 /**

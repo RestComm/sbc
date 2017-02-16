@@ -19,7 +19,6 @@
  */
 package org.restcomm.sbc.media;
 
-import org.mobicents.media.io.ice.IceCandidate;
 import org.mobicents.media.io.ice.IceComponent;
 import org.mobicents.media.server.io.sdp.MediaProfile;
 import org.mobicents.media.server.io.sdp.SessionDescription;
@@ -253,7 +252,7 @@ public class SdpFactory {
 		
 		return md;
 	}
-	
+	/*
 	private static CandidateAttribute processCandidate(IceCandidate candidate) {
 		CandidateAttribute candidateSdp = new CandidateAttribute();
 		candidateSdp.setFoundation(candidate.getFoundation());
@@ -271,7 +270,7 @@ public class SdpFactory {
 		candidateSdp.setGeneration(0);
 		return candidateSdp;
 	}
-	
+	*/
 	private static CandidateAttribute processHostCandidate(MediaChannel candidate, short componentId) {
 	       CandidateAttribute candidateSdp = new CandidateAttribute();
 	        candidateSdp.setFoundation("11111111");

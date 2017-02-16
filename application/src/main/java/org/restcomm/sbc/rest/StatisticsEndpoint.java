@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.configuration.Configuration;
-import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.StatisticsDao;
@@ -76,7 +75,7 @@ public abstract class StatisticsEndpoint extends SecuredEndpoint {
     protected String instanceId;
 	protected StatisticsListConverter listConverter;
 	
-	private static transient Logger LOG = Logger.getLogger(StatisticsEndpoint.class);
+	//private static transient Logger LOG = Logger.getLogger(StatisticsEndpoint.class);
     public StatisticsEndpoint() {
         super();
     }

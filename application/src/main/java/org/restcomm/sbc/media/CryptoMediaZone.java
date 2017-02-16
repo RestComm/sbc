@@ -56,7 +56,8 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	private AudioChannel audioChannel;
 	private IceAuthenticator iceAuthenticator;
     private RtcpChannel rtcpChannel;
-    private RtpChannel rtpChannel;
+    @SuppressWarnings("unused")
+	private RtpChannel rtpChannel;
     private IceHandler stunHandler;
     private DtlsHandler dtlsHandler;
     private Packet packetType;
@@ -79,6 +80,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	}
 	
 	
+	@SuppressWarnings("deprecation")
 	private void attachChannel() {
 		
 		try {
