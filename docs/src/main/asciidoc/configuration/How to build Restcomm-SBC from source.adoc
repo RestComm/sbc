@@ -30,7 +30,7 @@ This command will create a new directory called sbc. Go to this directory enteri
 
 [source,bash]
 ----
- cd Restcomm-SBC
+ cd sbc
 ----
 
 The content of the directory should contain the following:
@@ -46,16 +46,17 @@ In this tutorial, the script below is stored in the file *restcomm-sbc-build.sh*
 [source,bash]
 ----
 #!/bin/bash
-export RESTCOMM_HOME=/home/yuliachornobrivets/Restcomm-SBC
-export MAJOR_VERSION_NUMBER=7.6
-export BUILD_NUMBER=0
+export SBC_HOME=/root/sbc
+export MAJOR_VERSION_NUMBER=1.0
+export BUILD_NUMBER=356
 
-export WORKSPACE=$RESTCOMM_HOME
+export WORKSPACE=$SBC_HOME
 mkdir $WORKSPACE/dependencies
 export DEPENDENCIES_HOME=$WORKSPACE/dependencies
 
 
-ant release -f ./release/build.xml -Drestcomm.release.version=$MAJOR_VERSION_NUMBER.$BUILD_NUMBER -Drestcomm.branch.name=restcomm-release-$MAJOR_VERSION_NUMBER.$BUILD_NUMBER -Dcheckout.restcomm.dir=$RESTCOMM_HOME -Dworkspace.restcomm.dir=$RESTCOMM_HOME/restcomm -Dcheckout.dir=$DEPENDENCIES_HOME
+ant release -f ./release/build.xml -Dsbc.release.version=$MAJOR_VERSION_NUMBER.$BUILD_NUMBER -Dsbc.branch.name=sbc-release-$MAJOR_VERSION_NUMBER.$BUILD_NUMBER -Dcheckout.sbc.dir=$SBC_HOME -Dworkspace.sbc.dir=$SBC_HOME -Dcheckout.dir=$DEPENDENCIES_HOME
+
 ----
 
 * Change the restcomm-sbc-build.sh permission to make it executable as follows
@@ -64,10 +65,6 @@ ant release -f ./release/build.xml -Drestcomm.release.version=$MAJOR_VERSION_NUM
 ----
 chmod +x ./restcomm-sbc-build.sh
 ----
-The RestComm directory should now display the following content:
-
-
-image::images/4.png[]
 
 * Now, run the build script as follows:
 [source,bash]
@@ -79,24 +76,23 @@ This may take a while to build. If the build is successful, you should see this 
 
 [source,bash]
 ----
-make-final-zip:
 
-    [zip] Building zip: /home/username/Restcomm-SBC/release/SBC-JBoss-AS7-1.0.0.zip
+make-final-zip:
+      [zip] Building zip: /root/sbc/SBC-Tomcat7-1.0.356.zip
 
 release:
 
 BUILD SUCCESSFUL
-Total time: 42 minutes 11 seconds
+Total time: 1 minute 46 seconds
+
 ----
 * At the root of the SBC directory you should see:
 
 
 image::images/2.png[]
-* Go to the *release* directory. You will see the following files:
 
-image::images/3.png[]
 
-Note that the zip file called *SBC-JBoss-AS7-1.0.0* is the binary for JBoss container.
+Note that the zip file called *SBC-Tomcat7-1.0.356.zip* is the binary for Tomcat container.
 You can copy this zip file into a directory on your computer and unzip the content.
 
 Here you can read the detailed information on <<Starting   SBC.adoc#configure-restcomm-iP-information-and-text-to-speech,Starting Restcomm-SBC>>.

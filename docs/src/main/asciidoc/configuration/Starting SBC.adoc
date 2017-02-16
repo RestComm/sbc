@@ -15,40 +15,176 @@ _If you you have already installed Restcomm SBC you can <<Configure Restcomm IP 
 
 [source,bash]
 ----
-wget https://mobicents.ci.cloudbees.com/job/RestComm/lastSuccessfulBuild/artifact/SBC-Tomcat-<xxx>.zip
+wget https://mobicents.ci.cloudbees.com/job/RestComm-SBC/lastSuccessfulBuild/artifact/SBC-Tomcat7-<xxx>.zip
 ----
 
 * Unzip the binary to a local directory. It should be similar to this one:
-*SBC-Tomcat-1.0.869.zip*.
+*SBC-Tomcat7-1.0.869.zip*.
   Further we shall refer to this above SBC directory as the *$SBC_HOME*.
+  
+=== Configuring your SIP domain
+
+edit the main RestComm-SBC configuration file located in  $SBC_HOME/webapps/restcomm-sbc/WEB-INF/conf/sbc.xml
+
+and you will find the domain parameter:
+
+[source,bash]
+----
+ <domain>cloud.eolos.la</domain>
+----
+Change it to your SIP target chosen domain.
+
+After that configure the IP/Host target of your SIP termination service on the MZ
+
+[source,bash]
+----
+<militarized-zone-target>
+    <ip-address>192.168.120.2</ip-address>
+    <failover-ip-address>192.168.120.96</failover-ip-address>
+</militarized-zone-target>
+
+----
+
+
+
+[source,bash]
+----
+  
+cd $SBC-HOME/bin
+
+and launch the SBC container by typing:
+
+./catalina.sh start
+
+after that, look at the logs to confirm everything started gracefully.
+
+tail -f $SBC_HOME/logs/catalina.out
+
+
+----
+
 
 [ip-information]
 == Configure Restcomm SBC IP information
 === Add your IP address
-_A single host may have multiple IP addresses.
-To get Restcomm working properly it is important to indicate the right IP address.
-For local testing you can use localhost address (e.g. 127.0.0.1), in real working environment you will
-need to use your public IP address._
+When RestComm-SBC has started without errors, you will be able to configure its Network interfaces.
 
-* Go to the directory *$SBC_HOME/bin/restcomm*.
-* Open the file *restcomm.conf*.
-* Go to the section *# Network configuration*. You have to indicate the following information:
+RestComm-SBC needs, at least, two phisical network interfaces. At least one for De-militarized-zone and at least one for Militarized-zone.
+
+The first step is to tag each network interface in order to declare
+what side of the SBC it will serve. You can check your available network interfaces thru the RestComm-SBC autodiscovering feature:
 
 [source,bash]
 ----
-# Network configuration
-NET_INTERFACE=''
-PRIVATE_IP=''
-SUBNET_MASK=''
-NETWORK=''
-BROADCAST_ADDRESS=''
+curl -X GET  http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints
 ----
-==== Obtaining the network interface
+
+After executing this command you will get the following output:
+
+[source,bash]
+----
+<RestcommResponse>
+  <NetworkPoints>
+    <NetworkPoint>
+      <Id>eth1-0</Id>
+      <MacAddress>94DE80228FC2</MacAddress>
+      <Description>eth1</Description>
+      <Tag>MZ</Tag>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </NetworkPoint>
+    <NetworkPoint>
+      <Id>eth0-0</Id>
+      <MacAddress>C4E98402F438</MacAddress>
+      <Description>eth0</Description>
+      <Tag>DMZ</Tag>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </NetworkPoint>
+  </NetworkPoints>
+</RestcommResponse>
+----
+
+NOTE: The obtained list is the enumeration of all usable network interfaces installed on your system. In the case of the example, the system is equiped with 2 NICs: eth0-0 already tagged to give service to DMZ and eth1-0 already tagged to give service to MZ. In your setup you will find NICs not already tagged as IDLE.
+
+
+* Select which NIC will serve each SBC zone. As a rule of thumb, MZ is your LAN, where your SIP Service resides and Internet is your DMZ, from where untrusted endpoints will get service.
+
+* Tag your NICs, in the example:
+
+
+----
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints/ -d "Id=eth0-0" -d "Tag=DMZ"
+
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/NetworkPoints/ -d "Id=eth1-0" -d "Tag=MZ"
+----
+
+* Once each network interface is tagged we must proceed to attach desired service connectors to them. In the example we add a SIP connector for UDP service on port 5060 and a WEBRTC SIP connector on port 5083 to eth0-0: 
+
+[source,bash]
+----
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Connectors/ -d "NetworkPointId=eth0-0" -d "Transport=UDP" -d "Port=5060"
+
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Connectors/ -d "NetworkPointId=eth0-0" -d "Transport=WSS" -d "Port=5083"
+----
+
+* Now, we add a SIP connector for UDP service on port 5060  to eth1-0 pointing to the LAN: 
+
+[source,bash]
+----
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Connectors/ -d "NetworkPointId=eth1-0" -d "Transport=UDP" -d "Port=5060"
+----
+
+If we list the just created Connectors we will find its sids and the autodiscover IPs:
+
+[source,bash]
+----
+<RestcommResponse>
+  <Connectors>
+    <Connector>
+      <IpAddress>201.216.233.185</IpAddress>
+      <Sid>CNae6e420f425248d6a26948c17a9e2aaa</Sid>
+      <Port>5060</Port>
+      <NetworkPointId>eth0-0</NetworkPointId>
+      <Transport>UDP</Transport>
+      <State>UP</State>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Connector>
+    <Connector>
+      <IpAddress>192.168.120.6</IpAddress>
+      <Sid>CNae6e420f425248d6a26948c17a9e2bbb</Sid>
+      <Port>5060</Port>
+      <NetworkPointId>eth1-0</NetworkPointId>
+      <Transport>UDP</Transport>
+      <State>UP</State>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Connector>
+    <Connector>
+      <IpAddress>201.216.233.185</IpAddress>
+      <Sid>CNae6e420f425248d6a26948c17a9e2ccc</Sid>
+      <Port>5083</Port>
+      <NetworkPointId>eth0-0</NetworkPointId>
+      <Transport>WSS</Transport>
+      <State>UP</State>
+      <AccountSid>ACae6e420f425248d6a26948c17a9e2acf</AccountSid>
+    </Connector>
+  </Connectors>
+</RestcommResponse>
+----
+
+* Now, we add a couple of routes to define the traffic policy from DMZ to MZ: 
+
+[source,bash]
+----
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes/ -d "SourceConnectorSid=CNae6e420f425248d6a26948c17a9e2aaa" -d "TargetConnectorSid=CNae6e420f425248d6a26948c17a9e2bbb"
+
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/Routes/ -d "SourceConnectorSid=CNae6e420f425248d6a26948c17a9e2ccc" -d "TargetConnectorSid=CNae6e420f425248d6a26948c17a9e2bbb"
+----
+
+==== Tips on ways to obtain the network interface data
 * First you have to get the information on your network interface. Run the command:
 
 [source,bash]
 ----
- netstat -r
+ netstat -nr
 ----
 * Picture below shows sample output for the command.
 Your *network interface* you can find in the Iface column in the same row where Gateway is indicated (for example wlx60e32716068a).
@@ -58,7 +194,7 @@ One of the rows in the Destination column contains the *network address* (for ex
 
 image::images/10.png[]
 
-==== Obtaining the public IP
+==== Tips on ways to obtain the public IP
 * In order to get your public ip address you should run the following command:
 
 [source,bash]
@@ -86,44 +222,7 @@ Mask
 ----
 Bcast
 ----
-==== Network configuration
-* Insert the network configuration details of your server in the following variables:
 
-[source,bash]
-----
-# Network configuration
-NET_INTERFACE='wlx60e32716068a'
-PRIVATE_IP='172.21.0.107'
-SUBNET_MASK='255.255.255.0'
-NETWORK='172.21.0.0'
-BROADCAST_ADDRESS='172.21.0.255'
-----
-
-
-
-* Save and exit the restcomm.conf file.
-
-== Start Restcomm and Open the Admin GUI
-
-* Go to the *$RESTCOMM_HOME/bin/restcomm/* directory.
-
-* To start Restcomm and media server run the following command:
-[source,bash]
-----
-./start-restcomm.sh
-----
-
-* To see the Restcomm startup process run the following command (only works if you have screen installed):
-[source,bash]
-----
-screen -r restcomm
-----
-
-* To see the Restcomm Media Server startup process run the command:
-[source,bash]
-----
-screen -r mms
-----
 
 * Open your web browser and go to the url – *http://IP:8080*.
 Instead of "IP" you should put your IP.
@@ -131,17 +230,18 @@ Instead of "IP" you should put your IP.
 * Log in with the *administrator@company.com* username and the *RestComm* password.
 Then you should change the default password.
 
-* If you need to stop the Restcomm you need to go to *$RESTCOMM_HOME/bin/restcomm*
+* If you need to stop the Restcomm-SBC you need to go to *$SBC_HOME/bin/*
 directory and run
 [source,bash]
 ----
-./stop-restcomm.sh
+./catalina.sh stop
 ----
 == Making Test SIP Calls using the Demo Apps
 
 * Open any SIP phone of your choice.
 
+* Register to a DMZ service connector with valid credentials at your SIP backoffice.
 
-* Go to the *Contacts* and make a test call at +1234 number. You will hear the standard voice message that is 2-3 seconds long.
+* Make a test call at any valid number at your SIP backoffice.
 
 image::images/15.png[]
