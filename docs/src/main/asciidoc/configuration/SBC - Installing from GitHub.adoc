@@ -1,21 +1,20 @@
-This tutorial will take you through the steps of installing Restcomm to a GNU/Linux box using the latest release from GitHub.
+This tutorial will take you through the steps of installing SBC to a GNU/Linux box using the latest release from GitHub.
 
 
 ==Prerequisites
 ^^^^^^^^^^^^^
 
 * A Linux box with Java 1.7 or higher installed
-* Free VoiceRSS account for text to speech functionality
 
 
-==Installing Restcomm
+==Installing SBC
 ^^^^^^^^^^^^^^^^^^^
 
-* Download link:https://github.com/Restcomm/RestComm-Connect/releases/latest[Restcomm latest release] and extract it:
+* Download link:https://github.com/Restcomm/RestComm-SBC/releases/latest[Restcomm-SBC latest release] and extract it:
 +
 [source,theme:github,toolbar:1,lang:default,decode:true]
 ----
-$ unzip <mobicents restcomm release>.zip
+$ unzip <restcomm release>.zip
 ----
 * Go to link:http://www.voicerss.org and get a Text-to-Speech account. This is a free account that is required to activate Text-to-Speech in Restcomm.
 * Navigate to $RESTCOMM/bin/restcomm/restcomm.conf and set the string you got from voicerss accordingly:
