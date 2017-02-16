@@ -87,7 +87,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	    }
 		
 		SipServletRequest dmzRequest=(SipServletRequest) message.getContent();
-		SipServletRequest oRequest=(SipServletRequest) dmzRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		//SipServletRequest oRequest=(SipServletRequest) dmzRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		int expires=dmzRequest.getExpires();
 		Address contactAddress = null;
@@ -183,7 +183,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 	          LOG.trace(">> response received: \n"+mzResponse.toString());
 	         
 	    }
-		SipServletRequest oRequest=(SipServletRequest) mzResponse.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		//SipServletRequest oRequest=(SipServletRequest) mzResponse.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		
 		Location location=null;
 		

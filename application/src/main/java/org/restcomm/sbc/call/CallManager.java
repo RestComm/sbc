@@ -20,7 +20,6 @@
 
 package org.restcomm.sbc.call;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -152,9 +151,7 @@ public class CallManager  {
 	public Call getCall(String sessionId)  {
 		Call call=calls.get(sessionId);
 		if(LOG.isTraceEnabled()) {
-			if(call==null)
-				LOG.error("cannot find call for SessionID "+sessionId);
-			else
+			if(call!=null)
 				LOG.trace("call hashCode "+call.hashCode());
 		}
 		

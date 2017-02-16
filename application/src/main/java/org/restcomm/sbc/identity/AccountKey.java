@@ -15,7 +15,8 @@ import org.restcomm.sbc.bo.Account;
  */
 public class AccountKey {
 
-    private String challengedSid;
+    @SuppressWarnings("unused")
+	private String challengedSid;
     private String challengedKey;
     private Account account;    // Having this set does not mean it is verified. It just means that the (account) challengedSid exists.
     private boolean verified = false;

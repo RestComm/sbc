@@ -28,9 +28,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
-import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.bo.Account;
 
 /**
@@ -43,7 +41,7 @@ public class UserIdentityContext {
     final AccountKey accountKey;
     final Account effectiveAccount; // if oauthToken is set get the account that maps to it. Otherwise use account from accountKey
     Set<String> effectiveAccountRoles;
-    private static transient Logger LOG = Logger.getLogger(UserIdentityContext.class);
+    //private static transient Logger LOG = Logger.getLogger(UserIdentityContext.class);
 	
 
     /**

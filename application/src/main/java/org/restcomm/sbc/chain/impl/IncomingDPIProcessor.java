@@ -37,9 +37,8 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.media.MediaController;
 import org.restcomm.sbc.media.MediaSession;
-import org.restcomm.sbc.media.MediaZone;
+
 
 
 

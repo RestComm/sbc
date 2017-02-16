@@ -24,18 +24,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
-
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.tls.ProtocolVersion;
 import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.server.impl.rtp.SsrcGenerator;
-import org.mobicents.media.server.impl.rtp.crypto.AlgorithmCertificate;
-import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
-
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
 import org.mobicents.media.server.spi.ConnectionMode;
-
-
 import org.restcomm.sbc.media.dtls.DtlsConfiguration;
 import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
 
@@ -74,9 +67,11 @@ public abstract class MediaChannel {
 	private final IceAuthenticatorImpl iceAuthenticator;
 
 
+	@SuppressWarnings("unused")
 	private String originalHost;
 
 
+	@SuppressWarnings("unused")
 	private int originalPort;
 
 	/**

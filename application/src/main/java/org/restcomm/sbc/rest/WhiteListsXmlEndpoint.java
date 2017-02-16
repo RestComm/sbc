@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.restcomm.sbc.bo.BanList.Type;
+
 
 
 /**

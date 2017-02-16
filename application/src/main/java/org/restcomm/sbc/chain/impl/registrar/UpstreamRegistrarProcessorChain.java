@@ -35,7 +35,6 @@ import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.chain.impl.B2BUABuilderProcessor;
 import org.restcomm.sbc.chain.impl.UserAgentACLDPIProcessor;
-import org.restcomm.sbc.chain.impl.NATHelperProcessor;
 import org.restcomm.sbc.chain.impl.SanityCheckProcessor;
 import org.restcomm.sbc.chain.impl.ProtocolAdaptProcessor;
 

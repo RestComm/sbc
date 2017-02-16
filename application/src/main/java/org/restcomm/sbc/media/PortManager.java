@@ -21,8 +21,6 @@ package org.restcomm.sbc.media;
 
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.call.CallManager;
-import org.restcomm.sbc.managers.MessageUtil;
 
 
 /**

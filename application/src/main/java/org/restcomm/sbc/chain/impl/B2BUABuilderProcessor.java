@@ -39,11 +39,7 @@ import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TooManyHopsException;
-import javax.sip.header.ViaHeader;
-import javax.sip.message.Request;
-
 import org.apache.log4j.Logger;
-import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;

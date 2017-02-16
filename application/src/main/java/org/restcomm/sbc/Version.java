@@ -158,4 +158,9 @@ public class Version {
         }
         return null;
     }
+    
+    public static void main(String argv[]) {
+    	System.out.println(Version.getFullVersion());
+    	System.out.println(Version.getRevision());
+    }
 }
