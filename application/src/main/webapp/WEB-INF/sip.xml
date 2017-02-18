@@ -56,6 +56,18 @@
 			</pattern>
 		</servlet-mapping>
 		
+		<servlet-mapping>
+			<servlet-name>Messenger</servlet-name>
+			<pattern>
+				<or>
+					<equal>
+						<var>request.method</var>
+						<value>MESSAGE</value>
+					</equal>
+				</or>
+			</pattern>
+		</servlet-mapping>
+		
 	</servlet-selection>
 
 	<servlet>
@@ -94,6 +106,15 @@
 			org.restcomm.sbc.servlet.sip.SBCCallServlet
 		</servlet-class>
 		<load-on-startup>3</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>Messenger</servlet-name>
+		<display-name>Messenger</display-name>
+		<description>SBC Messenger.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCMessengerServlet
+		</servlet-class>
+		<load-on-startup>4</load-on-startup>
 	</servlet>
 
 </sip-app>
