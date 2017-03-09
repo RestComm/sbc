@@ -29,6 +29,7 @@ import org.infinispan.Cache;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationNotFoundException;
+import org.restcomm.sbc.bo.Sid;
 
 
 /**
@@ -58,6 +59,9 @@ public class LocationManager  {
 		return locationManager;
 	}
 	
+	public Location create(String user, String domain, String host, int port, String transport, Sid connector) {
+		return new Location(user, domain, host, port, transport, connector);
+	}
 	
 	public void register(Location location, String userAgent, String callID, int cSeq, int ttl) {
 	

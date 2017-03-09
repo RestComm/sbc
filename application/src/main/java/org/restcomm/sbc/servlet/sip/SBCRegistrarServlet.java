@@ -49,11 +49,10 @@ public class SBCRegistrarServlet extends SipServlet {
 	private Configuration configuration;
 	private SipFactory sipFactory;	
 	
-	private String routeMZIPAddress;
 	
 	private UpstreamRegistrarProcessorChain upChain;
 	private DownstreamRegistrarProcessorChain dwChain;
-	
+	private ServletConfig config;
 	private static transient Logger LOG = Logger.getLogger(SBCRegistrarServlet.class);
 	
 	@Override
@@ -62,13 +61,11 @@ public class SBCRegistrarServlet extends SipServlet {
 	          LOG.trace(">> Registart Servlet init()");
 	    }
 		super.init(servletConfig);
+		this.config=servletConfig;
 		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 		final ServletContext context = servletConfig.getServletContext();
 		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
 		ConfigurationCache.build(sipFactory, configuration);
-		
-      
-        routeMZIPAddress=ConfigurationCache.getTargetHost();
 		
 		upChain=new UpstreamRegistrarProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
@@ -81,7 +78,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	
 	@Override
 	protected void doRegister(SipServletRequest sipServletRequest) throws ServletException, IOException {
-		
+		 LOG.info("OUTB IFCES="+config.getServletContext().getAttribute("javax.servlet.sip.outboundInterfaces"));
 		 upChain.process(new SIPMutableMessage(sipServletRequest));
 		
 		

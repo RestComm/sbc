@@ -66,14 +66,13 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	}
 	
 	
-	private void processResponse(Message message) {
-		//SipServletResponse response=(SipServletResponse) message.getContent();
-		
+	private void processResponse(Message message) {		
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processResponse()");
 	          LOG.trace(message.toString());
 	          LOG.trace(message.getMetadata());
 	    }
+		
 		ProtocolAdapter adapter = null;
 		try {
 			adapter = protocolAdapterFactory.getAdapter(message.getTargetTransport());//response.getTransport());
@@ -88,7 +87,6 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	}
 
 	private void processRequest(Message message) {
-		//SipServletRequest request=(SipServletRequest) message.getContent();
 		if(LOG.isTraceEnabled()){
 	          LOG.trace(">> processRequest()");
 	          LOG.trace(message.toString());

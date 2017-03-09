@@ -29,15 +29,15 @@ import org.apache.log4j.Logger;
  * @author Henrique Rosa (henrique.rosa@telestax.com)
  * 
  */
-public class AudioChannel extends MediaChannel {
-	private static final Logger logger = Logger.getLogger(AudioChannel.class);
+public class VideoChannel extends MediaChannel {
+	private static final Logger logger = Logger.getLogger(VideoChannel.class);
 	
-	public static final String MEDIA_TYPE = "audio";
+	public static final String MEDIA_TYPE = "video";
 
-	public AudioChannel(String originalHost, int originalPort) {
+	public VideoChannel(String originalHost, int originalPort) {
 		super(MEDIA_TYPE, originalHost, originalPort);
 		if(logger.isTraceEnabled()) {
-			logger.trace("Creating AudioChannel on "+originalHost+":"+originalPort);
+			logger.trace("Creating VideoChannel on "+originalHost+":"+originalPort);
 		}
 		
 	}

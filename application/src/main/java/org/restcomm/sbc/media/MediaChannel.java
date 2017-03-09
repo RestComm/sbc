@@ -25,11 +25,13 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.DatagramChannel;
 import org.apache.log4j.Logger;
+import org.mobicents.media.io.ice.IceAuthenticator;
 import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.server.impl.rtp.SsrcGenerator;
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
 import org.mobicents.media.server.spi.ConnectionMode;
 import org.restcomm.sbc.media.dtls.DtlsConfiguration;
+import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
 import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
 
 /**
@@ -94,6 +96,7 @@ public abstract class MediaChannel {
 	protected MediaChannel(String mediaType, String originalHost, int originalPort) {
 	    // Media Session Properties
 	    this.mediaType = mediaType;
+	    
 		this.ssrc = 0L;
 		this.cname = "";
 		this.rtcpMux = false;
@@ -446,7 +449,7 @@ public abstract class MediaChannel {
 	 *            The address of the remote peer
 	 */
 	public void connectRtcp(SocketAddress remoteAddress) {
-		this.connectRtcp(remoteAddress);
+		//this.connectRtcp(remoteAddress);
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug(this.mediaType + " RTCP channel " + this.ssrc + " has connected to remote peer " + remoteAddress.toString());
@@ -575,7 +578,7 @@ public abstract class MediaChannel {
 	 *         channel.
 	 */
 	public String getIceUfrag() {
-	    return this.ice ? this.iceAuthenticator.getUfrag() : "";
+	    return this.ice ?  this.iceAuthenticator.getUfrag() : "";
 	}
 
 	/**
@@ -585,7 +588,7 @@ public abstract class MediaChannel {
 	 *         the channel.
 	 */
 	public String getIcePwd() {
-	    return this.ice ? this.iceAuthenticator.getPassword() : "";
+	    return this.ice ? ((IceAuthenticatorImpl) this.iceAuthenticator).getPassword() : "";
 	}
 
 	/*
@@ -682,33 +685,14 @@ public abstract class MediaChannel {
 
 	
 	public RtpChannel createRtpChannel(String originalHost, int originalPort)  {
-	    
-    	//Dtls Server Provider
-		   
-	    DtlsConfiguration configuration = new DtlsConfiguration();
-	    
-	    DtlsSrtpServerProvider dtlsServerProvider = null;
-	    
-	    
-	        dtlsServerProvider = 
-	        		new DtlsSrtpServerProvider(	configuration.getMinVersion(),
-	        									configuration.getMaxVersion(),
-	        									configuration.getCipherSuites(),
-	        									configuration.getCertificatePath(), //System.getProperty("user.home")+"/certs/x509-server-ecdsa.cert.pem",
-	        									configuration.getKeyPath(), //System.getProperty("user.home")+"/certs/x509-server-ecdsa.private.pem",
-	        									configuration.getAlgorithmCertificate());
-	        
-	       
-	    
-	    rtcpChannel=new RtcpChannel(dtlsServerProvider);
-    	return new RtpChannel(dtlsServerProvider,originalHost, originalPort);
+		
+	    rtcpChannel=new RtcpChannel();
+    	return new RtpChannel(originalHost, originalPort);
     
     	
     }
 
-	public IceAuthenticatorImpl getIceAuthenticator() {
-		return iceAuthenticator;
-	}
+	
 
 	public RtcpChannel getRtcpChannel() {
 		return rtcpChannel;
@@ -716,6 +700,10 @@ public abstract class MediaChannel {
 	
 	public RtpChannel getRtpChannel() {
 		return rtpChannel;
+	}
+
+	public IceAuthenticator getIceAuthenticator() {
+		return iceAuthenticator;
 	}
 
 }

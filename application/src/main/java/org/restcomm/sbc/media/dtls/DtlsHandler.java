@@ -35,6 +35,7 @@ import org.mobicents.media.server.impl.rtp.crypto.PacketTransformer;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPPolicy;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPTransformEngine;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
+import org.restcomm.sbc.media.MediaController;
 
 
 /**
@@ -61,7 +62,7 @@ public class DtlsHandler  {
 
 
     // DTLS Handshake properties
-    private DtlsSrtpServer server;
+   
     private DatagramChannel channel;
     private volatile boolean handshakeComplete;
     private volatile boolean handshakeFailed;
@@ -82,9 +83,9 @@ public class DtlsHandler  {
     private PacketTransformer srtcpEncoder;
     private PacketTransformer srtcpDecoder;
 
-    private DtlsSrtpServerProvider tlsServerProvider;
+    private DtlsSrtpServer server;
 
-    public DtlsHandler(DtlsSrtpServerProvider tlsServerProvider) {
+    public DtlsHandler() {
         
 
         // Network properties
@@ -92,7 +93,7 @@ public class DtlsHandler  {
         
 
         // Handshake properties
-        this.server = tlsServerProvider.provide();
+        this.server = MediaController.getDTLSServer();
         this.handshakeComplete = false;
         this.handshakeFailed = false;
         this.handshaking = false;
@@ -103,7 +104,7 @@ public class DtlsHandler  {
         this.startTime = 0L;
 
         this.listeners = new ArrayList<DtlsListener>();
-        this.tlsServerProvider = tlsServerProvider;
+       
     }
 
     public void setChannel(DatagramChannel channel) {
@@ -306,7 +307,7 @@ public class DtlsHandler  {
 
     public void reset() {
         // XXX try not to create the server every time!
-        this.server = this.tlsServerProvider.provide();
+        
         this.channel = null;
         this.srtcpDecoder = null;
         this.srtcpEncoder = null;

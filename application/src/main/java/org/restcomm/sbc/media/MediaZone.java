@@ -35,7 +35,9 @@ import java.util.concurrent.Executors;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.crypto.RawPacket;
+import org.mobicents.media.server.io.sdp.SessionDescription;
 import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.media.srtp.RtpConnection;
 
 
 /**
@@ -80,6 +82,7 @@ public class MediaZone  {
 	protected InetAddress proxyAddress;
 	private InetAddress originalAddress;
 	protected MediaController controller;
+	protected RtpConnection rtpConnection;
 	
 	public MediaZone(MediaController controller, Direction direction, String mediaType, String originalHost, int originalRtpPort, int originalRtcpPort, boolean canMux, int proxyPort) throws UnknownHostException {
 		this.controller=controller;
@@ -91,6 +94,10 @@ public class MediaZone  {
 		this.direction=direction;
 		this.proxyPort=proxyPort;
 		originalAddress=InetAddress.getByName(originalHost);
+		rtpConnection= new RtpConnection(controller, originalHost, originalRtpPort);
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("direction "+direction);
+		}
 			
 	}
 	
@@ -115,15 +122,16 @@ public class MediaZone  {
 		//socket.setSoTimeout(60000);	
 		proxyAddress=address.getAddress();
 		
-		if(checkReady()) {	
-			this.fireProxyReadyEvent();	
-		}
-		else {
-			this.fireProxyFailedEvent();
-		}
+		
+		
+		
 	}
 	
-	private synchronized boolean checkReady() {
+	public SessionDescription getLocalSdp() {
+		return controller.getSdp();
+	}
+	
+	protected synchronized boolean checkReady() {
 		if(!isAttached())
 			return false;
 		if(originalHost==null || originalRtpPort==0)
@@ -188,10 +196,10 @@ public class MediaZone  {
 		executorService = Executors.newCachedThreadPool();
 		executorService.execute(new Proxy());
 		
-		
+		/*
 		if(!mediaZonePeer.isRunning())
 			mediaZonePeer.start();	
-		
+		*/
 		if(LOG.isInfoEnabled()) {
 			LOG.info("Started "+isRunning()+"->"+this.toPrint());		
 		}
@@ -294,7 +302,7 @@ public class MediaZone  {
 		
 		
 		if(dgram.getData().length>8) {
-				if(logCounter==rtpCountLog){
+				if(logCounter==rtpCountLog&&!mediaType.equals("video")){
 					RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
 					LOG.trace("--->[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");
 					logCounter=0;
@@ -321,15 +329,17 @@ public class MediaZone  {
 		mediaZonePeer.socket.receive(dgram);
 		
 		if(dgram==null||dgram.getLength()<8){
-			LOG.warn("RTPPacket too short, sending anyway "+dgram);
-			return dgram;		
+			LOG.warn("RTPPacket too short, not sending ["+(dgram!=null?dgram.getLength():"NULL")+"]");
+			dgram=new DatagramPacket(buffer, BUFFER);
+			return null;
+					
 		}
 		
 		dgram.setData(mediaZonePeer.encodeRTP(dgram.getData(), 0, dgram.getLength()));
 			
 		logCounter++;
 		
-		if(logCounter==rtpCountLog){	
+		if(logCounter==rtpCountLog&&!mediaType.equals("video")){	
 			RawPacket rtp=new RawPacket(dgram.getData(),0,dgram.getLength());
 			LOG.trace("<---[PayloadType "+rtp.getPayloadType()+"]("+this.mediaType+", "+this.direction+") LocalProxy "+proxyHost+":"+proxyPort+"/"+dgram.getAddress()+":"+dgram.getPort()+"["+dgram.getLength()+"]");		
 		}
@@ -345,14 +355,13 @@ public class MediaZone  {
 			setMediaZonePeer(mediaZone);		
 		}
 		if(!mediaZone.isAttached()) {
-			mediaZone.setMediaZonePeer(this);
+			mediaZone.attach(this);
 		}
-		// first chance
 		
 		if(checkReady()) {
 			// Ready to start
 			this.fireProxyReadyEvent();
-		}
+		}	
 		
 	}
 	
@@ -523,6 +532,14 @@ public class MediaZone  {
 
 	public boolean canMux() {
 		return canMux;
+	}
+
+	public DatagramChannel getChannel() {
+		return channel;
+	}
+
+	public RtpConnection getRtpConnection() {
+		return rtpConnection;
 	}
 
 	

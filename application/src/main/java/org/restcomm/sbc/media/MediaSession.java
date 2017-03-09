@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.event.EventListenerList;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.io.sdp.SdpException;
+import org.restcomm.sbc.media.MediaController.StreamProfile;
 
 
 
@@ -51,12 +52,10 @@ public class MediaSession  {
 	
 	public final int MEDIATYPE_AUDIO   = portManager.getNextAvailablePort();
 	public final int MEDIATYPE_VIDEO   = portManager.getNextAvailablePort();
-	public final int MEDIATYPE_MESSAGE = portManager.getNextAvailablePort();
 	
 	public final int[] proxyPorts = { 
 			MEDIATYPE_AUDIO,
-			MEDIATYPE_VIDEO,
-			MEDIATYPE_MESSAGE
+			MEDIATYPE_VIDEO		
 	};
 	
 	public MediaSession(String id)   {
@@ -69,13 +68,13 @@ public class MediaSession  {
     	return "[MediaSession ("+sessionId+")]";
     }
 	
-	public MediaController buildOffer(String sdpOffer) throws UnknownHostException, SdpException {
-		this.offer=new MediaController(this, MediaZone.Direction.OFFER, sdpOffer);
+	public MediaController buildOffer(StreamProfile streamProfile, String sdpOffer, String targetProxyAddress) throws UnknownHostException, SdpException {
+		this.offer=new MediaController(this, streamProfile, MediaZone.Direction.OFFER, sdpOffer, targetProxyAddress);
 		return this.offer;
 	}
 	
-	public MediaController buildAnswer(String sdpAnswer) throws UnknownHostException, SdpException {
-		this.answer=new MediaController(this, MediaZone.Direction.ANSWER, sdpAnswer);
+	public MediaController buildAnswer(StreamProfile streamProfile, String sdpAnswer, String targetProxyAddress) throws UnknownHostException, SdpException {
+		this.answer=new MediaController(this, streamProfile, MediaZone.Direction.ANSWER, sdpAnswer, targetProxyAddress);
 		return this.answer;
 	}
 	

@@ -29,7 +29,6 @@ import java.nio.channels.DatagramChannel;
 
 import org.apache.log4j.Logger;
 
-import org.bouncycastle.crypto.tls.ProtocolVersion;
 import org.mobicents.media.io.ice.IceAuthenticator;
 import org.mobicents.media.io.ice.IceComponent;
 import org.mobicents.media.io.ice.IceHandler;
@@ -39,8 +38,6 @@ import org.mobicents.media.io.ice.events.SelectedCandidatesEvent;
 
 import org.mobicents.media.server.impl.rtp.RtpListener;
 
-import org.mobicents.media.server.impl.rtp.crypto.AlgorithmCertificate;
-import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
 
 import org.mobicents.media.server.impl.srtp.DtlsListener;
 
@@ -49,9 +46,9 @@ import org.mobicents.media.server.io.sdp.format.RTPFormats;
 
 import org.mobicents.media.server.spi.ConnectionMode;
 import org.mobicents.media.server.utils.Text;
-import org.restcomm.sbc.media.dtls.DtlsConfiguration;
 import org.restcomm.sbc.media.dtls.DtlsHandler;
-import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
+import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
+
 
 
 
@@ -105,7 +102,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
 
 	private int originalPort;
 
-    private RtpChannel(DtlsSrtpServerProvider dtlsServerProvider) {
+    private RtpChannel() {
         // Initialize MultiplexedChannel elements
         super();
 
@@ -122,7 +119,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
       
         this.rtcpHandler = new RtcpHandler();
     
-        this.dtlsHandler = new DtlsHandler(dtlsServerProvider);
+        this.dtlsHandler = new DtlsHandler();
     
         this.stunHandler = new IceHandler(IceComponent.RTP_ID, this);
        
@@ -133,8 +130,8 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
         
     }
     
-    public RtpChannel(DtlsSrtpServerProvider dtlsServerProvider , String originalHost, int originalPort) {  	
-    	this(dtlsServerProvider);
+    public RtpChannel(String originalHost, int originalPort) {  	
+    	this();
     	 // Channel attributes
         this.originalHost=originalHost;
         this.originalPort=originalPort;
@@ -577,46 +574,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
 		
 	}
   
-    public static void main(String argv[]) throws IOException {
-    
-    	//Dtls Server Provider
-		   
-	    CipherSuite[] cipherSuites = new DtlsConfiguration().getCipherSuites();
-	    
-	    AlgorithmCertificate algorithmCertificate = AlgorithmCertificate.RSA;
-	    DtlsSrtpServerProvider dtlsServerProvider = null;
-	    
-	    
-	        dtlsServerProvider = 
-	        		new DtlsSrtpServerProvider(	ProtocolVersion.DTLSv10,
-	        									ProtocolVersion.DTLSv12,
-	        									cipherSuites,
-	        									System.getProperty("user.home")+"/certs/x509-server-ecdsa.public.pem",
-	        									System.getProperty("user.home")+"/certs/x509-server-ecdsa.private.pem",
-	        									algorithmCertificate);
-	        
-	       
-	       
-	    
-    	RtpChannel channel=new RtpChannel(dtlsServerProvider);
-    	
-		DatagramChannel rtpChannel = DatagramChannel.open();
-    	channel.open(rtpChannel);
-    	channel.bind(rtpChannel);
-    	
-
-		
-		System.out.println("AVAILABLE:"+channel.isAvailable());
-		System.out.println("BOUND    :"+channel.isBound());
-		System.out.println("CONNECTED:"+channel.isConnected());
-		//System.out.println("LOCAL FIN:"+channel.getWebRtcLocalFingerprint());
-		
-		channel.enableSRTP();
-		System.out.println("LOCALPORT:"+channel.getLocalPort());
-		channel.close();
-    	
-    }
-
+   
 	public void setRtcpMux(boolean rtcpMux) {
 		this.rtcpMux = rtcpMux;
 	}

@@ -22,6 +22,8 @@ package org.restcomm.sbc.chain.impl.registrar;
 
 
 
+import java.net.NoRouteToHostException;
+
 import javax.servlet.sip.Address;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipServletMessage;
@@ -36,12 +38,13 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.chain.impl.registrar.RegistrarProcessor;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
-
+import org.restcomm.sbc.managers.RouteManager;
 
 import gov.nist.javax.sip.header.SIPHeader;
 
@@ -162,7 +165,7 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 		
 		} catch (ServletParseException e) {
 			LOG.error("ERROR",e);
-			SipServletResponse dmzResponse = dmzRequest.createResponse(401, "Not Found");
+			SipServletResponse dmzResponse = dmzRequest.createResponse(404, "Not Found");
 			message.setContent(dmzResponse);	
 			message.unlink();
 			return;
@@ -225,7 +228,14 @@ public class RegistrarProcessor extends DefaultProcessor implements ProcessorCal
 				
 				
 				if(!locationManager.exists(user, domain)) {
-					location=new Location(uri.getUser(), domain, uri.getHost(), uri.getPort(), message.getTargetTransport());
+					RouteManager routeManager=RouteManager.getRouteManager();
+					Connector connector=null;
+					try {
+						connector=routeManager.getDMZConnector(message.getTargetLocalAddress(), mzResponse.getLocalPort(), message.getTargetTransport());
+					} catch (NoRouteToHostException e) {
+						LOG.error("Connector not found!, this should never happen: "+message.getTargetLocalAddress()+":"+ mzResponse.getLocalPort()+":"+message.getTargetTransport());
+					}
+					location=locationManager.create(uri.getUser(), domain, uri.getHost(), uri.getPort(), message.getTargetTransport(), connector.getSid());
 					locationManager.register(location, mzResponse.getRequest().getHeader("User-Agent"), mzResponse.getCallId(), getCSeq(mzResponse.getRequest()) , mzExpires);
 					if(LOG.isDebugEnabled()){
 				          LOG.debug("REGISTER new "+location);

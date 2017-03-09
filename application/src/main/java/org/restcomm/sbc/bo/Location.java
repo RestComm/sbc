@@ -38,13 +38,14 @@ public class Location {
 	private String userAgent;
 	private String callID;
 	private int cSeq;
-	
+	private Sid sourceConnectorSid;
 	private DateTime expires;
 	
-	public Location(String user, String domain, String host, int port, String transport) {
+	public Location(String user, String domain, String host, int port, String transport, Sid sourceConnectorSid) {
 		this.user=user;
 		this.domain=domain;
 		this.host=host;
+		this.sourceConnectorSid=sourceConnectorSid;
 		this.port=(port<=0?5060:port);
 		this.transport=(transport==null?"UDP":transport.toUpperCase());
 		
@@ -170,6 +171,18 @@ public class Location {
 
 	public void setcSeq(int cSeq) {
 		this.cSeq = cSeq;
+	}
+
+
+
+	public Sid getSourceConnectorSid() {
+		return sourceConnectorSid;
+	}
+
+
+
+	public void setSourceConnectorSid(Sid sourceConnectorSid) {
+		this.sourceConnectorSid = sourceConnectorSid;
 	}
 
 }
