@@ -24,4 +24,9 @@ package org.restcomm.sbc.rest.exceptions;
  * @author orestis.tsakiridis@telestax.com (Orestis Tsakiridis)
  */
 public class NotAuthenticated extends AuthorizationException {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1332289882513564323L;
 }

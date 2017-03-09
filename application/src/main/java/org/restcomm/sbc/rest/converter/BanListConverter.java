@@ -31,7 +31,6 @@ import java.lang.reflect.Type;
 
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.mobicents.servlet.sip.restcomm.util.StringUtils;
 import org.restcomm.sbc.bo.BanList;
 
 
@@ -40,15 +39,15 @@ import org.restcomm.sbc.bo.BanList;
  */
 @ThreadSafe
 public final class BanListConverter extends AbstractConverter implements JsonSerializer<BanList> {
-    private final String apiVersion;
-    private final String rootUri;
+    //private final String apiVersion;
+    //private final String rootUri;
     private BanList.Type color;
 
     public BanListConverter(BanList.Type color, final Configuration configuration) {
         super(configuration);
         this.color = color;
-        apiVersion = configuration.getString("api-version");
-        rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
+      //  apiVersion = configuration.getString("api-version");
+      //  rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
     }
 
     @SuppressWarnings("rawtypes")

@@ -32,7 +32,6 @@ import java.lang.reflect.Type;
 import org.apache.commons.configuration.Configuration;
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.mobicents.servlet.sip.restcomm.util.StringUtils;
 import org.restcomm.sbc.bo.CallDetailRecord;
 import org.restcomm.sbc.bo.Sid;
 
@@ -41,13 +40,13 @@ import org.restcomm.sbc.bo.Sid;
  */
 @ThreadSafe
 public final class CallDetailRecordConverter extends AbstractConverter implements JsonSerializer<CallDetailRecord> {
-    private final String apiVersion;
-    private final String rootUri;
+   // private final String apiVersion;
+   // private final String rootUri;
 
     public CallDetailRecordConverter(final Configuration configuration) {
         super(configuration);
-        apiVersion = configuration.getString("api-version");
-        rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
+     //   apiVersion = configuration.getString("api-version");
+     //   rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
     }
 
     @SuppressWarnings("rawtypes")
@@ -82,14 +81,14 @@ public final class CallDetailRecordConverter extends AbstractConverter implement
         writeRingDuration(cdr.getRingDuration(), writer);
         writer.endNode();
     }
-
+/*
     private String prefix(final CallDetailRecord cdr) {
         final StringBuilder buffer = new StringBuilder();
         buffer.append(rootUri).append(apiVersion).append("/Calls/");
         buffer.append(cdr.getSid());
         return buffer.toString();
     }
-
+*/
     @Override
     public JsonElement serialize(final CallDetailRecord cdr, Type type, final JsonSerializationContext context) {
         final JsonObject object = new JsonObject();

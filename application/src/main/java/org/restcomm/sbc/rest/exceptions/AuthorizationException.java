@@ -27,4 +27,9 @@ package org.restcomm.sbc.rest.exceptions;
  */
 
 public class AuthorizationException extends RuntimeException {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4037536692919403892L;
 }

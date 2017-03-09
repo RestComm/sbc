@@ -59,14 +59,16 @@ public class Version {
                         // Follow the EAP Convention
                         // Release ID: JBoss [EAP] 5.0.1 (build:
                         // SVNTag=JBPAPP_5_0_1 date=201003301050)
-                        logger.info("Release ID: (" + releaseName
+                    	logger.info("*****************************************************************************");
+                        logger.info("*  Release ID: (" + releaseName
                                 + ") Eolos SBC " + releaseVersion
                                 + " (build: Git Hash=" + releaseRevision
                                 + " date=" + releaseDate + ")");
-                        logger.info(releaseName + " Eolos SBC "
+                        logger.info("*  "+releaseName + " Eolos SBC "
                                 + releaseVersion + " (build: Git Hash="
                                 + releaseRevision + " date=" + releaseDate
                                 + ") Started.");
+                        logger.info("*****************************************************************************");
                     } else {
                         logger.warn("Unable to extract the version of Eolos SBC currently running");
                     }
@@ -160,7 +162,8 @@ public class Version {
     }
     
     public static void main(String argv[]) {
-    	System.out.println(Version.getFullVersion());
-    	System.out.println(Version.getRevision());
+    	System.out.println("*****************************************************************************");
+    	System.out.println("* "+Version.getFullVersion());
+    	System.out.println("*****************************************************************************");
     }
 }
