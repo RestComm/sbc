@@ -175,7 +175,7 @@ PrivateJainSipMessageConnector.prototype.onJainSipClientConnectorSipResponseEven
 				}
 			}
 		} else {
-			if (statusCode === 407) {
+			if (statusCode === 401 || statusCode === 407) {
 				this.sipMessageState = this.SIP_MESSAGE_407_STATE;
 
 				// Send Authenticated SIP INVITE
@@ -873,7 +873,7 @@ PrivateJainSipCallConnector.prototype.processInvitingSipResponseEvent = function
 				this.webRTCommCall.onPrivateCallConnectorCallInProgressEvent();
 			}
 			console.debug("PrivateJainSipCallConnector:processInvitingSipResponseEvent(): 1XX response ignored");
-		} else if (statusCode === 407) {
+		} else if (statusCode === 401 || statusCode === 407) {
 			// Send Authenticated SIP INVITE
 			var jainSipAuthorizationHeader = this.clientConnector.jainSipHeaderFactory.createAuthorizationHeader(jainSipResponse, this.jainSipInvitingRequest, this.clientConnector.configuration.sipPassword, this.clientConnector.configuration.sipLogin);
 			this.sendAuthenticatedSipInviteRequest(jainSipAuthorizationHeader);
@@ -964,7 +964,7 @@ PrivateJainSipCallConnector.prototype.processInvitingSipResponseEvent = function
 	} else if (this.sipCallState === this.SIP_INVITING_ACCEPTED_STATE) {
 		console.debug("PrivateJainSipCallConnector:processInvitingSipResponseEvent(): Got reponse status: " + jainSipResponse.getStatusCode());
 	} else if (this.sipCallState === this.SIP_INVITING_LOCAL_HANGINGUP_STATE) {
-		if (statusCode === 407) {
+		if (statusCode === 401 || statusCode === 407) {
 			try {
 				// Send Authenticated BYE request
 				var jainSipByeRequest = this.jainSipInvitingDialog.createRequest("BYE");
@@ -1104,7 +1104,7 @@ PrivateJainSipCallConnector.prototype.processInvitedSipResponseEvent = function(
 	} else if (this.sipCallState === this.SIP_INVITED_ACCEPTED_STATE) {
 		console.debug("PrivateJainSipCallConnector:processInvitedSipResponseEvent(): Got reponse status: " + jainSipResponse.getStatusCode());
 	} else if (this.sipCallState === this.SIP_INVITED_LOCAL_HANGINGUP_STATE) {
-		if (statusCode === 407) {
+		if (statusCode === 401 || statusCode === 407) {
 			try {
 				// Send Authenticated BYE request
 				var jainSipByeRequest = this.jainSipInvitedDialog.createRequest("BYE");
@@ -3504,7 +3504,7 @@ WebRTCommCall.prototype.setRtcPeerConnectionLocalDescription = function(sdpOffer
 		}
 	}
 	// Force just public netId interface candidates on offer
-	//this.forcePublicCandidate(parsedSdpOffer);
+	this.forcePublicCandidate(parsedSdpOffer);
 	// Check if offer is ok with the requested RTCPeerConnection constraints
 	if (this.webRTCommClient.configuration.RTCPeerConnection.forceTurnMediaRelay === true) {
 		this.forceTurnMediaRelay(parsedSdpOffer);
