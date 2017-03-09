@@ -137,6 +137,7 @@
 
 		var email = location.search.split('email=')[1];
 		var idle = false;
+		var incoming = false;
 		
 		var localMedia = document.getElementById("localMedia");
 		var remoteMedia = document.getElementById("remoteMedia");
@@ -147,7 +148,7 @@
 		var parameters = {
 			'debug': true,
 			'username': '21',
-			'password': 'Demo1088',
+			'password': 'Demo2016',
 			'registrar':'wss://10.0.0.10:5083',
 			'domain':   '10.0.0.10'
 		};
@@ -165,18 +166,20 @@
 		// Pass a callback to get notified when RestCommWebClient is ready
 		RestCommClient.Device.offline(function(device) {
 			idle = false;
+			incoming = false;
 			log("Offline");
 		});
 
 		// Pass a callback to get notified if a Device error occurs
 		RestCommClient.Device.error(function(error) {
 			idle = false;
+			incoming = false;
 			dismiss();
 			log(error);
 			
 			setTimeout(function(){
       		  register();
-      		}, 2000);
+      		}, 5000);
 
 						
 			
@@ -190,15 +193,37 @@
 		});
 
 		// Pass a callback to get notified when a connection is Ringing incoming
-		RestCommClient.Device.incoming(function(device) {
+		RestCommClient.Device.incoming(function(connection) {
 			idle = false;
-			log.text("Ringing...");
+			incoming = true;
+			var parameters=connection.parameters;
+			incomingOffer(parameters['From']);	
+			log("Ringing ...");
+			
+			currentConnection = connection;
+			currentConnection.disconnect(function(connection) {
+				dismiss();
+				log("Connection ended");
+				setTimeout(function(){
+      		  		log('Idle');
+      			}, 2000);
+				idle = true;
+				incoming = false;
+
+				
+			});
 		});
 
 		// Pass a callback to get notified when a connection is Cancelled
 		RestCommClient.Device.cancel(function(device) {
 			idle = true;
-			log.text("Cancelled");
+			incoming = false;
+			dismiss();
+
+			log("Cancelled");
+			setTimeout(function(){
+				log("Idle");
+      			}, 1000);
 		});
 
 		
@@ -235,6 +260,7 @@
       		  		log('Idle');
       			}, 2000);
 				idle = true;
+				incoming = false;
 
 				
 			});
@@ -242,11 +268,29 @@
 			// Pass a callback to get notified if a Connetion error occurs
 			currentConnection.error(function(error) {
 				idle = false;
+				incoming = false;
 				dismiss();
 				log("Connection error: " + error);
 				
 			});
 		}
+
+		
+		// When user presses Dial, in incoming state, this function is called that makes the actuall pickup
+		function pickup() {
+						
+			var number = document.getElementById("dialTarget");
+			var parameters = {
+				'video-enabled': false,  // should we use WebRTC video or WebRTC audio only?
+				'local-media': localMedia,
+				'remote-media': remoteMedia,
+			};
+
+			// Make the actual call, using the parameters above
+			currentConnection.accept(parameters);
+
+		}
+
 
 		function log(text) {
 			$("#log").text(text);
@@ -263,6 +307,7 @@
 		// When user presses Hangup, this function is called that makes the actuall call
 		function hangup() {
 			idle = true;
+			incoming = false;
 			dismiss();
 			RestCommClient.Device.disconnectAll();
 			
