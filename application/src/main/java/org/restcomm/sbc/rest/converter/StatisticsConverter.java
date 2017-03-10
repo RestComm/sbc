@@ -30,7 +30,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import java.lang.reflect.Type;
 
 import org.apache.commons.configuration.Configuration;
-import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.Statistics;
 

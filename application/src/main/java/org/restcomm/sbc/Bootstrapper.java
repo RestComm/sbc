@@ -120,7 +120,7 @@ public final class Bootstrapper extends SipServlet {
 			bindConnectors(storage);
 			
 		} catch (Exception e) {
-			LOG.error(e);
+			LOG.error("Cannot bind connectors!",e);
 		}
        
         Version.printVersion();
@@ -175,6 +175,7 @@ public final class Bootstrapper extends SipServlet {
         return config.getServletContext().getContextPath();
     }
     
+    
     class MyExceptionHandler implements java.lang.Thread.UncaughtExceptionHandler {
 
 		@Override
@@ -184,4 +185,5 @@ public final class Bootstrapper extends SipServlet {
 		}
     	
     }
+    
 }

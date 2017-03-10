@@ -24,4 +24,9 @@ package org.restcomm.sbc.rest.exceptions;
  * @author orestis.tsakiridis@telestax.com (Orestis Tsakiridis)
  */
 public class InsufficientPermission extends AuthorizationException {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2209419282721225652L;
 }

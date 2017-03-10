@@ -75,7 +75,7 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 						r.sendReliably();
 						return r;
 					} catch (Rel100Exception e) {
-						LOG.error("rel100 not supported!");
+						LOG.warn("rel100 not supported!");
 						
 					} catch (RuntimeException e) {
 						LOG.error("!"+ e.getMessage());
@@ -88,7 +88,7 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 			LOG.error(e.getMessage(), e);
 		
 		} catch (RuntimeException e) {
-			LOG.error("!"+e.getMessage());
+			LOG.error("!Cannot dispatch", e);
 		}
 		
 		return m;

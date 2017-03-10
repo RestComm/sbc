@@ -29,11 +29,13 @@ import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
+import org.restcomm.sbc.media.MediaController;
 
 
 
@@ -48,6 +50,7 @@ public class TCPProtocolAdapter extends ProtocolAdapter {
 	private static transient Logger LOG = Logger.getLogger(TCPProtocolAdapter.class);
 	
 	private SipFactory sipFactory;
+	private SIPMutableMessage m;
 	
 	public TCPProtocolAdapter() {
 		this.sipFactory=ConfigurationCache.getSipFactory();
@@ -56,18 +59,12 @@ public class TCPProtocolAdapter extends ProtocolAdapter {
 	
 
 	public Message adapt(Message message) throws NoRouteToHostException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
+		m=(SIPMutableMessage) message;
 		SipServletMessage sm=m.getContent();
 		
-		String sourceTransport=sm.getInitialTransport();
-		if(sourceTransport==null) {
-			sourceTransport=ProtocolAdapterFactory.PROTOCOL_UDP;
-		}
+		String sourceTransport=m.getSourceTransport();
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("o Contact "+sm.getHeader("Contact"));
-			LOG.trace("o Transport "+sourceTransport);
-			LOG.trace("o Message follows:\n"+message.toString());
-			LOG.trace(">> adapt() Adapting protocol [->TCP]");
+			LOG.trace(">> adapt() Adapting protocol ["+sourceTransport+"->"+getProtocol()+"]");
 		}
 		
 		
@@ -81,9 +78,27 @@ public class TCPProtocolAdapter extends ProtocolAdapter {
 		if(sm instanceof SipServletRequest)
 			((SipServletRequest) sm).setRequestURI(sipUri);
 		
+		if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
+			message=adaptMedia(message);
+		}
 		m.setContent(sm);
 		return m;
 	
+
+	}
+	
+	@Override
+	protected String adaptSdp(MediaController mediaController, String host) throws SdpException {
+
+		String sdpContent = mediaController.getProxySdp(host);
+		
+		if (m.getTarget() == Message.TARGET_MZ) {
+			// always stream plain media to MZ
+				sdpContent = mediaController.getAVPProxySdp(host);
+			
+		} 
+		
+		return sdpContent;
 
 	}
 	

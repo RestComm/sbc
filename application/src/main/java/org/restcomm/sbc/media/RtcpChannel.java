@@ -36,7 +36,8 @@ import org.mobicents.media.server.impl.srtp.DtlsListener;
 import org.mobicents.media.server.io.network.channel.MultiplexedChannel;
 import org.mobicents.media.server.utils.Text;
 import org.restcomm.sbc.media.dtls.DtlsHandler;
-import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
+;
+
 
 /**
  * Channel for exchanging RTCP traffic
@@ -69,7 +70,7 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 	// Listeners
 	private RtpListener rtpListener;
 
-	public RtcpChannel(DtlsSrtpServerProvider dtlsServerProvider) {
+	public RtcpChannel() {
 		// Initialize MultiplexedChannel elements
 		super();
 		
@@ -78,7 +79,7 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 		// Protocol Handler pipeline
 		
 		this.rtcpHandler = new RtcpHandler();
-        this.dtlsHandler = new DtlsHandler(dtlsServerProvider);
+        this.dtlsHandler = new DtlsHandler();
         this.stunHandler = new IceHandler(IceComponent.RTCP_ID, this);
 		
 		// WebRTC
@@ -86,7 +87,10 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 	}
 
 	public void setRemotePeer(SocketAddress remotePeer) {
-		
+		if(logger.isTraceEnabled()) {
+        	logger.trace("RemotePeer  "+remotePeer.toString());
+        	logger.trace("Datachannel "+dataChannel);
+        }
 		if (this.dataChannel != null) {
 			if (this.dataChannel.isConnected()) {
 				try {
@@ -103,10 +107,7 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 			}
 			
 		}
-		if(logger.isTraceEnabled()) {
-        	logger.trace("RemotePeer  "+remotePeer.toString());
-        	logger.trace("Datachannel "+dataChannel);
-        }
+		
 	}
 	
 	public void setRtpListener(RtpListener rtpListener) {

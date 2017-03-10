@@ -4,6 +4,41 @@
 // 0651985833
 //
 
+// sound files to be used for various events
+		var sound0 = 'scripts/sounds/0.wav';
+		var sound1 = 'scripts/sounds/1.wav';
+		var sound2 = 'scripts/sounds/2.wav';
+		var sound3 = 'scripts/sounds/3.wav';
+		var sound4 = 'scripts/sounds/4.wav';
+		var sound5 = 'scripts/sounds/5.wav';
+		var sound6 = 'scripts/sounds/6.wav';
+		var sound7 = 'scripts/sounds/7.wav';
+		var sound8 = 'scripts/sounds/8.wav';
+		var sound9 = 'scripts/sounds/9.wav';
+		var soundp = 'scripts/sounds/p.wav';
+		var sounds = 'scripts/sounds/s.wav';
+		var soundc = 'scripts/sounds/click.wav';
+
+
+		
+		var audio0 = new Audio(sound0);
+		var audio1 = new Audio(sound1);
+		var audio2 = new Audio(sound2);
+		var audio3 = new Audio(sound3);
+		var audio4 = new Audio(sound4);
+		var audio5 = new Audio(sound5);
+		var audio6 = new Audio(sound6);
+		var audio7 = new Audio(sound7);
+		var audio8 = new Audio(sound8);
+		var audio9 = new Audio(sound9);
+		var audiop = new Audio(soundp);
+		var audios = new Audio(sounds);
+		var audioc = new Audio(soundc);
+
+
+
+
+
 $('.number-dig').click(function() {
 	//add animation
 	addAnimationToButton(this);
@@ -11,6 +46,7 @@ $('.number-dig').click(function() {
 	var currentValue = $('.phoneString input').val();
 	var valueToAppend = $(this).attr('name');
 	$('.phoneString input').val(currentValue + valueToAppend);
+	dtmfOutput(valueToAppend);
 	checkNumber();
 });
 
@@ -25,25 +61,37 @@ $('.action-dig').click(function() {
 		var currentValue = $('.phoneString input').val();
 		var newValue = currentValue.substring(0, currentValue.length - 1);
 		$('.phoneString input').val(newValue);
+		audioc.play();
 		checkNumber();
 	} else if ($(this).hasClass('call')) {
 		if ($('.call-pad').hasClass('in-call')) {
 			timeCounterCounting = false;
 			timeCounter = 0;
-			hangUpCall();
-			$('.pulsate').toggleClass('active-call');
+			if (incoming) {
+				$('.call-icon').toggleClass('in-call');
+				$('.call-change').toggleClass('in-call');
+				acceptCall();
+				incoming = false;
+			}
+			else {
 
-			$('.phoneString input').val('');
-			checkNumber();
+				hangUpCall();
+		
+				$('.pulsate').toggleClass('active-call');
+
+				$('.phoneString input').val('');
+				checkNumber();
+			}
 		} else {
 			var currentValue = $('.phoneString input').val();
 			if(currentValue.length > 0 ) {
-				$('.ca-status').text('Calling');
 				$('.ca-number').text(currentValue);
-				makeCall();
+				$('.ca-status').text('Calling');
 				setToInCall();
+				makeCall();
 				timeoutTimer = true;
 				looper();
+				
 			}
 			
 		}
@@ -63,6 +111,49 @@ var attach = function(newValue) {
 	setToInCall();
 	timeoutTimer = true;
 	looper();
+}
+
+var dtmfOutput = function(digit) {
+	switch (digit) {
+    case "0":
+        audio0.play();
+        break;
+    case "1":
+        audio1.play();
+        break;
+    case "2":
+        audio2.play();
+        break;
+    case "3":
+        audio3.play();
+        break;
+    case "4":
+        audio4.play();
+        break;
+    case "5":
+        audio5.play();
+        break;
+    case "6":
+        audio6.play();
+        break;
+    case "7":
+        audio7.play();
+        break;
+    case "8":
+        audio8.play();
+        break;
+    case "9":
+        audio9.play();
+        break;
+    case "#":
+        audiop.play();
+        break;
+    case "*":
+        audios.play();
+        break;
+
+
+	}	
 }
 
 var callStarted = function() {
@@ -110,8 +201,10 @@ var timeCounterLoop = function() {
 
 var setToInCall = function() {
 	$('.call-pad').toggleClass('in-call');
-	$('.call-icon').toggleClass('in-call');
-	$('.call-change').toggleClass('in-call');
+	if (!incoming) {
+		$('.call-icon').toggleClass('in-call');
+		$('.call-change').toggleClass('in-call');
+	}
 	$('.ca-avatar').toggleClass('in-call');
 };
 
@@ -147,6 +240,21 @@ var makeCall = function() {
 	call();
 
 };
+
+var acceptCall = function() {
+	pickup();
+};
+
+var incomingOffer = function(from) {
+	$('.phoneString input').val(from);
+	var currentValue = $('.phoneString input').val();
+	$('.ca-status').text('Incoming');
+	$('.ca-number').text(currentValue);
+	setToInCall();
+	timeoutTimer = true;
+	looper();
+};
+
 
 var dismiss = function() {
 	timeCounterCounting = false;

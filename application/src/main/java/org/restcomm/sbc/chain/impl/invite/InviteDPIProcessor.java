@@ -135,12 +135,16 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 		}
 				
 		SipServletResponse ok = request.createResponse(SipServletResponse.SC_OK);
-		
+		message.setContent(ok);
+		message.unlink();
+		/*
 		try {
 			ok.send();
 		} catch (IOException e) {
 			LOG.error("",e);
 		}	
+		*/
+		
 		
 		
 	}

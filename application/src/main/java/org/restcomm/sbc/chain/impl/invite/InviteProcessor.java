@@ -25,13 +25,17 @@ import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
-
+import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.call.Call;
+import org.restcomm.sbc.call.CallManager;
+import org.restcomm.sbc.managers.MessageUtil;
 
 
 
@@ -50,7 +54,7 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
-	//private CallManager callManager=CallManager.getCallManager();
+	private CallManager callManager=CallManager.getCallManager();
 	
 	
 	public InviteProcessor(ProcessorChain chain) {
@@ -66,9 +70,9 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 
 	private void processInviteRequest(SIPMutableMessage message) {
 		SipServletRequest request=(SipServletRequest) message.getContent();
-		//MediaSession mediaSession=null;
+		MediaSession mediaSession=null;
 		
-		//SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+		SipServletRequest oRequest=(SipServletRequest) request.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		/*
 		try {
 			mediaSession=(MediaSession) message.getMetadata();
@@ -94,11 +98,11 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private void processInviteResponse(SIPMutableMessage message) {
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
-		//String callSessionId=response.getRequest().getSession().getId();
-		//Call call=callManager.getCall(callSessionId);
+		String callSessionId=response.getRequest().getSession().getId();
+		Call call=callManager.getCall(callSessionId);
 		
 		if(response.getStatus()==SipServletResponse.SC_OK) {
-			//MediaSession mediaSession=(MediaSession) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
+			MediaSession mediaSession=(MediaSession) response.getRequest().getSession().getAttribute(MessageUtil.MEDIA_MANAGER);
 			
 			/*
 			try {
@@ -163,13 +167,13 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private void processCancelResponse(SIPMutableMessage message)  {	
 		
 	}
-	/*
+	
 	private String getCallSessionId(SipServletRequest currentRequest) {
 		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		return oRequest.getSession().getId();
 	}
 
-*/
+
 
 	public String getName() {
 		return name;

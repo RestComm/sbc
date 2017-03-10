@@ -130,15 +130,11 @@
 		        		When dealing with secured WEBRTC streams (SRTP/DTLS or so), we can choose
 		        		to do encryption termination.
 		        		false: do not handle encryption, just pass-thru.
-		        		true : does encryption termination, just passes SRTP to DMZ.
+		        		true : does encryption termination and decode-encode SRTP/RTP to DMZ.
 	        	 	-->
         			<encryption-handle>true</encryption-handle>
-        			<!-- SBC does media & signaling pass-thru per default ((S)RTCP/(S)RTP).
-        				We can enable a decoder in order to stream just plain media RTP to DMZ
-        				false: pass-thru.
-        				true : decode SRTP stream.
-	        	 	-->
-        			<decoding-handle>true</decoding-handle>
+        			
+        			
         		</security-policy>
         		<!-- log every 500 packet 
         		<rtp-log>500</rtp-log> -->

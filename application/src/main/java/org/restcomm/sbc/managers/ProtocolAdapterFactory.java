@@ -85,7 +85,7 @@ public class ProtocolAdapterFactory {
 		}
 		else {
 			if(LOG.isTraceEnabled()){
-		          LOG.trace(">> Factoring ProtocolAdapter ["+adapter.getProtocol()+"]"+adapter);
+		          LOG.trace(">> Factoring ProtocolAdapter ["+adapter.getProtocol()+"]");
 		    }
 			return adapter;
 		}

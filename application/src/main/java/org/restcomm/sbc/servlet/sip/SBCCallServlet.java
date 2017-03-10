@@ -83,6 +83,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	
 	@Override
 	protected void doInvite(SipServletRequest request) throws ServletException,	IOException {
+		
 		String direction="outbound";
 		if(RouteManager.isFromDMZ(request)) {
 			direction="inbound";

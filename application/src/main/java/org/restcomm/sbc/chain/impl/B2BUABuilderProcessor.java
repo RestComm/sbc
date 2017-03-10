@@ -24,11 +24,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipApplicationSession;
@@ -39,6 +41,7 @@ import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TooManyHopsException;
+
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
@@ -100,15 +103,16 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
      */
 
 	private void processRequest(SIPMutableMessage message) {
-		if (LOG.isTraceEnabled()) {
-			LOG.trace(">> processRequest()");
-			
-		}
+		
 		SipServletRequest request=(SipServletRequest) message.getContent();
 		
 		
 		
 		B2buaHelper helper = request.getB2buaHelper();
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processRequest() Initial/Linked="+request.isInitial()+"/"+helper.getLinkedSession(request.getSession()));
+			
+		}
 		SipServletRequest newRequest = null;
 		Map<String, List<String>> headers = new HashMap<String, List<String>>();
 		
@@ -116,8 +120,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		
 		SipURI toURI 	= (SipURI) request.getTo().  getURI();
 		SipURI newSipToUri = toURI;
-		SipURI contactURI = null;
-
+		Address contactURI = null;
+		
 		
 		RouteManager routeManager = RouteManager.getRouteManager();
 		Connector connector = null;
@@ -133,8 +137,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
 						request.getInitialTransport());
 				outBoundInterface = connector.getOutboundInterface();
-				contactURI = routeManager.getContactAddress(fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
-				contactURI.setTransportParam(connector.getTransport().toString());
+				contactURI = routeManager.getContactAddress(request.getFrom().getDisplayName(), fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
 				
 
 			} catch (Exception e) {
@@ -153,6 +156,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
 			route="sip:" + ConfigurationCache.getTargetHost();
 			
+			
 
 		} else {
 			message.setTarget(Message.TARGET_DMZ);
@@ -161,10 +165,11 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			
 			try {
 				location = locationManager.getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
-				outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
-				contactURI = routeManager.getContactAddress(fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
-				contactURI.setTransportParam(location.getTransport());
-		
+				//outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
+				outBoundInterface = routeManager.getOutboundProxy(location.getSourceConnectorSid().toString());
+				connector=routeManager.getDMZConnector(location.getSourceConnectorSid().toString());
+				contactURI = routeManager.getContactAddress(request.getFrom().getDisplayName(), fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
+				
 				message.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
 				message.setTargetRemoteAddress(location.getHost());
 				message.setTargetTransport(location.getTransport().toUpperCase());
@@ -176,24 +181,30 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				
 				SipServletResponse response =
 				request.createResponse(SipServletResponse.SC_FORBIDDEN);
-				try {
-					response.send();
-				} catch (IOException e1) {
-					LOG.error("ERROR", e);
-				}
-				message.abort();
+				
+				message.setContent(response);
+				message.unlink();
 				return;
 				
 			} catch (NoRouteToHostException e) {
 				LOG.error("ERROR", e);
+				SipServletResponse response =
+				request.createResponse(SipServletResponse.SC_FORBIDDEN);
+						
+				message.setContent(response);
+				message.unlink();
+				return;
 			}
 			
 			newSipToUri = sipFactory.createSipURI(toURI.getUser(), location.getHost());
 			newSipToUri.setPort(location.getPort());
 			newSipToUri.setTransportParam(location.getTransport());
-			route=null; //"sip:" + location.getHost();
+			connector=routeManager.getDMZConnector(location.getSourceConnectorSid().toString());
+			fromURI.setHost(connector.getHost());
+			fromURI.setTransportParam(connector.getTransport().name());
+			fromURI.setPort(connector.getPort());
+			route=null;
 			//headers.put("To",	Arrays.asList(newSipToUri.toString()));
-			
 			
 
 		}
@@ -202,8 +213,9 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			
 			
 			if (request.isInitial()) {
-				
-				headers.put("Contact",	Arrays.asList(contactURI.toString()));
+				ArrayList<String> headerList = new ArrayList<String>();
+				headerList.add(contactURI.toString());
+				headers.put("Contact",	headerList);
 				
 				
 				
@@ -212,6 +224,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 					if(aSession!=null&&aSession.isValid()){
 					LOG.trace("LNK "+aSession.getAttribute(request.getSession().getCallId()));
 					}
+					
 				}
 				
 				SipServletRequest usedRequest=null;
@@ -221,33 +234,61 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 					
 					
 				}
+				
 				if(usedRequest!=null&&usedRequest.getSession().isValid()) {
+					
 					LOG.trace("REUSING SESSION REQ "+usedRequest.getCallId()+":"+usedRequest.getHeader("CSeq"));
+					usedRequest.setMaxForwards(70);
+
 					newRequest = helper.createRequest(usedRequest.getSession(), request, headers);
+					newRequest.removeHeader("Authorization");
+					newRequest.addHeader("Authorization", request.getHeader("Authorization"));
 					// Controls expiration time of this leg
 					newRequest.getApplicationSession().setExpires(0);
 					
 					
 				}
 				else {
+					
 					newRequest = helper.createRequest(request, true, headers);
 					// Controls expiration time of this leg
 					newRequest.getApplicationSession().setExpires(0);
 					aSession = sipFactory.createApplicationSession();
 					aSession.setAttribute(request.getSession().getCallId(), newRequest);
-					
-				}
-			
+					LOG.trace("NEW SESSION REQ/OLD "+newRequest.getSession()+"/"+request.getSession());
 				
-				newRequest.getSession().setOutboundInterface(outBoundInterface);
-
+				}
+				
+				
+				
+				
+				//newRequest.pushRoute(newSipToUri);
+				
+				
 				//newRequest.getFrom().setURI(sipFactory.createSipURI(fromURI.getUser(),  ConfigurationCache.getTargetHost()));
 				//newRequest.getTo().  setURI(newSipToUri);
-
-				if(route!=null)
-					newRequest.pushRoute(sipFactory.createAddress(route));
-				else
+				
+				if(route!=null) {
+					
+					 newRequest.getSession().setOutboundInterface(outBoundInterface);
+					 newRequest.pushRoute(sipFactory.createAddress(route));
+					 route=null;
+				}
+				/*else {
+					try {
+					newRequest.pushRoute(connector.buildAddress());
+				} catch (ServletParseException e) {
+					LOG.error("Cannot build addess",e);
+				}
+					
+				}*/
+				else {
+					
 					newRequest.setRequestURI(newSipToUri);
+					newRequest.getTo().  setURI(newSipToUri);
+					newRequest.getFrom().  setURI(fromURI);
+					
+				}
 				
 				
 			} else {
@@ -259,7 +300,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("NOT Initial Request " + request.getMethod());
 					LOG.trace("SES " + session.toString());
-					LOG.trace("LNK " + linkedSession.toString());
+					LOG.trace("LNK " + linkedSession);
 				}
 				if(linkedSession==null) {
 					// what else can I do?
@@ -346,6 +387,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		int statusResponse = dmzResponse.getStatus();
 		String reasonResponse = dmzResponse.getReasonPhrase();
 		
+		
+		
 		if (dmzResponse.getStatus() == SipServletResponse.SC_RINGING) {
 			
 			if (LOG.isTraceEnabled()) {
@@ -357,13 +400,14 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 
 		}
 		if (dmzResponse.getStatus() == SipServletResponse.SC_OK) {
-			if(dmzResponse.getMethod().equals("REGISTER")) {
+			//if(dmzResponse.getMethod().equals("REGISTER")) {
 			
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("Final Response Discarding dialog");
 				}
-				aSession=null;
-			}
+				if(aSession!=null)
+					aSession.invalidate();
+			//}
 		}
 		
 		SipServletRequest linked = helper.getLinkedSipServletRequest(dmzResponse.getRequest()); 
@@ -410,15 +454,19 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			LOG.error("ERROR", e);
 		} catch (IllegalStateException e) {
 			LOG.error("ERROR", e);
-		} 
-
-		if (dmzResponse.getStatus() == SipServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED) {
-			mzResponse.setHeader("Proxy-Authenticate", dmzResponse.getHeader("Proxy-Authenticate"));
-			
 		}
-
-		else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {	
-			mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));	
+		
+		try {
+		
+			if (dmzResponse.getStatus() == SipServletResponse.SC_PROXY_AUTHENTICATION_REQUIRED) {	
+				mzResponse.setHeader("Proxy-Authenticate", dmzResponse.getHeader("Proxy-Authenticate"));	
+			}
+	
+			else if (dmzResponse.getStatus() == SipServletResponse.SC_UNAUTHORIZED) {	
+				mzResponse.setHeader("WWW-Authenticate", dmzResponse.getHeader("WWW-Authenticate"));	
+			}
+		} catch (Exception e) {
+			LOG.error("ERROR", e);
 		}
 		
 		
@@ -456,11 +504,12 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		SIPMutableMessage m = (SIPMutableMessage) message;
 		SipServletMessage sm=(SipServletMessage) message.getContent();
 		
-		
+		/*
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("-------" + sm.getLocalAddr() + "->" + sm.getRemoteAddr());
 			LOG.trace("-------Receiving message: \n" + sm);
 		}
+		*/
 		if(sm instanceof SipServletRequest) {
 			processRequest(m);
 		}

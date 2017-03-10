@@ -48,7 +48,6 @@ public class ConfigurationCache {
 	private static int mediaStartPort;
 	private static int mediaEndPort;
 	private static boolean mediaDecryptionEnabled;
-	private static boolean mediaDecodingEnabled;
 	private static String ipOfDomain;
 	private static String apiVersion;
 	private static int rtpLog;
@@ -74,8 +73,7 @@ public class ConfigurationCache {
         rtpLog=configuration.getInt					("media-proxy.rtp-log");
         mediaDecryptionEnabled=configuration.getBoolean	
         											("media-proxy.security-policy.encryption-handle");
-        mediaDecodingEnabled=configuration.getBoolean	
-													("media-proxy.security-policy.decoding-handle");
+        
         ipOfDomain="";
         localNetworks=configuration.getList			("runtime-settings.nat-helper.local-networks.local-address");
 		
@@ -155,12 +153,6 @@ public class ConfigurationCache {
 	public static boolean isMediaDecryptionEnabled() {
 		return mediaDecryptionEnabled;
 	}
-
-
-	public static boolean isMediaDecodingEnabled() {
-		return mediaDecodingEnabled;
-	}
-
 
 	public static int getRtpCountLog() {
 		return rtpLog;

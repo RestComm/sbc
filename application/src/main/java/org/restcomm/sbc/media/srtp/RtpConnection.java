@@ -27,7 +27,6 @@ import java.net.SocketException;
 import java.nio.channels.DatagramChannel;
 
 import org.apache.log4j.Logger;
-
 import org.mobicents.media.server.impl.rtp.CnameGenerator;
 import org.mobicents.media.server.impl.rtp.RtpListener;
 
@@ -38,7 +37,6 @@ import org.mobicents.media.server.io.sdp.SessionDescriptionParser;
 import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
 
 import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
-import org.mobicents.media.server.io.sdp.format.RTPFormat;
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
 import org.mobicents.media.server.io.sdp.rtcp.attributes.RtcpAttribute;
 
@@ -50,7 +48,8 @@ import org.mobicents.media.server.spi.ModeNotSupportedException;
 
 import org.mobicents.media.server.utils.Text;
 import org.restcomm.sbc.media.AudioChannel;
-
+import org.restcomm.sbc.media.MediaController;
+import org.restcomm.sbc.media.MediaZone.Direction;
 import org.restcomm.sbc.media.SdpFactory;
 
 
@@ -70,7 +69,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	
 	// RTP session elements
 	private String cname;
-	private boolean outbound;
+	
 	private boolean local;
 
 
@@ -95,14 +94,14 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 * @param dspFactory
 	 *            The DSP provider
 	 */
-	public RtpConnection(String originalHost, int originalPort) {
+	public RtpConnection(MediaController controller, String originalHost, int originalPort) {
 		super();
 		this.originalHost=originalHost;
 		this.originalPort=originalPort;
 		
 		this.audioChannel=new AudioChannel(originalHost, originalPort);
 		// Connection state
-		this.outbound = false;
+		
 		this.local = false;
 		this.cname = CnameGenerator.generateCname();
 		audioChannel.setCname(cname);
@@ -140,12 +139,12 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	}
 
 	
-	public void setOtherParty(DatagramChannel localChannel, byte[] descriptor) throws IOException {
+	public void setOtherParty(Direction direction, DatagramChannel localChannel, byte[] descriptor) throws IOException {
 		try {
 			
 			this.remoteSdp = SessionDescriptionParser.parse(new String(
 					descriptor));
-			setOtherParty(localChannel);
+			setOtherParty(direction == Direction.ANSWER, localChannel);
 		} catch (SdpException e) {
 			throw new IOException(e);
 		}
@@ -190,9 +189,9 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 * @throws IOException
 	 *             If an error occurs while setting up the remote peer
 	 */
-	private void setOtherParty(DatagramChannel localChannel) throws IOException {
+	private void setOtherParty(boolean outbound, DatagramChannel localChannel) throws IOException {
 		
-		if (this.outbound) {
+		if (outbound) {
 			setOtherPartyOutboundCall();
 		} else {
 			setOtherPartyInboundCall(localChannel);
@@ -266,6 +265,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
         // Setup audio channel
         MediaDescriptionField remoteAudio = this.remoteSdp.getMediaDescription("audio");
         if (remoteAudio != null) {
+        	//this.audioChannel.bind(localChannel, remoteAudio.isRtcpMux());
             // Set remote DTLS fingerprint
             if(this.audioChannel.isDtlsEnabled()) {
                 FingerprintAttribute fingerprint = remoteAudio.getFingerprint();
@@ -303,7 +303,9 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 *             When binding the audio data channel. Non-WebRTC calls only.
 	 */
     private void setupAudioChannelInbound(DatagramChannel localChannel, MediaDescriptionField remoteAudio) throws IOException {
-        
+    	if(logger.isTraceEnabled()) {
+	    	logger.trace(">> setupAudioChannelInbound()");
+	    }
         // Bind audio channel to an address provided by UdpManager
     	
         this.audioChannel.bind(localChannel, remoteAudio.isRtcpMux());
@@ -347,15 +349,17 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 */
 	private void setupAudioChannelOutbound(MediaDescriptionField remoteAudio)
 			throws IOException {
-	    
+	    if(logger.isTraceEnabled()) {
+	    	logger.trace(">> setupAudioChannelOutbound()");
+	    }
 		// connect to remote peer - RTP
 		String remoteRtpAddress = remoteAudio.getConnection().getAddress();
 		int remoteRtpPort = remoteAudio.getPort();
 		
 		// only connect is calls are plain old SIP
 		// For WebRTC cases, the ICE Agent must connect upon candidate selection
-		boolean connectNow = !(this.outbound && audioChannel.isIceEnabled());
-        if (connectNow) {
+		boolean connectNow = !( audioChannel.isIceEnabled());
+        if (true) {
             this.audioChannel.connectRtp(remoteRtpAddress, remoteRtpPort);
             // connect to remote peer - RTCP
             boolean remoteRtcpMux = remoteAudio.isRtcpMux();
@@ -402,7 +406,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
         // Only open and bind a new channel if not currently configured
         if (!this.audioChannel.isOpen()) {
             // call is outbound since the connection is generating the offer
-            this.outbound = true;
+            
 
             // setup audio channel
             this.audioChannel.open();
@@ -467,7 +471,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 */
 	private void reset() {
 		// Reset SDP
-		this.outbound = false;
+		
 		this.localSdp = null;
 		this.remoteSdp = null;
 	}

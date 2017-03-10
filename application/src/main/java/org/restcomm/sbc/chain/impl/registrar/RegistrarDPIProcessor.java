@@ -82,10 +82,13 @@ public class RegistrarDPIProcessor extends DefaultDPIProcessor implements Proces
 			if(LOG.isDebugEnabled()){
 		          LOG.debug("Rejecting REGISTER from unauthorized NetworkPoint!");
 		    }
-			SipServletResponse dmzResponse = dmzRequest.createResponse(405, "Method not allowed");
-			message.setContent(dmzResponse);	
-			message.unlink();		
-			return;	
+			SipServletResponse dmzResponse =
+					dmzRequest.createResponse(SipServletResponse.SC_FORBIDDEN);
+							
+			message.setContent(dmzResponse);
+			message.unlink();
+			return;
+			
 		}
 		
 		

@@ -85,7 +85,7 @@ public class SuspectActivityProcessor extends DefaultProcessor implements Proces
 	}
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
-		doProcess((SuspectActivityCache)message);
+		doProcess((SuspectActivityCache<?, ?>)message);
 	}
 	
 	@Override

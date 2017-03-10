@@ -21,6 +21,10 @@ package org.restcomm.sbc.bo;
 
 import java.net.InetSocketAddress;
 
+import javax.servlet.sip.Address;
+import javax.servlet.sip.ServletParseException;
+
+import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.managers.NetworkManager;
 
 /**
@@ -30,6 +34,8 @@ import org.restcomm.sbc.managers.NetworkManager;
  *
  */
 public class Connector {
+	
+
 	private Sid sid;
 	private Sid accountSid;
 	private int port;
@@ -39,6 +45,7 @@ public class Connector {
 	private InetSocketAddress outboundInterface;
 	
 	public Connector(final Sid sid, final Sid accountSid, final int port, final Transport transport, final String point, final State state) {
+		
 		this.sid = sid;
 		this.port = port;
 		this.state = state;
@@ -46,6 +53,7 @@ public class Connector {
 		this.point = point;
 		this.accountSid = accountSid;
 		this.outboundInterface = new InetSocketAddress(NetworkManager.getIpAddress(point), port);
+		
 	}
 	
 	public Connector(final int port, final Transport transport, final String point, final State state) {
@@ -54,6 +62,7 @@ public class Connector {
 		this.transport = transport;
 		this.point = point;
 		this.outboundInterface = new InetSocketAddress(NetworkManager.getIpAddress(point), port);
+		
 	}
 	
 	public static Builder builder() {
@@ -211,6 +220,10 @@ public class Connector {
 
 	public InetSocketAddress getOutboundInterface() {
 		return outboundInterface;
+	}
+
+	public Address buildAddress() throws ServletParseException {
+		return ConfigurationCache.getSipFactory().createAddress("sip:"+NetworkManager.getIpAddress(point)+":"+port+";transport="+transport.name().toLowerCase());	
 	}
 
 }

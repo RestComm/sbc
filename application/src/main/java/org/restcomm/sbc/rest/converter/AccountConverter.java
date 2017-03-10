@@ -31,7 +31,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.mobicents.servlet.sip.restcomm.util.StringUtils;
 import org.restcomm.sbc.bo.Account;
 
 /**
@@ -39,13 +38,13 @@ import org.restcomm.sbc.bo.Account;
  */
 @ThreadSafe
 public final class AccountConverter extends AbstractConverter implements JsonSerializer<Account> {
-    private final String apiVersion;
-    private final String rootUri;
+   // private final String apiVersion;
+   // private final String rootUri;
 
     public AccountConverter(final Configuration configuration) {
         super(configuration);
-        this.apiVersion = configuration.getString("api-version");
-        rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
+     //   this.apiVersion = configuration.getString("api-version");
+     //   rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
     }
 
     @SuppressWarnings("rawtypes")

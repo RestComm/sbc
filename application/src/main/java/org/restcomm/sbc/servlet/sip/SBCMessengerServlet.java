@@ -49,8 +49,6 @@ public class SBCMessengerServlet extends SipServlet {
 	private Configuration configuration;
 	private SipFactory sipFactory;	
 	
-	private String routeMZIPAddress;
-	
 	private UpstreamMessengerProcessorChain upChain;
 	private DownstreamMessengerProcessorChain dwChain;
 	
@@ -66,9 +64,6 @@ public class SBCMessengerServlet extends SipServlet {
 		final ServletContext context = servletConfig.getServletContext();
 		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
 		ConfigurationCache.build(sipFactory, configuration);
-		
-      
-        routeMZIPAddress=ConfigurationCache.getTargetHost();
 		
 		upChain=new UpstreamMessengerProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());

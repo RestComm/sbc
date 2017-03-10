@@ -22,12 +22,17 @@
 package org.restcomm.sbc.adapter.impl;
 
 import java.net.NoRouteToHostException;
+
 import javax.servlet.sip.SipServletMessage;
+
+
 import org.apache.log4j.Logger;
+import org.mobicents.media.server.io.sdp.SdpException;
 import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.adapter.ProtocolAdapter;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
+import org.restcomm.sbc.media.MediaController;
 
 
 
@@ -40,28 +45,38 @@ import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 public class WSSProtocolAdapter extends ProtocolAdapter {
 	
 	private static transient Logger LOG = Logger.getLogger(WSSProtocolAdapter.class);
-	
+	private SIPMutableMessage m;
 	
 	public WSSProtocolAdapter() {
 		
 	}
 	
 	public Message adapt(Message message) throws NoRouteToHostException {
-		SIPMutableMessage m=(SIPMutableMessage) message;
+		m=(SIPMutableMessage) message;
 		SipServletMessage sm=m.getContent();
 		
-		String sourceTransport=sm.getInitialTransport();
-		if(sourceTransport==null) {
-			sourceTransport=ProtocolAdapterFactory.PROTOCOL_WSS;
-		}
+		String sourceTransport=m.getSourceTransport();
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("o Transport "+sourceTransport);
-			LOG.trace(">> adapt() Adapting protocol [->WSS]");
+			LOG.trace(">> adapt() Adapting protocol ["+sourceTransport+"->"+getProtocol()+"]");
 		}
-		adaptMedia(message);
+		if (sm.getContentLength() > 0 && sm.getContentType().equalsIgnoreCase("application/sdp")) {
+			message=adaptMedia(message);
+			
+		}
 		
 		return m;
 	}
+	
+	
+	@Override
+	protected String adaptSdp(MediaController mediaController, String host) throws SdpException {
+
+		String sdpContent = mediaController.getWebrtcSdp(host);
+	
+		return sdpContent;
+
+	}
+
 
 	@Override
 	public String getProtocol() {

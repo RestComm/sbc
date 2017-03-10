@@ -21,10 +21,10 @@ package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 
-
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
+import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.io.sdp.SdpException;
@@ -34,9 +34,15 @@ import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.bo.Connector;
+import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.call.CallManager;
+import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
+import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.media.MediaController.StreamProfile;
 import org.restcomm.sbc.media.MediaSession;
 
 
@@ -51,6 +57,8 @@ import org.restcomm.sbc.media.MediaSession;
 public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
+	private RouteManager routeManager = RouteManager.getRouteManager();
+	private LocationManager locationManager = LocationManager.getLocationManager();
 	
 	public IncomingDPIProcessor(ProcessorChain callback) {
 		super(callback);
@@ -74,19 +82,6 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 
 	}
 
-
-	private void processMessage(SIPMutableMessage message) {
-
-		if (RouteManager.isFromDMZ(message.getContent())) {
-			message.setDirection(Message.SOURCE_DMZ);	
-		}
-		else {
-			message.setDirection(Message.SOURCE_MZ);
-		}
-		
-		message.setTarget(Message.TARGET_B2BUA);
-	}
-
 	@Override
 	public ProcessorCallBack getCallback() {
 		return this;
@@ -98,33 +93,60 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		return "1.0.0";
 	}
 
-	@Override
-	public void doProcess(Message message) throws ProcessorParsingException {
+	
+	private void processRequest(Message message) throws ProcessorParsingException {
+		
 		SIPMutableMessage m = (SIPMutableMessage) message;
 		SipServletMessage sm=m.getContent();
 		MediaSession mediaSession;
+		Connector connector;
 		
 		m.setSourceLocalAddress(sm.getLocalAddr());
 		m.setSourceRemoteAddress(sm.getRemoteAddr());
 		m.setSourceTransport(sm.getTransport()==null?"UDP":sm.getTransport().toUpperCase());
 		
+		if (RouteManager.isFromDMZ(m.getContent())) {
+			m.setDirection(Message.SOURCE_DMZ);
+			try {		
+				connector = routeManager.getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
+						sm.getInitialTransport());	
+				m.setTargetLocalAddress(connector.getHost());
+				m.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
+				m.setTargetTransport(connector.getTransport().toString());		
+
+			} catch (Exception e) {
+					LOG.error("ERROR", e);
+			}
+		}
+		else {
+			m.setDirection(Message.SOURCE_MZ);
+			SipURI toURI 	= (SipURI) sm.getTo().  getURI();
+			m.setTarget(Message.TARGET_DMZ);
+			if(!sm.getMethod().equals("REGISTER")) {
+				// Comes from MZ Must create LEG to DMZ based on Location info
+				Location location = null;
+				
+				try {
+					location = locationManager.getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
+					m.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
+					m.setTargetRemoteAddress(location.getHost());
+					m.setTargetTransport(location.getTransport().toUpperCase());
+				} catch (Exception e) {
+					LOG.error("ERROR", e);
+				}
+			}
+		}
+		
+		m.setTarget(Message.TARGET_B2BUA);
+		
+		
 		if(sm.getContentLength()>0 &&
 			sm.getContentType().equals("application/sdp")) {
 			try {
-				
-				if(sm instanceof SipServletRequest) {
-					mediaSession=CallManager.getCallManager().getMediaSession(sm.getSession().getId());
-					mediaSession.buildOffer(new String(sm.getRawContent()));	
-				}
-				else {	
-					SipServletResponse response=(SipServletResponse) sm;
-					String callSessionId=getCallSessionId(response.getRequest());
-					mediaSession=CallManager.getCallManager().getMediaSession(callSessionId);
-					mediaSession.buildAnswer(new String(sm.getRawContent()));
-				}
-				m.setMetadata(mediaSession);
-				
-				
+				mediaSession=CallManager.getCallManager().getMediaSession(sm.getSession().getId());
+				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);		
+				mediaSession.buildOffer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());	
+				m.setMetadata(mediaSession);	
 			} catch (IOException | SdpException  e) {
 				LOG.error("Invalid MediaMetadata!", e);
 			}
@@ -132,10 +154,91 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		}
 		
 		
-		processMessage(m);
+	}
+	private void processResponse(Message message) {
+		SIPMutableMessage m = (SIPMutableMessage) message;
+		SipServletMessage sm=m.getContent();
+		MediaSession mediaSession;
+		Connector connector;
 		
+		m.setSourceLocalAddress(sm.getLocalAddr());
+		m.setSourceRemoteAddress(sm.getRemoteAddr());
+		m.setSourceTransport(sm.getTransport()==null?"UDP":sm.getTransport().toUpperCase());
+		
+		if (RouteManager.isFromDMZ(m.getContent())) {
+			m.setDirection(Message.SOURCE_DMZ);
+			m.setTarget(Message.TARGET_B2BUA);
+			try {		
+				connector = routeManager.getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
+						sm.getInitialTransport());	
+				m.setTargetLocalAddress(connector.getHost());
+				m.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
+				m.setTargetTransport(connector.getTransport().toString());		
+
+			} catch (Exception e) {
+					LOG.error("ERROR", e);
+			}
+		}
+		else {
+			m.setDirection(Message.SOURCE_MZ);
+			SipURI fromURI 	= (SipURI) sm.getFrom().  getURI();
+			m.setTarget(Message.TARGET_DMZ);
+			if(!sm.getMethod().equals("REGISTER")) {
+				// Comes from MZ Must create LEG to DMZ based on Location info
+				Location location = null;
+				
+				try {
+					location = locationManager.getLocation(fromURI.getUser() + "@" + ConfigurationCache.getDomain());
+					m.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
+					m.setTargetRemoteAddress(location.getHost());
+					m.setTargetTransport(location.getTransport().toUpperCase());
+				} catch (Exception e) {
+					LOG.error("ERROR", e);
+				}
+			}
+		}
+	
+		if(sm.getContentLength()>0 &&
+			sm.getContentType().equals("application/sdp")) {
+			try {			
+				SipServletResponse response=(SipServletResponse) sm;
+				String callSessionId=getCallSessionId(response.getRequest());
+				mediaSession=CallManager.getCallManager().getMediaSession(callSessionId);
+				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);
+				mediaSession.buildAnswer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());		
+				m.setMetadata(mediaSession);		
+			} catch (IOException | SdpException  e) {
+				LOG.error("Invalid MediaMetadata!", e);
+			}
+			
+		}
 		
 	}
+	
+	@Override
+	public void doProcess(Message message) throws ProcessorParsingException {
+		SIPMutableMessage m = (SIPMutableMessage) message;
+		SipServletMessage sm=(SipServletMessage) message.getContent();
+		
+		
+		
+		if(sm instanceof SipServletRequest) {
+			processRequest(m);
+		}
+		if(sm instanceof SipServletResponse) {
+			processResponse(m);
+		}
+		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(message.toString());
+			LOG.trace("-------" + sm.getLocalAddr() + "->" + sm.getRemoteAddr());
+			LOG.trace("-------Receiving message: \n" + sm);
+		}
+		
+	}
+	
+	
+
 	private String getCallSessionId(SipServletRequest currentRequest) {
 		SipServletRequest oRequest=(SipServletRequest) currentRequest.getSession().getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 		return oRequest.getSession().getId();

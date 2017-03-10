@@ -52,6 +52,7 @@ public class RouteManager {
 	
 	private static RouteManager routeManager;
 	private HashMap<String, Connector> dmzTable =null;
+	private HashMap<String, Connector> conTable =null;
 	
 	private static transient Logger LOG = Logger.getLogger(RouteManager.class);
 	
@@ -69,6 +70,7 @@ public class RouteManager {
 	
 	private void updateRoutingTable() {
 		dmzTable =new HashMap<String, Connector>();
+		conTable =new HashMap<String, Connector>();
 		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);		
         RoutesDao rdao = daos.getRoutesDao();
         ConnectorsDao cdao = daos.getConnectorsDao();
@@ -79,9 +81,11 @@ public class RouteManager {
         	Connector target=cdao.getConnector(dmzRoute.getTargetConnector());	
         	
         	dmzTable.put(NetworkManager.getIpAddress(source.getPoint())+":"+source.getTransport()+":"+source.getPort(), target);
+        	conTable.put(NetworkManager.getIpAddress(source.getPoint())+":"+source.getTransport()+":"+source.getPort(), source);
         	
         	if(LOG.isInfoEnabled()) {
         		LOG.info("DMZ Route add "+source.toPrint()+" => "+target.toPrint());
+        		LOG.info("DMZ Connector add "+source.toPrint());
         		
         	}
         }
@@ -108,15 +112,22 @@ public class RouteManager {
 		return sipFactory.createAddress(contactUri);
 	}
 	
-	public SipURI getContactAddress(String user, String transport, InetSocketAddress address) throws NoRouteToHostException {
+	public Address getContactAddress(String displayName, String user, String transport, InetSocketAddress address) throws NoRouteToHostException {
 		
 		SipFactory sipFactory = ConfigurationCache.getSipFactory();
-		SipURI contactUri = sipFactory.createSipURI(user, address.getHostString());
-		if(transport!=null&&!"".equals(transport.trim())) {
-			contactUri.setTransportParam(transport);
+		Address contactUri;
+		String stringUri="";
+		try {
+			stringUri="<sip:"+user+"@"+address.getHostString()+":"+address.getPort()+">";
+			contactUri = sipFactory.createAddress(stringUri);
+		} catch (ServletParseException e) {
+			throw new NoRouteToHostException("Cannot create Contact Address "+stringUri);
 		}
 		
-		contactUri.setPort(address.getPort());
+		if(transport!=null&&!"".equals(transport.trim())) {
+			contactUri.setParameter("transport", transport);
+		}
+		
 		
 		
 		if(LOG.isTraceEnabled()) {
@@ -147,6 +158,47 @@ public class RouteManager {
 		}
 		return connector;
 	}
+	
+	public Connector getDMZConnector(String sourceHost, int sourcePort, String sourceTransport) throws NoRouteToHostException {
+		if(sourceTransport==null) {
+			// implicit transport
+			sourceTransport="UDP";
+		}
+		if(sourcePort<0) {
+			// implicit port
+			sourcePort=5060;
+		}
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("oo Getting DMZ Connector for host="+sourceHost+" transport="+sourceTransport+" port="+sourcePort);
+		}
+		Connector connector=conTable.get(sourceHost+":"+sourceTransport.toUpperCase()+":"+sourcePort);
+		if(connector==null)
+			throw new NoRouteToHostException("No Connector for "+sourceHost+":"+sourceTransport+":"+sourcePort);
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("ooo "+connector.toPrint());
+		}
+		return connector;
+	}
+	
+	public InetSocketAddress getOutboundProxy(String connectorSid) {
+		for(Connector connector:conTable.values()) {
+			if(connector.getSid().toString().equals(connectorSid)) {
+				return connector.getOutboundInterface();
+			}
+		}
+		return null;
+		
+	}
+	public Connector getDMZConnector(String connectorSid) {
+		for(Connector connector:conTable.values()) {
+			if(connector.getSid().toString().equals(connectorSid)) {
+				return connector;
+			}
+		}
+		return null;
+		
+	}
+	
 	
 	public Connector getRouteToMZ(SipServletMessage sourceMessage) throws NoRouteToHostException {
 		String sourceHost=sourceMessage.getLocalAddr();

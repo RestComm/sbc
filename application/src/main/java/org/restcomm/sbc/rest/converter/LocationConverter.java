@@ -32,7 +32,6 @@ import java.lang.reflect.Type;
 import org.apache.commons.configuration.Configuration;
 import org.joda.time.DateTime;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
-import org.mobicents.servlet.sip.restcomm.util.StringUtils;
 import org.restcomm.sbc.bo.Location;
 
 
@@ -45,13 +44,13 @@ import org.restcomm.sbc.bo.Location;
  */
 @ThreadSafe
 public final class LocationConverter extends AbstractConverter implements JsonSerializer<Location> {
-    private final String apiVersion;
-    private final String rootUri;
+   // private final String apiVersion;
+   // private final String rootUri;
 
     public LocationConverter(final Configuration configuration) {
         super(configuration);
-        apiVersion = configuration.getString("api-version");
-        rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
+        //apiVersion = configuration.getString("api-version");
+        //rootUri = StringUtils.addSuffixIfNotPresent(configuration.getString("root-uri"), "/");
     }
 
     @SuppressWarnings("rawtypes")
@@ -71,6 +70,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writeExpires(location.getExpires(), writer);
         writeUserAgent(location.getUserAgent(), writer);
         writePort(location.getPort(), writer);
+        writeConnector(location.getSourceConnectorSid().toString(), writer);
         writer.endNode();
     }
 
@@ -85,6 +85,7 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writePort(location.getPort(), object);
         writeExpires(location.getExpires(), object);
         writeUserAgent(location.getUserAgent(), object);
+        writeConnector(location.getSourceConnectorSid().toString(), object);
         return object;
     }
 
@@ -104,6 +105,18 @@ public final class LocationConverter extends AbstractConverter implements JsonSe
         writer.startNode("Domain");
         if (domain != null) {
             writer.setValue(domain);
+        }
+        writer.endNode();
+    }
+
+    private void writeConnector(final String connector, final JsonObject object) {
+        object.addProperty("connectorSid", connector);
+    }
+    
+    private void writeConnector(final String connector, final HierarchicalStreamWriter writer) {
+        writer.startNode("ConnectorSid");
+        if (connector != null) {
+            writer.setValue(connector);
         }
         writer.endNode();
     }
