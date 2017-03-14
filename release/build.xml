@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
 <project basedir="." default="release" name="sbc.release">
 <!-- certificate properties -->	
-<property name="build.output.dir" value="/usr/local"/>
-<property name="verisign.key.store" value="${build.output.dir}/.keystore"/>
+<property name="verisign.output.dir" value="/usr/local"/>
 <property name="verisign.key.storepass" value="chanGeME"/>
-<property name="verisign.key.alias" value="sbc"/>
 <property name="verisign.key.pass" value="chanGeME"/>
 	<!-- general properties -->		
   <property environment="sys"/>
@@ -60,8 +58,8 @@
     </classpath>
   </taskdef>
 
-  <target depends="clean,get-deps,extract-deps,build-sbc, copy-sbc, copy-docs, genKeystore, make-final-zip" name="release"/>
-  <target depends="get-deps,extract-deps,build-sbc, copy-sbc, copy-docs, genKeystore, make-final-zip" name="release-no-clean"/>
+  <target depends="clean,get-deps,extract-deps,build-sbc, copy-sbc, copy-docs, make-final-zip" name="release"/>
+  <target depends="get-deps,extract-deps,build-sbc, copy-sbc, copy-docs, make-final-zip" name="release-no-clean"/>
 
   <target name="deploy">
     <ant antfile="${ant.file.sbc.release}" target="release">
@@ -294,20 +292,7 @@
     </tstamp>
   </target>
 
-	<target name="genKeystore">
-	  <mkdir dir="${build.output.dir}" />
-	  <delete failonerror="false" file="${verisign.key.store}"/>	 
-	  <genkey alias="${verisign.key.alias}" verbose="true"
-	storepass="${verisign.key.storepass}" keypass="${verisign.key.pass}"
-	validity="365" keyalg="RSA" keysize="2048" keystore="${verisign.key.store}">
-	    <dname>
-	      <param name="CN" value="SBC Project"/>
-	      <param name="OU" value="Osky"/>
-	      <param name="O" value="sbc.eolos.la"/>
-	      <param name="C" value="US"/>
-	    </dname>
-	  </genkey>
-	  </target>
+
 	
   <target name="clean">
     <delete dir="${release.tomcat.dir}"/>
