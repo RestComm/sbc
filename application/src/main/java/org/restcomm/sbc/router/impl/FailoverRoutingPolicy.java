@@ -19,38 +19,43 @@
  *******************************************************************************/
 package org.restcomm.sbc.router.impl;
 
-import java.net.InetAddress;
+import java.util.List;
 
+import javax.servlet.sip.SipURI;
+
+import org.restcomm.sbc.managers.RoutingPolicyFactory;
 import org.restcomm.sbc.router.RoutingPolicy;
+
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    28/4/2016 10:58:01
+ * @date    17 mar. 2017 8:00:59
  * @class   FailoverRoutingPolicy.java
- * @project Servlet2.5SBC
  *
  */
-public class FailoverRoutingPolicy implements RoutingPolicy {
+public class FailoverRoutingPolicy extends RoutingPolicy {
 
+	private List<String> targets;
+	
 	public String getName() {
-		return "Failover Routing Policy";
+		return RoutingPolicyFactory.FAILOVER;
 	}
 
-	public InetAddress getSelectedIPAddress() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public List<String> getTargets() {
+		return targets;
 	}
 
-	public String getSelectdTransport() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public void setTargets(List<String> targets) {
+		this.targets=targets;
+		
 	}
 
-	public int getSelectedPort() {
-		// TODO Auto-generated method stub
-		return 0;
+	@Override
+	public SipURI getCandidate() {
+		return super.getURI(0);
 	}
-
 	
 
 }

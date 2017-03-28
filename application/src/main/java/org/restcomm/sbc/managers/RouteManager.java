@@ -117,8 +117,12 @@ public class RouteManager {
 		SipFactory sipFactory = ConfigurationCache.getSipFactory();
 		Address contactUri;
 		String stringUri="";
+		
+		if (displayName==null) {
+			displayName=user;
+		}
 		try {
-			stringUri="<sip:"+user+"@"+address.getHostString()+":"+address.getPort()+">";
+			stringUri=displayName+" <sip:"+user+"@"+address.getHostString()+":"+address.getPort()+">";
 			contactUri = sipFactory.createAddress(stringUri);
 		} catch (ServletParseException e) {
 			throw new NoRouteToHostException("Cannot create Contact Address "+stringUri);
@@ -133,6 +137,41 @@ public class RouteManager {
 		if(LOG.isTraceEnabled()) {
 			LOG.trace("from-Outbound-Intf  "+address.toString());
     		LOG.trace("getContactAddress() "+contactUri.toString());		
+    	}
+		
+		return contactUri;
+	}
+	
+	public Address getFromAddress(SipURI fromURI, InetSocketAddress address) throws NoRouteToHostException {
+		
+		SipFactory sipFactory = ConfigurationCache.getSipFactory();
+		Address contactUri;
+		String stringUri="";
+		String user = fromURI.getUser();
+		String transport = fromURI.getTransportParam();
+		String tag = fromURI.getParameter("tag");
+		int port=fromURI.getPort();
+		
+		if(port <= 0) {
+			port = 5060;
+		}
+		
+		try {
+			stringUri=user+" <sip:"+user+"@"+address.getHostString()+":"+port+">";
+			contactUri = sipFactory.createAddress(stringUri);
+		} catch (ServletParseException e) {
+			throw new NoRouteToHostException("Cannot create From Address "+stringUri);
+		}
+		
+		if(transport!=null&&!"".equals(transport.trim())) {
+			contactUri.setParameter("transport", transport);
+		}
+		
+		contactUri.setParameter("tag", tag);
+		
+		if(LOG.isTraceEnabled()) {
+			LOG.trace("from-Outbound-Intf  "+address.toString());
+    		LOG.trace("getFromAddress() "+contactUri.toString());		
     	}
 		
 		return contactUri;
