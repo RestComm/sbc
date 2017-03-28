@@ -28,6 +28,9 @@ import java.util.List;
 import javax.servlet.sip.SipFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
+import org.restcomm.sbc.managers.RoutingPolicyFactory;
+import org.restcomm.sbc.router.RoutingPolicy;
+import org.restcomm.sbc.router.impl.UnavailableRoutingPolicyException;
 
 
 /**
@@ -39,8 +42,7 @@ import org.apache.log4j.Logger;
 public class ConfigurationCache {
 	
 	private static String domain;
-	private static String targetHost;
-	private static String targetHAHost;
+	private static RoutingPolicy routingPolicy;
 	private static SipFactory sipFactory;
 	private static boolean regThrottleEnabled;
 	private static int regThrottleMZTTL;
@@ -63,8 +65,12 @@ public class ConfigurationCache {
 		home=configuration.getString				("runtime-settings.home-directory");
 		apiVersion=configuration.getString			("runtime-settings.api-version");	
 		domain=configuration.getString				("runtime-settings.domain");	
-	    targetHost=configuration.getString			("runtime-settings.routing-policy.militarized-zone-target.ip-address");	
-	    targetHAHost=configuration.getString		("runtime-settings.routing-policy.militarized-zone-target.failover-ip-address");	
+	    try {
+			routingPolicy=RoutingPolicyFactory.getRoutingPolicyFactory().getPolicy(configuration);
+		} catch (UnavailableRoutingPolicyException e1) {
+			LOG.fatal("Cannot get Routing Policy ");
+			System.exit(101);
+		}	   	
 		regThrottleEnabled=configuration.getBoolean ("registrar-throttle.enable");  
         regThrottleMZTTL=configuration.getInt		("registrar-throttle.force-mz-expiration");
         regThrottleUATTL=configuration.getInt       ("registrar-throttle.force-ua-expiration");
@@ -93,16 +99,6 @@ public class ConfigurationCache {
 		
 	}
 	
-
-	public static String getTargetHost() {
-		return targetHost;
-	}
-	
-	public static String getHATargetHost() {
-		return targetHAHost;
-	}
-
-
 	public static SipFactory getSipFactory() {
 		return sipFactory;
 	}
@@ -161,6 +157,11 @@ public class ConfigurationCache {
 
 	public static String getHome() {
 		return home;
+	}
+
+
+	public static RoutingPolicy getRoutingPolicy() {
+		return routingPolicy;
 	}
 
 

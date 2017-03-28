@@ -48,6 +48,8 @@
                 
                 <domain>10.0.0.10</domain>
                 
+                <normalize-numbers-for-outbound-calls>true</normalize-numbers-for-outbound-calls>
+                
                 <nat-helper>
                 	<!-- The SBC acts as a NAT helper.
                 		 Some endpoints publish their local IP contact address,
@@ -64,55 +66,24 @@
 		                </local-networks>
                 </nat-helper>
 
-                <!-- If set to true RestComm will use the To header to determine the destination.
-                        If set to false RestComm will use the Request URI to determine the destination. -->
-                <use-to>true</use-to>
-
-                <!-- If set to true Restcomm will use the Local Address (or external address
-                        if available) in the host part of the From header for calls to the outbound
-                        proxy. Default is False, which means that Restcomm will use outbound proxy
-                        for the host part of From header -->
-                <use-local-address>false</use-local-address>
-
-                <!-- If set to true Restcomm will authenticate users and incoming messages
-                        from those users -->
-                <authenticate>true</authenticate>
-				<!-- If set to true, when calling clients Restcomm will bypass LB or Proxy if set.
-		     		Default value false so call are routed through LB-->
-				<bypass-lb-for-clients>false</bypass-lb-for-clients>
-				
-                <!-- Interval time in seconds that Restcomm will send keepalive messages (OPTIONS) to registered clients -->
-                <ping-interval>60</ping-interval>
-
-                <!-- If set to FALSE Restcomm wont normalize phone numbers (prepend +1)
-                        when creating an outbound call -->
-                <normalize-numbers-for-outbound-calls>false</normalize-numbers-for-outbound-calls>
-                <!--If set to TRUE Restcomm will use the From address of initial call as
-                        caller-id for calls created with Dial Number. Caller A (callerId A) dials
-                        DID XYZ that is bind to RCML that Dials Number 4321. If from-address-to-proxied-calls
-                        is TRUE Restcomm will pass callerId A to the created call -->
-                <from-address-to-proxied-calls>true</from-address-to-proxied-calls>
-
-                <!-- Control whether Restcomm will try to patch the Request-URI and SDP
- 			for B2BUA sessions with the discovered external IP Address of the peer -->
-                <!-- Default value: true -->
-                <patch-for-nat-b2bua-sessions>true</patch-for-nat-b2bua-sessions>
-
                 <routing-policy>
-                        <!-- Parameters for static routing policiy provider -->
-                        <militarized-zone-target>
-	                        <ip-address>201.216.233.187</ip-address>    
-	                        <failover-ip-address>192.168.120.6</failover-ip-address>
-
-	                        <!-- Allow failover to backup target -->
-	                        <allow-failover>false</allow-failover>
-	                        <!-- Number of maximum failed calls before switching from primary to the failover target -->
-	                        <max-failed-calls>20</max-failed-calls>
-	                        <!-- Allow failover recover to primary backup target fails also -->
-	                        <allow-failover-to-primary>true</allow-failover-to-primary>
-                        </militarized-zone-target>
-                </routing-policy>
-                
+                        <!-- Parameters for routing policy provider (static|fail-over|load-balance) -->
+                        	<policy name="static">
+		                        <militarized-zone-target>
+		                       		<target>udp:201.216.233.187:5060</target>
+		                        </militarized-zone-target>
+	                        </policy> 
+	                        <!-- 
+	                        <policy name="fail-over">
+	                        	<max-failed-calls>20</max-failed-calls>
+	                        	<allow-failover-to-primary>true</allow-failover-to-primary>
+		                        <militarized-zone-target>
+		                       		<target>udp:201.216.233.187:5070</target>
+		                       		<target>tcp:192.168.120.6:5060</target>
+		                        </militarized-zone-target>
+	                        </policy>    
+	                        -->           
+                </routing-policy>              
              
         </runtime-settings>
         
@@ -139,9 +110,9 @@
         		<!-- log every 500 packet 
         		<rtp-log>500</rtp-log> -->
         		-->
-        		<rtp-log>300</rtp-log>
-                <start-port>10000</start-port>
-                <end-port>20000</end-port>
+        		<rtp-log>3</rtp-log>
+                <start-port>20001</start-port>
+                <end-port>21000</end-port>
         </media-proxy>
        
         <smtp-notify>

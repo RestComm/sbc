@@ -17,42 +17,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  *******************************************************************************/
-package org.restcomm.sbc.router;
+package org.restcomm.sbc.router.impl;
 
 import java.util.List;
 
 import javax.servlet.sip.SipURI;
 
-import org.restcomm.sbc.ConfigurationCache;
+import org.restcomm.sbc.managers.RoutingPolicyFactory;
+import org.restcomm.sbc.router.RoutingPolicy;
 
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    17 mar. 2017 6:58:52
- * @class   RoutingPolicy.java
+ * @date    17 mar. 2017 7:17:27
+ * @class   StaticRoutingPolicy.java
  *
  */
-public abstract class RoutingPolicy {
+public class StaticRoutingPolicy extends RoutingPolicy {
+
+	private List<String> targets;
 	
-	
-	public abstract List<String> getTargets();
-	public abstract void setTargets(List<String> targets);
-	public abstract String getName();
-	public abstract SipURI getCandidate();
-	
-	public SipURI getURI(int order) {
-		if(order>getTargets().size()) {
-			return null;
-		}
-		String target=getTargets().get(order);
-		
-		String [] address=target.split(":");
-		SipURI uri=ConfigurationCache.getSipFactory().createSipURI("", address[1]);
-		uri.setPort(Integer.parseInt(address[2]));
-		uri.setTransportParam(address[0]);
-		
-		return uri;
+	public String getName() {
+		return RoutingPolicyFactory.STATIC;
+	}
+
+	@Override
+	public List<String> getTargets() {
+		return targets;
+	}
+
+	@Override
+	public void setTargets(List<String> targets) {
+		this.targets = targets;
 		
 	}
+
+	@Override
+	public SipURI getCandidate() {
+		return super.getURI(0);
+	}
+
 	
 }
