@@ -11,7 +11,6 @@
  * @author Jean Deruelle (jean.deruelle@ŧelestax.com)
  */
 
-var netId = '2';
 PrivateJainSipMessageConnector = function(clientConnector, webRTCommMessage, sipCallId) {
 	console.debug("PrivateJainSipMessageConnector:PrivateJainSipMessageConnector()");
 	if (clientConnector instanceof PrivateJainSipClientConnector && webRTCommMessage instanceof WebRTCommMessage) {
@@ -3503,8 +3502,7 @@ WebRTCommCall.prototype.setRtcPeerConnectionLocalDescription = function(sdpOffer
 			console.error("WebRTCommCall:onRtcPeerConnectionCreateOfferSuccessEvent(): configured codec filtering has failded, use inital RTCPeerConnection SDP offer");
 		}
 	}
-	// Force just public netId interface candidates on offer
-	this.forcePublicCandidate(parsedSdpOffer);
+	
 	// Check if offer is ok with the requested RTCPeerConnection constraints
 	if (this.webRTCommClient.configuration.RTCPeerConnection.forceTurnMediaRelay === true) {
 		this.forceTurnMediaRelay(parsedSdpOffer);
@@ -4446,41 +4444,7 @@ WebRTCommCall.prototype.forceTurnMediaRelay = function(sessionDescription) {
 		throw "WebRTCommCall:forceTurnMediaRelay(): bad arguments"
 	}
 };
-/**
- * Modifiy SDP, remove non "public" ICE candidates
- * @private
- * @param {SessionDescription} sessionDescription  JAIN (gov.nist.sdp) SDP offer object 
- */
-WebRTCommCall.prototype.forcePublicCandidate = function(sessionDescription) {
-	console.debug("WebRTCommCall:forcePublicCandidate()");
-	if (sessionDescription instanceof SessionDescription) {
-		try {
-			var mediaDescriptions = sessionDescription.getMediaDescriptions(false);
-			for (var i = 0; i < mediaDescriptions.length; i++) {
-				var mediaDescription = mediaDescriptions[i];
-				var newAttributeFieldArray = new Array();
-				var attributFields = mediaDescription.getAttributes();
-				for (var k = 0; k < attributFields.length; k++) {
-					var attributField = attributFields[k];
-					if (attributField.getName() === "candidate") {
-						var candidateValue = attributField.getValue();
-						var isPublicCandidate = candidateValue.indexOf("network-id "+netId) > 0;
-						if (isPublicCandidate) {
-							newAttributeFieldArray.push(attributField);
-						}
-					} else
-						newAttributeFieldArray.push(attributField);
-				}
-				mediaDescription.setAttributes(newAttributeFieldArray);
-			}
-		} catch (exception) {
-			console.error("WebRTCommCall:forcePublicCandidate(): catched exception, exception:" + exception);
-			throw exception;
-		}
-	} else {
-		throw "WebRTCommCall:forcePublicCandidate(): bad arguments"
-	}
-};
+
 /**
  * @class WebRTCommMessage
  * @classdesc Implements WebRTComm message  
