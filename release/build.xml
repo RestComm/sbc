@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <project basedir="." default="release" name="sbc.release">
-<!-- certificate properties -->	
-<property name="verisign.output.dir" value="/usr/local"/>
-<property name="verisign.key.storepass" value="chanGeME"/>
-<property name="verisign.key.pass" value="chanGeME"/>
+
 	<!-- general properties -->		
   <property environment="sys"/>
   <property location="../" name="workspace.sbc.dir"/>
@@ -27,7 +24,7 @@
   </condition>
 
   <!--mobicents binaries versions-->
-  <property name="sipservlets-build" value="695"/>
+  <property name="sipservlets-build" value="773"/>
   <property name="sipservlets-as7.version" value="3.1.${sipservlets-build}"/>
 
   <!-- mobicents SIP Servlets 7.x on Tomcat 7 -->
@@ -150,25 +147,34 @@
     <echo>Copy sbc
     </echo>
     <!--tomcat-->
-    <copy failonerror="true" file="${configuration.directory}/catalina.sh" overwrite="true" tofile="${build.work.dir}/bin/catalina.sh"/>
-    <copy failonerror="true" file="${configuration.directory}/setenv.sh" overwrite="true" tofile="${build.work.dir}/bin/setenv.sh"/>
-    <copy failonerror="true" file="${configuration.directory}/server.xml" overwrite="true" tofile="${build.work.dir}/conf/server.xml"/>
-    <delete failonerror="false" file="${build.work.dir}/conf/dars/mobicents-dar.properties"/>
   	<delete includeemptydirs="true">
-  	    <fileset dir="${build.work.dir}/webapps/" includes="**/*"/>
+  	  	    <fileset dir="${build.work.dir}/webapps/" includes="**/*"/>
   	</delete>
+  	
+  	<copy failonerror="true" todir="${build.work.dir}/webapps/restcomm-sbc">
+  	      <fileset dir="${workspace.sbc.dir}/application/target/restcomm-sbc">
+  	        <include name="**/*"/>
+  	      </fileset>
+  	</copy>
+
+    <copy failonerror="true" file="${configuration.directory}/catalina.sh" overwrite="true" tofile="${build.work.dir}/bin/catalina.sh"/>
+  	<copy failonerror="true" file="${configuration.directory}/sbc-configuration.sh" overwrite="true" tofile="${build.work.dir}/bin/sbc-configuration.sh"/>
+    <copy failonerror="true" file="${configuration.directory}/setenv.sh" overwrite="true" tofile="${build.work.dir}/bin/setenv.sh"/>
+  	<copy failonerror="true" file="${configuration.directory}/certs.sh" overwrite="true" tofile="${build.work.dir}/bin/certs.sh"/>
+  	<copy failonerror="true" file="${configuration.directory}/sbc.sh" overwrite="true" tofile="${build.work.dir}/bin/sbc.sh"/>
+    <copy failonerror="true" file="${configuration.directory}/server.xml" overwrite="true" tofile="${build.work.dir}/conf/server.xml"/>
+  	<copy failonerror="true" file="${configuration.directory}/mss-sip-stack.properties.template" overwrite="true" tofile="${build.work.dir}/conf/mss-sip-stack.properties.template"/>
+  	<copy failonerror="true" file="${configuration.directory}/sbc.xml.template" overwrite="true" tofile="${build.work.dir}/conf/sbc.xml.template"/>
+  	<copy failonerror="true" file="${configuration.directory}/sbc.script" overwrite="true" tofile="${build.work.dir}/webapps/restcomm-sbc/WEB-INF/data/hsql/sbc.script"/>
+    <delete failonerror="false" file="${build.work.dir}/conf/dars/mobicents-dar.properties"/>
+  	
   	<delete includeemptydirs="true">
   	  	    <fileset dir="${build.work.dir}/docs/" includes="**/*"/>
   	</delete>
   	
     <copy failonerror="true" file="${configuration.directory}/mobicents-dar.properties" tofile="${build.work.dir}/conf/dars/mobicents-dar.properties"/>
-    <copy failonerror="true" file="${configuration.directory}/mss-sip-stack.properties" overwrite="true" tofile="${build.work.dir}/conf/mss-sip-stack.properties"/>
     
-    <copy failonerror="true" todir="${build.work.dir}/webapps/restcomm-sbc">
-      <fileset dir="${workspace.sbc.dir}/application/target/restcomm-sbc">
-        <include name="**/*"/>
-      </fileset>
-    </copy>
+    
 
   	 <copy failonerror="true" todir="${build.work.dir}/docs">
   	      <fileset dir="${workspace.sbc.dir}/docs/target/generated-docs">
@@ -178,11 +184,8 @@
     
     <touch file="${build.work.dir}/bin/setenv.sh"/>
 
-    <echo append="true" file="${build.work.dir}/bin/setenv.sh">
-      export APPSERVER_PLATFORM='SBC' 
-    </echo>
-
     <chmod dir="${build.work.dir}/bin" includes="**/*.sh" perm="ugo+rx"/>
+  	<chmod dir="${build.work.dir}/webapps/restcomm-sbc/WEB-INF/scripts" includes="**/*.sh" perm="ugo+rx"/>
 
 
     <!--JBoss AS7-->

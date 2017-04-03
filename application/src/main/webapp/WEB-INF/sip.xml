@@ -116,6 +116,14 @@
 		</servlet-class>
 		<load-on-startup>4</load-on-startup>
 	</servlet>
-
+	<servlet>
+		<servlet-name>Launcher</servlet-name>
+		<display-name>Launcher</display-name>
+		<description>SBC Service Launcher</description>
+		<servlet-class>
+			org.restcomm.sbc.ServiceLauncher
+		</servlet-class>
+		<load-on-startup>5</load-on-startup>
+	</servlet>
 </sip-app>
 

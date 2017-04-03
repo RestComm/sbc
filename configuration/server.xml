@@ -95,7 +95,7 @@
          described in the APR documentation -->
     
     <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
-				keystoreFile="${user.home}/.keystore" keystorePass="NJB94210"
+				keystoreFile="conf/certs/keystore-web.jks" keystorePass="changeME"
                	maxThreads="150" scheme="https" secure="true"
                	clientAuth="false" sslProtocol="TLS" />
     <!--

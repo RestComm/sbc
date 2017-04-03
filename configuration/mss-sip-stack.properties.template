@@ -4,7 +4,7 @@ gov.nist.javax.sip.TRACE_LEVEL=0
 #LOG4J
 gov.nist.javax.sip.DEBUG_LOG=logs/mss-jsip-debuglog.txt
 gov.nist.javax.sip.SERVER_LOG=logs/mss-jsip-messages.xml
-javax.sip.STACK_NAME=Restcomm-SIP-Servlets
+javax.sip.STACK_NAME=SBC-1.0
 javax.sip.AUTOMATIC_DIALOG_SUPPORT=off
 gov.nist.javax.sip.DELIVER_UNSOLICITED_NOTIFY=true
 gov.nist.javax.sip.THREAD_POOL_SIZE=512
@@ -21,8 +21,8 @@ gov.nist.javax.sip.MAX_FORK_TIME_SECONDS=0
 # but won't work on chained applications so false by default
 gov.nist.javax.sip.AUTOMATIC_DIALOG_ERROR_HANDLING=false
 gov.nist.javax.sip.MESSAGE_PROCESSOR_FACTORY=gov.nist.javax.sip.stack.NioMessageProcessorFactory
-org.mobicents.servlet.sip.USER_AGENT_HEADER=SBC 7.5.0.806
-org.mobicents.servlet.sip.SERVER_HEADER=SBC 7.5.0.806
+org.mobicents.servlet.sip.USER_AGENT_HEADER=SBC 1.0
+org.mobicents.servlet.sip.SERVER_HEADER=SBC 1.0
 #Uncomment the following line to enable Congestion Control
 #gov.nist.javax.sip.SIP_MESSAGE_VALVE=org.mobicents.ext.javax.sip.congestion.CongestionControlMessageValve
 #org.mobicents.ext.javax.sip.congestion.CONGESTION_CONTROL_MONITOR_INTERVAL=1000
@@ -40,10 +40,8 @@ org.mobicents.ha.javax.sip.LOCAL_HTTP_PORT=8080
 org.mobicents.ha.javax.sip.LOCAL_SSL_PORT=8443
 #org.mobicents.ha.javax.sip.REACHABLE_CHECK=
 gov.nist.javax.sip.TLS_CLIENT_AUTH_TYPE=Disabled
-#javax.net.ssl.keyStore=/usr/local/Restcomm-JBoss-AS7-7.5.0.806/standalone/configuration/restcomm.keystore
-javax.net.ssl.keyStorePassword=chanGeME
-javax.net.ssl.trustStorePassword=chanGeME
-#javax.net.ssl.trustStore=/usr/local/Restcomm-JBoss-AS7-7.5.0.806/standalone/configuration/restcomm.keystore
+javax.net.ssl.keyStorePassword=changeME
+javax.net.ssl.trustStorePassword=changeME
 javax.net.ssl.keyStoreType=JKS
-javax.net.ssl.keyStore=/usr/local/.keystore
-javax.net.ssl.trustStore=/usr/local/.keystore
+javax.net.ssl.keyStore=__PWD__/conf/certs/keystore-web.jks
+javax.net.ssl.trustStore=__PWD__/conf/certs/keystore-web.jks
