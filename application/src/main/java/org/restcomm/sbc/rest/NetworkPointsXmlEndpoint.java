@@ -84,7 +84,7 @@ public final class NetworkPointsXmlEndpoint extends NetworkPointsEndpoint {
     @Path("/{id}.json")
     @Consumes(APPLICATION_FORM_URLENCODED)
     @POST
-    public Response updateAccountAsJsonPost(@PathParam("id") final String id,
+    public Response updateNetworkPointAsJsonPost(@PathParam("id") final String id,
             final MultivaluedMap<String, String> data) {
         return updateNetworkPoint(id, data, APPLICATION_JSON_TYPE);
     }
@@ -92,7 +92,7 @@ public final class NetworkPointsXmlEndpoint extends NetworkPointsEndpoint {
     @Path("/{id}.json")
     @Consumes(APPLICATION_FORM_URLENCODED)
     @PUT
-    public Response updateAccountAsJsonPut(@PathParam("id") final String id,
+    public Response updateNetworkPointAsJsonPut(@PathParam("id") final String id,
             final MultivaluedMap<String, String> data) {
         return updateNetworkPoint(id, data, APPLICATION_JSON_TYPE);
     }
@@ -100,7 +100,7 @@ public final class NetworkPointsXmlEndpoint extends NetworkPointsEndpoint {
     @Path("/{id}")
     @Consumes(APPLICATION_FORM_URLENCODED)
     @POST
-    public Response updateAccountAsXmlPost(@PathParam("id") final String id,
+    public Response updateNetworkPointAsXmlPost(@PathParam("id") final String id,
             final MultivaluedMap<String, String> data) {
         return updateNetworkPoint(id, data, APPLICATION_XML_TYPE);
     }
@@ -108,7 +108,7 @@ public final class NetworkPointsXmlEndpoint extends NetworkPointsEndpoint {
     @Path("/{id}")
     @Consumes(APPLICATION_FORM_URLENCODED)
     @PUT
-    public Response updateAccountAsXmlPut(@PathParam("id") final String id,
+    public Response updateNetworkPointAsXmlPut(@PathParam("id") final String id,
             final MultivaluedMap<String, String> data) {
         return updateNetworkPoint(id, data, APPLICATION_XML_TYPE);
     }

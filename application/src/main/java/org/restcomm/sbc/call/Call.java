@@ -20,10 +20,11 @@
 
 package org.restcomm.sbc.call;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
+
 
 import javax.swing.event.EventListenerList;
 
@@ -252,6 +253,7 @@ public class Call implements MediaSessionListener {
 	public void onMediaTimeout(MediaSession session, MediaZone zone) {
 		if(LOG.isInfoEnabled()) {
 			LOG.warn("Force ending media on "+zone.toPrint());
+			LOG.info("TODO a BYE here ");
 		}
 		
 		
@@ -259,9 +261,9 @@ public class Call implements MediaSessionListener {
 
 	@Override
 	public void onMediaTerminated(MediaSession mediaSession, MediaZone mediaZone) {
-		if(mediaSession.isActive())
-			mediaSession.finalize();
-		
+		if(mediaSession.isActive()){
+			//mediaSession.finalize();
+		}
 	}
 	
 	@Override
@@ -279,7 +281,7 @@ public class Call implements MediaSessionListener {
 				mediaSession.start();
 			if(!mediaZone.isRunning())
 				mediaZone.start();
-		} catch (UnknownHostException e) {
+		} catch (IOException e) {
 			LOG.error("Cannot start MediaSession/Zone",e);
 		}
 		

@@ -84,7 +84,7 @@ public final class ConnectorsXmlEndpoint extends ConnectorsEndpoint {
     @Path("/{sid}")
     @Consumes(APPLICATION_FORM_URLENCODED)
     @POST
-    public Response updateAccountAsXmlPost(@PathParam("sid") final String sid,
+    public Response updateConnectorAsXmlPost(@PathParam("sid") final String sid,
             final MultivaluedMap<String, String> data) {
     	return updateConnector(new Sid(sid), data, APPLICATION_XML_TYPE);
         

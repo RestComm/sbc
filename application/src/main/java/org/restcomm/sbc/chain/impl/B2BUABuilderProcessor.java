@@ -56,6 +56,7 @@ import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.router.RoutingPolicy;
 
 
 /**
@@ -71,6 +72,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	private LocationManager locationManager;
 	private SipFactory sipFactory;
 	private SipApplicationSession aSession;
+	private RoutingPolicy routingPolicy=ConfigurationCache.getRoutingPolicy();
 	
 
 	public B2BUABuilderProcessor(ProcessorChain chain) {
@@ -126,7 +128,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		RouteManager routeManager = RouteManager.getRouteManager();
 		Connector connector = null;
 		InetSocketAddress outBoundInterface = null;
-		String route;
+		SipURI route;
 		
 		
 		if (message.getDirection()==Message.SOURCE_DMZ) {
@@ -137,8 +139,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				connector = routeManager.getRouteToMZ(request.getLocalAddr(), request.getLocalPort(),
 						request.getInitialTransport());
 				outBoundInterface = connector.getOutboundInterface();
-				contactURI = routeManager.getContactAddress(request.getFrom().getDisplayName(), fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
-				
+				contactURI = routeManager.getFromAddress(fromURI, outBoundInterface);
+				//contactURI.setParameter("gr", "");
 
 			} catch (Exception e) {
 				LOG.error("ERROR", e);
@@ -146,15 +148,19 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 
 			if (LOG.isTraceEnabled()) {
 				headers.put(MessageUtil.B2BUA_FINGERPRINT_HEADER, Arrays.asList("Made in RequestBuilder to MZ"));
+				LOG.trace("Connector to build OB "+connector.toPrint());
 			}
 			message.setTargetLocalAddress(connector.getHost());
-			message.setTargetRemoteAddress(ConfigurationCache.getTargetHost());
+			message.setTargetRemoteAddress(routingPolicy.getCandidate().getHost());
 			message.setTargetTransport(connector.getTransport().toString());
 			
 			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
 			// ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
-			route="sip:" + ConfigurationCache.getTargetHost();
+			SipURI candidate=routingPolicy.getCandidate();
+			
+			route=candidate;
+			//route="sip:" + candidate.getHost()+":"+candidate.getPort()+";transport="+candidate.getTransportParam();
 			
 			
 
@@ -168,8 +174,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				//outBoundInterface = new InetSocketAddress(ConfigurationCache.getDomain(), request.getLocalPort());
 				outBoundInterface = routeManager.getOutboundProxy(location.getSourceConnectorSid().toString());
 				connector=routeManager.getDMZConnector(location.getSourceConnectorSid().toString());
-				contactURI = routeManager.getContactAddress(request.getFrom().getDisplayName(), fromURI.getUser(), fromURI.getTransportParam(), outBoundInterface);
-				
+				contactURI = routeManager.getFromAddress(fromURI, outBoundInterface);
+				//contactURI.setParameter("gr", "");
 				message.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
 				message.setTargetRemoteAddress(location.getHost());
 				message.setTargetTransport(location.getTransport().toUpperCase());
@@ -213,11 +219,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			
 			
 			if (request.isInitial()) {
-				ArrayList<String> headerList = new ArrayList<String>();
-				headerList.add(contactURI.toString());
-				headers.put("Contact",	headerList);
-				
-				
+				headers.put("Contact",	Arrays.asList(contactURI.toString()));
 				
 				if (LOG.isTraceEnabled()) {
 					
@@ -238,19 +240,32 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				if(usedRequest!=null&&usedRequest.getSession().isValid()) {
 					
 					LOG.trace("REUSING SESSION REQ "+usedRequest.getCallId()+":"+usedRequest.getHeader("CSeq"));
+					LOG.trace("ContactURI on creation "+contactURI.toString());
 					usedRequest.setMaxForwards(70);
-
+					
 					newRequest = helper.createRequest(usedRequest.getSession(), request, headers);
+					try {
+						newRequest.setAddressHeader("Contact", contactURI);
+					} catch (Exception e) {
+						LOG.trace(e.getMessage());
+					}
+					String auth = request.getHeader("Authorization");
 					newRequest.removeHeader("Authorization");
-					newRequest.addHeader("Authorization", request.getHeader("Authorization"));
+					if(auth!=null)
+						newRequest.addHeader("Authorization", auth);
 					// Controls expiration time of this leg
-					newRequest.getApplicationSession().setExpires(0);
+					// newRequest.getApplicationSession().setExpires(0);
 					
 					
 				}
 				else {
-					
+					LOG.trace("ContactURI on creation "+contactURI.toString());
 					newRequest = helper.createRequest(request, true, headers);
+					try {
+						newRequest.setAddressHeader("Contact", contactURI);
+					} catch (Exception e) {
+						LOG.trace(e.getMessage());
+					}
 					// Controls expiration time of this leg
 					newRequest.getApplicationSession().setExpires(0);
 					aSession = sipFactory.createApplicationSession();
@@ -271,7 +286,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				if(route!=null) {
 					
 					 newRequest.getSession().setOutboundInterface(outBoundInterface);
-					 newRequest.pushRoute(sipFactory.createAddress(route));
+					 newRequest.pushRoute(route);
 					 route=null;
 				}
 				/*else {
@@ -312,10 +327,19 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 					newRequest = linkedSession.createRequest("BYE");
 					
 				} 
+				
+				else if (request.getMethod().equals("CANCEL")) {
+					SipServletRequest originalRequest = (SipServletRequest) linkedSession
+							.getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
+					newRequest = helper.getLinkedSipServletRequest(originalRequest).createCancel();
+				} 
 				/*
 				 * Reinvites
 				 */
-				else if (request.getMethod().equals("INVITE")) {		
+				else if (request.getMethod().equals("INVITE")) {
+					if (LOG.isTraceEnabled()) {	
+						LOG.trace("Reinviting?");
+					}
 					newRequest = linkedSession.createRequest("INVITE");		
 				} 
 				else if (request.getMethod().equals("ACK")) {
@@ -325,11 +349,13 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 					newRequest = linkedSession.createRequest("INFO");
 					newRequest.setContent(request.getContent(), request.getContentType());		
 				} 
+				/*
 				else if (request.getMethod().equals("CANCEL")) {
 					SipServletRequest originalRequest = (SipServletRequest) linkedSession
 							.getAttribute(MessageUtil.B2BUA_ORIG_REQUEST_ATTR);
 					newRequest = helper.getLinkedSipServletRequest(originalRequest).createCancel();	
 				} 
+				*/
 				else {
 					LOG.error(request.getMethod() + " not implemented!");
 				}
@@ -354,8 +380,6 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		} catch (IllegalArgumentException e) {
 			LOG.error("", e);
 		} catch (TooManyHopsException e) {
-			LOG.error("", e);
-		} catch (ServletParseException e) {
 			LOG.error("", e);
 		} catch (UnsupportedEncodingException e) {
 			LOG.error("", e);
@@ -388,27 +412,18 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 		String reasonResponse = dmzResponse.getReasonPhrase();
 		
 		
+		/*
 		
-		if (dmzResponse.getStatus() == SipServletResponse.SC_RINGING) {
-			
-			if (LOG.isTraceEnabled()) {
-				LOG.trace("180 Detected->183");
-			}
-			//statusResponse = SipServletResponse.SC_SESSION_PROGRESS;
-			//reasonResponse = "Session Progress";
-			
-
-		}
 		if (dmzResponse.getStatus() == SipServletResponse.SC_OK) {
-			//if(dmzResponse.getMethod().equals("REGISTER")) {
-			
+		//	if(dmzResponse.getMethod().equals("REGISTER")) {	
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("Final Response Discarding dialog");
 				}
 				if(aSession!=null)
 					aSession.invalidate();
-			//}
+		//	}
 		}
+		*/
 		
 		SipServletRequest linked = helper.getLinkedSipServletRequest(dmzResponse.getRequest()); 
 		SipSession originalSession = helper.getLinkedSession(dmzResponse.getSession());
@@ -428,13 +443,18 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 			message.setTargetLocalAddress(dmzResponse.getLocalAddr());
 			message.setTargetRemoteAddress(dmzResponse.getRemoteAddr());
 			message.setTargetTransport(dmzResponse.getTransport().toUpperCase());
+			
+			if(originalSession == null) {
+				message.abort();
+				message.setContent(dmzResponse);
+				return;
+			}
+			
 			mzResponse = helper.createResponseToOriginalRequest(originalSession, statusResponse, reasonResponse);
 			
 			
 			LOG.warn(">>>>>>>>>>>>Must Abort Message flow?, No linked Session available.");
 			
-			//message.abort();
-			//return;
 		}
 		
 		

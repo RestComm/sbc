@@ -26,6 +26,7 @@ import org.apache.commons.configuration.Configuration;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.RoutesDao;
+import org.restcomm.sbc.managers.RouteManager;
 import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
@@ -79,6 +80,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
     protected String instanceId;
 	protected RouteListConverter listConverter;
 	protected Provider jmxManager;
+	protected RouteManager routeManager;
 
 	//private static transient Logger LOG = Logger.getLogger(RoutesEndpoint.class);
     public RoutesEndpoint() {
@@ -105,7 +107,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
         xstream.registerConverter(new RestCommResponseConverter(configuration));
         xstream.registerConverter(listConverter);
         instanceId = RestcommConfiguration.getInstance().getMain().getInstanceId();
-        
+        routeManager=RouteManager.getRouteManager();
        
     }
 
@@ -143,7 +145,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
         
        
         dao.removeRoute(sid);
-
+        routeManager.updateRoutingTable();
         return ok().build();
     }
     
@@ -194,6 +196,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
         final Route route = createFrom(account.getSid().toString(), data);
               
         dao.addRoute(route);
+        routeManager.updateRoutingTable();
         
         if (APPLICATION_XML_TYPE == responseType) {
             final RestCommResponse response = new RestCommResponse(route);
@@ -241,6 +244,21 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
         	throw new IllegalArgumentException("No routable NetworkPoints. Check that source is DMZ owned and target MZ owned!");
         }
         
+        if(routeExists(sconnector.getSid().toString())) {
+        	throw new IllegalArgumentException("Route from sourceConnector already exists!");
+        }
+        
+    }
+    
+    private boolean routeExists(String sourceConnector) {
+    	final RoutesDao rdao = daos.getRoutesDao();
+    	List<Route> routes = rdao.getRoutes();
+    	for(Route route:routes) {
+    		if(route.getSourceConnector().equals(sourceConnector)) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 
 }

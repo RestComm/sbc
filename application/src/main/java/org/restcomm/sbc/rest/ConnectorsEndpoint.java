@@ -242,28 +242,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         }
         
         final Connector connector = createFrom(account.getSid().toString(), data);
-        
-       // NetworkPoint point=NetworkManager.getNetworkPoint(connector.getPoint());
-        String ipAddress=NetworkManager.getIpAddress(connector.getPoint());
-        
-        boolean status=false;
-        
-        if(ipAddress!=null) {
-        	try {
-				status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString());
-			} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
-				LOG.error("JMX Manager failed");
-			}
-
-        }
-        if (!status) {
-        	LOG.error("SIP Connector was not unbound");
-        	return status(PRECONDITION_FAILED).entity("Cannot bind SIP Connector").build();
-        }
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("Binding SIP Connector on "+connector.getPoint()+" "+ipAddress+":"+ connector.getPort()+"/"+connector.getTransport().toString());
-        }
-               
+            
         dao.addConnector(connector);
         
         if (APPLICATION_XML_TYPE == responseType) {

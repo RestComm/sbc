@@ -63,14 +63,15 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 
 	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
 		SipServletMessage m=(SipServletMessage) message.getContent();
+		SipServletResponse r=null;
 		if(LOG.isTraceEnabled()) {	
 			LOG.trace("-------"+m.getLocalAddr()+"->"+m.getTo().getURI().toString());
 			LOG.trace("-------Dispatching message: \n"+m);
 		}
 		try {
 			if(m instanceof SipServletResponse) {
-				SipServletResponse r=(SipServletResponse) m;
-				if(r.getStatus()>100&&r.getStatus()<200) {
+				r=(SipServletResponse) m;
+				if(r.getStatus()>=100&&r.getStatus()<200) {
 					try {
 						r.sendReliably();
 						return r;
@@ -85,10 +86,10 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 			}
 			m.send();
 		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
+			LOG.error(e.getMessage());
 		
 		} catch (RuntimeException e) {
-			LOG.error("!Cannot dispatch", e);
+			LOG.error("!Cannot dispatch "+m.getMethod()+"/"+(r!=null?r.getStatus()+":"+r.getReasonPhrase():""));
 		}
 		
 		return m;

@@ -6,6 +6,7 @@
 * You must have link:https://git-scm.com/book/en/v2/Getting-Started-Installing-Git[git] installed on your computer
 * You must have link:http://ant.apache.org/manual/install.html[ant] installed on your computer
 * You must have link:http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html[JDK - 7] installed on your computer
+* You must have OpenSSL installed on your computer
 * You must be running link:https://maven.apache.org/download.cgi[maven] version 3.x.x on your computer
 
 == Obtaining git URL

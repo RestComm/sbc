@@ -68,7 +68,7 @@ public class RouteManager {
 		return routeManager;
 	}
 	
-	private void updateRoutingTable() {
+	public void updateRoutingTable() {
 		dmzTable =new HashMap<String, Connector>();
 		conTable =new HashMap<String, Connector>();
 		DaoManager daos=ShiroResources.getInstance().get(DaoManager.class);		

@@ -340,14 +340,14 @@ public class RtcpChannel extends MultiplexedChannel implements DtlsListener, Ice
 
     @Override
     public void onSelectedCandidates(SelectedCandidatesEvent event) {
-    	logger.info("onSelectedCandidates(), handshake must begin with event="+event);
+    	logger.info("onSelectedCandidates(), handshake must begin");
     	logger.info("Remote Peer="+event.getRemotePeer());
     	
         try {
-        	logger.info("dataChannel Local="+dataChannel.getLocalAddress()+", Remote="+dataChannel.getRemoteAddress());
+        	
             // Connect channel to start receiving traffic from remote peer
             this.connect(event.getRemotePeer());
-
+            logger.info("dataChannel Local="+dataChannel.getLocalAddress()+", Remote="+dataChannel.getRemoteAddress());
             if (this.secure) {
                 // Start DTLS handshake
                 this.dtlsHandler.handshake();

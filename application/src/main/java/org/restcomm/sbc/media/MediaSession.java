@@ -156,12 +156,7 @@ public class MediaSession  {
 	}
 	
 	public void finalize()  {
-		// MediaZones are finalized globally
-		
-		if(LOG.isTraceEnabled()) {
-			LOG.trace("Finalizing "+this.toPrint());	
-		}
-		
+	
 		if(offer!=null)
 			offer.finalize();
 		if(answer!=null)
@@ -257,7 +252,7 @@ public class MediaSession  {
 		    if(answerZone!=null) {
 		    	// either leg is stuck	
 		    	fireMediaTimeoutEvent(answerZone);
-		    	answer.finalize(offerZone);
+		    	answer.finalize(answerZone);
 		    }
 	             
 	    }

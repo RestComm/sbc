@@ -38,6 +38,7 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.managers.LocationManager;
+import org.restcomm.sbc.managers.RouteManager;
 import org.apache.commons.net.util.SubnetUtils;
 
 
@@ -84,8 +85,10 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">> processResponse()");
-			LOG.trace(">> request Coming from host: "+request.getRemoteHost());
-			LOG.trace(">> request Coming from port: "+request.getRemotePort());		
+			LOG.trace(">> request  came from host/port:"+request.getRemoteHost()+":"+request.getRemotePort());		
+			LOG.trace(">> message  coming from host:   "+message.getSourceRemoteAddress());
+			LOG.trace(">> response coming from Contact:"+response.getHeader("Contact"));
+			
 		}
 		
 		
@@ -103,7 +106,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		contactURI.setPort(request.getRemotePort());
 		
 		if(LOG.isTraceEnabled()){ 
-			LOG.trace("Patching NATed Contact Address to: "+contactURI.toString());
+			LOG.trace("Patching NATed Contact Address from: "+request.getHeader("Contact")+" to: "+contactURI.toString());
 		}
 		
 		/*
@@ -134,14 +137,23 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 		SipServletRequest request=(SipServletRequest) message.getContent();
 		SipURI toURI 	= (SipURI) request.getTo().getURI();
 		
-		
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">> processRequest()");
+			LOG.trace(">> request  came from host/port:"+request.getRemoteHost()+":"+request.getRemotePort());		
+			LOG.trace(">> message  coming from host:   "+message.getSourceRemoteAddress());
+			LOG.trace(">> request  coming from Contact:"+request.getHeader("Contact"));
+			LOG.trace(">> request  is inital          :"+request.isInitial());
+			LOG.trace(">> request  direction          :"+message.getDirection());
+			
+		}
+		/*
 		if(!request.isInitial()) {
-			/*
-			 * If the request goes to DMZ and it is not inital
-			 * it means that the original request came from a 
-			 * previously registered user.
-			 * has to patch NATed routes to reach the endpoint.
-			 */
+			//
+			// If the request goes to DMZ and it is not inital
+			// it means that the original request came from a 
+			// previously registered user.
+			// has to patch NATed routes to reach the endpoint.
+			//
 			if(message.getDirection()==Message.SOURCE_MZ) {
 				
 					Location location = null;
@@ -167,7 +179,7 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 			}
 			
 		}
-
+	*/
 		message.setContent(request);		
 	}
 

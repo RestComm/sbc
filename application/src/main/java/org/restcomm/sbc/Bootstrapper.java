@@ -31,18 +31,13 @@ import org.apache.commons.configuration.interpol.ConfigurationInterpolator;
 
 
 import org.apache.log4j.Logger;
-import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.identity.IdentityContext;
-import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
-import org.restcomm.sbc.managers.Monitor;
-import org.restcomm.sbc.managers.NetworkManager;
-import org.restcomm.sbc.managers.jmx.JMXProvider;
-import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
+
 
 import com.typesafe.config.ConfigFactory;
 
@@ -115,52 +110,12 @@ public final class Bootstrapper extends SipServlet {
         // Initialize identityContext
         IdentityContext identityContext = new IdentityContext(xml);
         context.setAttribute(IdentityContext.class.getName(), identityContext);
-        try {
-        	//launchJMXServer();
-			bindConnectors(storage);
-			
-		} catch (Exception e) {
-			LOG.error("Cannot bind connectors!",e);
-		}
-       
+        
         Version.printVersion();
-        
-        Monitor monitor=Monitor.getMonitor();
-        monitor.start();
        
-        
-        
     }
     
    
-    private void bindConnectors(DaoManager storage) throws Exception {
-    	
-    	JMXProvider jmxManager=null;
-    	boolean status;
-    	jmxManager = JMXProviderFactory.getJMXProvider();
-		
-    	ConnectorsDao dao=storage.getConnectorsDao();
-    	for(Connector connector:dao.getConnectors()) {
-    		String npoint=connector.getPoint();
-    		String ipAddress=NetworkManager.getIpAddress(npoint);
-    		if(connector.getState()==Connector.State.UP) {
-	    		status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString());
-	    		if(status) {
-		    		if(LOG.isDebugEnabled()) {
-		    			LOG.debug("Binding Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
-		    		}
-	    		}	
-	    		else {
-		    		if(LOG.isDebugEnabled()) {
-		    			LOG.debug("CANNOT Bind Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
-		    		}
-	    		}
-    		}
-    	}
-    	
-    }
-    
-
     private DaoManager storage(final Configuration configuration, final ClassLoader loader) throws ObjectInstantiationException {
         final String classpath = configuration.getString("dao-manager[@class]");
         final DaoManager daoManager = (DaoManager) new ObjectFactory(loader).getObjectInstance(classpath);

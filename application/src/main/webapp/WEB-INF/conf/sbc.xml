@@ -111,8 +111,8 @@
         		<rtp-log>500</rtp-log> -->
         		-->
         		<rtp-log>3</rtp-log>
-                <start-port>20001</start-port>
-                <end-port>21000</end-port>
+                <start-port>10000</start-port>
+                <end-port>20000</end-port>
         </media-proxy>
        
         <smtp-notify>
