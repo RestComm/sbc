@@ -1,5 +1,6 @@
 package org.restcomm.sbc.managers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +56,7 @@ public class Monitor {
 	private JMXProvider jmxManager;
 	private CallManager callManager;
 	private ThreatManager threatManager;
+	private ScheduledExecutorService scheduledExecutorService;
 	
 	private Monitor() {
 		threatManager=ThreatManager.getThreatManager();
@@ -66,7 +68,7 @@ public class Monitor {
 			LOG.error("JMX Error", e);
 		}
 		callManager=CallManager.getCallManager();
-		
+		Runtime.getRuntime().addShutdownHook(new ProcessorHook());
 	}
 	
 	
@@ -252,7 +254,7 @@ public class Monitor {
 	
 	public void start() {
 		
-		ScheduledExecutorService scheduledExecutorService =
+		scheduledExecutorService =
 		        Executors.newSingleThreadScheduledExecutor();
 
 		    scheduledExecutorService.scheduleWithFixedDelay(new Task(),
@@ -261,7 +263,25 @@ public class Monitor {
 		    TimeUnit.SECONDS);
 
 	}
-
+	
+	public void stop() throws IOException {		
+		scheduledExecutorService.shutdown();
+		jmxManager.close();
+	}
+	
+	class ProcessorHook extends Thread {
+		 
+	    @Override
+	    public void run(){
+	        try {
+				Monitor.this.stop();
+			} catch (IOException e) {
+				LOG.error("Cannot stop JMX Provider");
+			}
+	        
+	         
+	    }
+	}
 	
 	class Task implements Runnable {
 		
