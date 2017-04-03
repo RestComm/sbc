@@ -70,6 +70,7 @@ public class NetworkManager  {
 	}
 	
 	public static List<NetworkPoint> getPersistentNetworkPoints() {
+		mergeNetworkPoints();
 		return tots;
 	}
 	

@@ -205,7 +205,7 @@ public abstract class NetworkPointsEndpoint extends SecuredEndpoint {
             	return status(CONFLICT).build();
             }
             
-            update(point, data);
+            point=update(point, data);
             
             dao.updateNetworkPoint(point);
             
