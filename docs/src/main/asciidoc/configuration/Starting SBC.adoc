@@ -5,6 +5,8 @@
 
 * Install link:http://linuxaria.com/howto/linux-subnet-calculator-cidr[IPCalc]
 * Install link:http://dev.mysql.com/doc/refman/5.7/en/installing.html[MySQL]
+* Install link:http://dev.mysql.com/doc/refman/5.7/en/installing.html[OpenSSL]
+* Install link:http://dev.mysql.com/doc/refman/5.7/en/installing.html[Iptables]
 * You must have link:http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html[JDK - 7] installed on your computer
 
 == Download and unzip Restcomm SBC binary
@@ -22,6 +24,15 @@ wget https://mobicents.ci.cloudbees.com/job/RestComm-SBC/lastSuccessfulBuild/art
 *SBC-Tomcat7-1.0.869.zip*.
   Further we shall refer to this above SBC directory as the *$SBC_HOME*.
   
+=== QuickStart
+
+For the anxious ones just type the following, otherwise read the further instructive.
+[source,bash]
+----
+cd $SBC-HOME/bin
+./sbc-configuration.sh
+./sbc.sh -c -d <sip_domain> -r <routing_policy> -a start
+----
 === Configuring your SIP domain
 
 edit the main RestComm-SBC configuration file located in  $SBC_HOME/webapps/restcomm-sbc/WEB-INF/conf/sbc.xml
@@ -34,14 +45,28 @@ and you will find the domain parameter:
 ----
 Change it to your SIP target chosen domain.
 
-After that configure the IP/Host target of your SIP termination service on the MZ
+After that configure the Routing policy to the IP/Host, transport and port target of your SIP termination service on the MZ
 
 [source,bash]
 ----
-<militarized-zone-target>
-    <ip-address>192.168.120.2</ip-address>
-    <failover-ip-address>192.168.120.96</failover-ip-address>
-</militarized-zone-target>
+<routing-policy>
+     <!-- Parameters for routing policy provider (static|fail-over|load-balance) -->
+        <policy name="static">
+		      <militarized-zone-target>
+		        <target>udp:201.216.233.187:5060</target>
+		      </militarized-zone-target>
+	    </policy> 
+	 <!-- 
+	   <policy name="fail-over">
+	       <max-failed-calls>20</max-failed-calls>
+	       <allow-failover-to-primary>true</allow-failover-to-primary>
+		      <militarized-zone-target>
+		        <target>udp:201.216.233.187:5070</target>
+		        <target>tcp:192.168.120.6:5060</target>
+		      </militarized-zone-target>
+	   </policy>    
+	  -->           
+</routing-policy>       
 
 ----
 
@@ -54,11 +79,11 @@ cd $SBC-HOME/bin
 
 and launch the SBC container by typing:
 
-./catalina.sh start
+./sbc.sh start
 
 after that, look at the logs to confirm everything started gracefully.
 
-tail -f $SBC_HOME/logs/catalina.out
+tail -f $SBC_HOME/logs/sip-server.log
 
 
 ----

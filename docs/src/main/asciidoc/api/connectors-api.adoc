@@ -161,14 +161,14 @@ curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/rest
 ----
 
 
-NOTE: Connectors are first created in DOWN State. Yo have to plug it to put it on service (UP State).
+NOTE: Connectors are first created in DOWN State. You have to plug it to put it on service (UP State).
 
 [[plug-connectors]]
 === Plug a Connector
 
 .XML Connector plugging
 ----
-curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/ -d "Sid=CNedc0bce80638e78ee20d68dc748d905f" -d "State=UP"
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/CNedc0bce80638e78ee20d68dc748d905f -d "State=UP"
 ----
 
 [[unplug-connectors]]
@@ -176,7 +176,7 @@ curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/rest
 
 .XML Connector unplugging
 ----
-curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/ -d "Sid=CNedc0bce80638e78ee20d68dc748d905f" -d "State=DOWN"
+curl -X POST http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/Connectors/CNedc0bce80638e78ee20d68dc748d905f -d "State=DOWN"
 ----
 
 
