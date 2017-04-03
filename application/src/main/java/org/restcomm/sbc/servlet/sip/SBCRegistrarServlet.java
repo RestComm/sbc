@@ -58,7 +58,7 @@ public class SBCRegistrarServlet extends SipServlet {
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> Registart Servlet init()");
+	          LOG.trace(">> Registrar Servlet init()");
 	    }
 		super.init(servletConfig);
 		this.config=servletConfig;
