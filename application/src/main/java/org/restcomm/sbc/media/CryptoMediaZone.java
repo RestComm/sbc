@@ -135,7 +135,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	}
 	
 	@Override
-	public void start() throws UnknownHostException {	
+	public void start() throws IOException {	
 		attachChannel();
 		
 		if(isRunning()) {

@@ -89,13 +89,17 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 		SipServletResponse response=(SipServletResponse) message.getContent();
 		
 		if(LOG.isTraceEnabled()) {	
-			LOG.trace("INVITE RESPONSE DMZ:"+RouteManager.isFromDMZ(response));
-			
+			LOG.trace("INVITE RESPONSE DMZ:"+RouteManager.isFromDMZ(response));	
 			LOG.trace("From/To "+response.getFrom()+"/"+response.getTo());
 		}
+		
 		if (response.getStatus() == SipServletResponse.SC_OK) {			
 			
 				SipServletRequest ackRequest = response.createAck();
+				ackRequest.addHeader("X-Target", Message.TARGET[message.getDirection()]);
+				if(LOG.isTraceEnabled()) {	
+					LOG.trace("Building ACK:"+ackRequest.toString());	
+				}
 				try {
 					ackRequest.send();
 				} catch (IOException e) {
@@ -103,6 +107,7 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 				}
 				
 		}
+		
 		
 	}
 	

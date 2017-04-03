@@ -240,9 +240,6 @@ public class MediaController  {
     }
     
     public synchronized void finalize()  {
-    	if(LOG.isTraceEnabled()) {
-			LOG.trace("Finalizing "+this.toPrint());	
-		}
     	for(MediaZone zone:mediaZones.values()) {
     		finalize(zone);
     	}
@@ -465,8 +462,14 @@ public class MediaController  {
 	   				
 	   			}
 	   			
-	   			if(ip!=null)
+	   			if(ip!=null) {
 	   				mediaDescription.setConnection(connection);
+	   				RtcpAttribute rtcp=mediaDescription.getRtcp();
+	   				if(rtcp!=null) {
+	   					rtcp.setAddress(ip);
+	   					mediaDescription.setRtcp(rtcp);
+	   				}
+	   			}
 	   			if(zone.getProxyPort()==0){
 	   				LOG.warn("Cannot Patch ProxyPort == 0 ");
 	   			}

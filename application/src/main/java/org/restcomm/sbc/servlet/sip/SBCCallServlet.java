@@ -22,6 +22,7 @@
 package org.restcomm.sbc.servlet.sip;
 
 import java.io.IOException;
+import java.nio.channels.DatagramChannel;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -41,6 +42,9 @@ import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
+import org.restcomm.sbc.media.MediaController;
+import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.media.MediaZone;
 
 
 /**
@@ -138,14 +142,19 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	protected void doResponse(SipServletResponse response) throws ServletException, IOException {
 		
 		// dismissing
+		/*
 		if(response.getStatus()==SipServletResponse.SC_TRYING) {
 			return;
 		}
+		*/
 		String callSessionId=getCallSessionId(response.getRequest());
-		//Call call=callManager.getCall(callSessionId);
 		
 		if(response.getStatus()==SipServletResponse.SC_RINGING) {
 			callManager.changeCallStatus(callSessionId, Call.Status.RINGING);
+			response.setStatus(SipServletResponse.SC_SESSION_PROGRESS, "Session Progress");
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("180 Detected->183");
+			}
 
 		}
 		
@@ -180,7 +189,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 			LOG.warn("===========\nNot forwarded  message===");
 			return;
 		}
-		super.doResponse(response);
+		//super.doResponse(response);
 	}
 	
 	
@@ -234,16 +243,27 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	 */
 	@Override
 	protected void doAck(SipServletRequest request) throws ServletException, IOException {
+		String callSessionId=request.getSession().getId();	
+		callManager.changeCallStatus(callSessionId, Call.Status.BRIDGED);
+		
+		
 		if(LOG.isDebugEnabled()) {
+			MediaSession mediaSession=callManager.getCall(callSessionId).getMediaSession();
+			MediaController mediaController=mediaSession.getOffer();
+			MediaZone mediaZone= mediaController.getMediaZone(MediaController.MEDIATYPE_AUDIO);
+			DatagramChannel offerChannel = mediaZone.getChannel();
+			DatagramChannel answerChannel = mediaZone.getMediaZonePeer().getChannel();
 			LOG.debug("CALL ACK SES:"+request.getSession());	
 			LOG.debug("Got Request ACK: "	+ request.getMethod()+" State:"+request.getSession().getState().toString());
-			LOG.debug("RTP Session might start");				
+			LOG.debug("RTP Session might start");	
+			LOG.debug("Expecting (offer)  audio stream "+offerChannel.getRemoteAddress()+"===>"+offerChannel.getLocalAddress());
+			LOG.debug("Expecting (answer) audio stream "+answerChannel.getRemoteAddress()+"===>"+answerChannel.getLocalAddress());
+			
 		}
 		// Get control of session expiration
 			
-		String callSessionId=request.getSession().getId();	
-		callManager.changeCallStatus(callSessionId, Call.Status.BRIDGED);	
-				
+		
+			
 	}
 	
 	/**
