@@ -42,6 +42,7 @@
   <property location="${release.tomcat.dir}/restcomm-sip-servlets-${sipservlets.tomcat.distro.version}" name="build.work.dir"/>
 	 
   <property name="release.build.goals" value="clean install -Dmaven.test.skip=true"/>
+  <property name="release.build.goals2" value="install -Dmaven.test.skip=true"/>
   <property name="release.build.test.goals" value="clean install -Dmaven.test.failure.ignore=true"/>
   <property name="release.ts.deploy.goals" value="clean deploy"/>
 
@@ -131,7 +132,10 @@
     <echo>Building SBC</echo>
     <echo>SBC workspace dir: "${workspace.sbc.dir}"</echo>
     <exec dir="${workspace.sbc.dir}" executable="${mvn.executable}" failonerror="true">
-      <arg line="${release.build.goals}"/>
+      <arg line="${release.build.goals} -Pmaven-release"/>
+    </exec>
+	<exec dir="${workspace.sbc.dir}" executable="${mvn.executable}" failonerror="true">
+      <arg line="${release.build.goals2} -Pmaven-wildfly-release"/>
     </exec>
     <!-- 
     <exec dir="${workspace.sbc.dir}/docs" executable="${mvn.executable}" failonerror="true">

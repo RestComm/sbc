@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is free software; you can redistribute it and/or modify it under
+        the terms of the GNU Lesser General Public License as published by the Free
+        Software Foundation; either version 2.1 of the License, or (at your option)
+        any later version. This software is distributed in the hope that it will
+        be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General
+        Public License for more details. You should have received a copy of the GNU
+        Lesser General Public License along with this software; if not, write to
+        the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+        MA 02110-1301 USA, or see the FSF site: http://www.fsf.org. -->
+<sbc>
+        <runtime-settings>
+                <!-- The API version that will be used. -->
+                <api-version>2012-04-24</api-version>
+
+               
+                <!-- Cache settings. -->
+                <cache-path>${sbc:home}/cache</cache-path>
+                <cache-uri>/sbc/cache</cache-uri>
+				<!-- Each permission is represented as three columns Domain:Action:Target 
+				Possible actions are Create, Read, Modify, Delete. -->
+				<security-roles>
+					<role name="Developer">
+						<permission>RestComm:*:Accounts</permission>
+						<permission>RestComm:*:Applications</permission>
+						<permission>RestComm:*:Announcements</permission>
+						<permission>RestComm:Read,Delete:Locations</permission>
+						<permission>RestComm:*:Calls</permission>
+						<permission>RestComm:*:BanLists</permission>
+						<permission>RestComm:*:NetworkPoints</permission>
+						<permission>RestComm:Create,Delete,Read:Faxes</permission>
+						<permission>RestComm:*:Connectors</permission>
+						<permission>RestComm:*:Routes</permission>
+						<permission>RestComm:*:Statistics</permission>
+						<permission>RestComm:Read:Notifications</permission>
+						<permission>RestComm:*:EmailMessages</permission>
+						<permission>RestComm:*:Usage</permission>
+					</role>
+				</security-roles>
+				
+               	<jmx-management>
+               		<!-- Tomcat -->
+               		<provider>org.restcomm.sbc.managers.jmx.tomcat.Provider</provider>
+               		<!-- JBOSS -->
+               		<!-- <provider>org.restcomm.sbc.managers.jmx.jboss.Provider</provider> -->
+               	</jmx-management>
+                
+                <domain>10.0.0.10</domain>
+                
+                <normalize-numbers-for-outbound-calls>true</normalize-numbers-for-outbound-calls>
+                
+                <nat-helper>
+                	<!-- The SBC acts as a NAT helper.
+                		 Some endpoints publish their local IP contact address,
+                		 this way, responses to these endpoints will never reach its target back.
+                		 The SBC checks for the real NATed address from where the message is coming
+                		 and fixes the contact in the REGISTER/Location cache.
+                		 Real life is a bit more complex. Some routed networks must not be fixed because
+                		 they are routable in the LAN. Here comes the exceptions -->
+                		<local-networks>
+                		<!-- 
+		                	<local-address>192.168.88.0/24</local-address>
+		                	<local-address>192.168.120.0/24</local-address>
+		                -->
+		                </local-networks>
+                </nat-helper>
+
+                <routing-policy>
+                        <!-- Parameters for routing policy provider (static|fail-over|load-balance) -->
+                        	<policy name="static">
+		                        <militarized-zone-target>
+		                       		<target>udp:201.216.233.187:5060</target>
+		                        </militarized-zone-target>
+	                        </policy> 
+	                        <!-- 
+	                        <policy name="fail-over">
+	                        	<max-failed-calls>20</max-failed-calls>
+	                        	<allow-failover-to-primary>true</allow-failover-to-primary>
+		                        <militarized-zone-target>
+		                       		<target>udp:201.216.233.187:5070</target>
+		                       		<target>tcp:192.168.120.6:5060</target>
+		                        </militarized-zone-target>
+	                        </policy>    
+	                        -->           
+                </routing-policy>              
+             
+        </runtime-settings>
+        
+		<registrar-throttle>
+                <enable>false</enable>
+                <force-mz-expiration>800</force-mz-expiration>
+                <force-ua-expiration>30</force-ua-expiration>
+        </registrar-throttle>
+        
+        <media-proxy>	
+        		<security-policy>
+	        		<!-- SBC Always proxies media, NO Exception!. It is a topology hider,
+		        		so, there is no way to do direct media streaming from DMZ to MZ or 
+		        		viceversa.
+		        		When dealing with secured WEBRTC streams (SRTP/DTLS or so), we can choose
+		        		to do encryption termination.
+		        		false: do not handle encryption, just pass-thru.
+		        		true : does encryption termination and decode-encode SRTP/RTP to DMZ.
+	        	 	-->
+        			<encryption-handle>true</encryption-handle>
+        			
+        			
+        		</security-policy>
+        		<!-- log every 500 packet 
+        		<rtp-log>500</rtp-log> -->
+        		-->
+        		<rtp-log>3</rtp-log>
+                <start-port>10000</start-port>
+                <end-port>20000</end-port>
+        </media-proxy>
+       
+        <smtp-notify>
+                <host></host>
+                <user></user>
+                <password></password>
+        </smtp-notify>
+
+        <smtp-service>
+                <host>smtp.googlemail.com</host>
+                <user>nn@eolos.la</user>
+                <password>xxxxx</password>
+                <port>465</port>
+        </smtp-service>
+<!--
+        <dao-manager class="org.mobicents.servlet.sbc.dao.mybatis.MybatisDaoManager">
+                <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml</configuration-file>
+                <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
+                <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
+        </dao-manager>
+-->
+        <dao-manager class="org.restcomm.sbc.dao.mybatis.MybatisDaoManager">
+                <configuration-file>${sbc:home}/WEB-INF/conf/mybatis.xml
+                </configuration-file>
+                <data-files>${sbc:home}/WEB-INF/data/hsql</data-files>
+                <!-- 
+                <sql-files>${sbc:home}/WEB-INF/scripts/mariadb/sql</sql-files>
+                -->
+                <sql-files>${sbc:home}/WEB-INF/sql</sql-files>
+        </dao-manager>
+         <!-- Adjust http client behaviour for outgoing requests -->
+		<http-client>
+			<response-timeout>5000</response-timeout>
+			<!-- Control peer certificate verification for https connections. Two modes are supported:
+				'allowall' : Disables peer certificate verification. Use it when testing.
+				'strict' : Fails requests if peer certificate is not trusted. Use it in production. -->
+			<ssl-mode>strict</ssl-mode>
+			<!-- Control whether relative URL should be resolved using hostname instead of IP Address.
+			If for any reason hostname resolution fails, IP Address will be used -->
+			<use-hostname-to-resolve-relative-url>true</use-hostname-to-resolve-relative-url>
+			<!-- Optionally provide the hostname to be used, otherwise Java will try to get the hostname of the machine JVM is running -->
+			<hostname></hostname>
+		</http-client>       
+        
+      
+        <!-- Adjust http client behaviour for outgoing requests -->
+        <http-client>
+                <!-- Control peer certificate verification for https connections. Two modes are supported:
+                        'allowall' : Disables peer certificate verification. Use it when testing.
+                        'strict' : Fails requests if peer certificate is not trusted. Use it in production. -->
+                <ssl-mode>allowall</ssl-mode>
+                <!-- Control whether relative URL should be resolved using hostname instead of IP Address.
+                If for any reason hostname resolution fails, IP Address will be used -->
+                <use-hostname-to-resolve-relative-url>true</use-hostname-to-resolve-relative-url>
+                                <!-- Optionally provide the hostname to be used, otherwise Java will try to get the hostname of the machine JVM is running -->
+                <hostname></hostname>
+        </http-client>
+
+
+        
+</sbc>
+                
