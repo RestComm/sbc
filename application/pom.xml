@@ -219,13 +219,7 @@
 			<dependency>
 			    <groupId>org.mobicents.media.io</groupId>
 			    <artifactId>sdp</artifactId>
-			</dependency>
-			<dependency>
-    			<groupId>org.mobicents.servlet.sip</groupId>
-    			<artifactId>sip-servlets-client</artifactId>
-   				<version>3.1.773</version>
-			</dependency>
-			
+			</dependency>		
 				
 	</dependencies>
 
