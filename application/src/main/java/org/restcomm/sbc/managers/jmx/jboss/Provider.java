@@ -57,12 +57,10 @@ import javax.management.remote.JMXServiceURL;
 import javax.servlet.sip.SipFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.modeler.BaseModelMBean;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.catalina.SipStandardService;
 import org.mobicents.servlet.sip.core.SipService;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.managers.NetworkManager;
@@ -293,7 +291,7 @@ public class Provider implements JMXProvider,
 				if(LOG.isDebugEnabled()) {
 					System.err.println("SipConnector Ontree: "+(ObjectInstance)mbean);
 					SipProtocolHandler handler = (SipProtocolHandler) mbsc.getAttribute(objectMBeanName, "protocol");
-					System.err.println("SipConnector: "+handler.getSipConnector());
+					//System.err.println("SipConnector: "+handler.getSipConnector());
 					
 				}
 			}       
