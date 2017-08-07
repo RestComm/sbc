@@ -520,6 +520,60 @@
 			<modules>
 				<module>docs</module>
 			</modules>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.coderplus.maven.plugins</groupId>
+						<artifactId>copy-rename-maven-plugin</artifactId>
+						<version>1.0</version>
+						<executions>
+						  <execution>
+							<id>copy-file</id>
+							<phase>generate-sources</phase>
+							<goals>
+							  <goal>copy</goal>
+							</goals>
+							<configuration>
+							  <sourceFile>src/main/webapp/WEB-INF/conf/sbc-tomcat.xml</sourceFile>
+							  <destinationFile>src/main/webapp/WEB-INF/conf/sbc.xml</destinationFile>
+							</configuration>
+						  </execution>
+						  <execution>
+							<id>copy-web-file</id>
+							<phase>generate-sources</phase>
+							<goals>
+							  <goal>copy</goal>
+							</goals>
+							<configuration>
+							  <sourceFile>src/main/webapp/WEB-INF/web-tomcat.xml</sourceFile>
+							  <destinationFile>src/main/webapp/WEB-INF/web.xml</destinationFile>
+							</configuration>
+						  </execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<webXml>src/main/webapp/WEB-INF/web-tomcat.xml</webXml>
+							<packagingExcludes>
+							**/*-wildfly.xml,
+							**/*-tomcat.xml
+							</packagingExcludes>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<configuration>
+							<allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+							<preparationGoals>clean install</preparationGoals>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<arguments>-Dmaven.test.skip</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<id>maven-release</id>
