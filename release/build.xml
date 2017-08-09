@@ -7,13 +7,13 @@
   <property location="../target" name="release.dir"/>
   <property location="../build/dependencies" name="checkout.dir"/>
   <property location="../build/target-tomcat" name="release.tomcat.dir"/>
-  <property location="../build/target-as7" name="release.as7.dir"/>
+  <property location="../build/target-as10" name="release.as10.dir"/>
   <property location=".." name="base.dir"/>
   <property location="${release.dir}/docs" name="docs.dir"/>
   <property name="version" value="1.0.0"/>
   <property location="${release.dir}/docs/sbc" name="sbc.docs.dir"/>
   <property location="${release.tomcat.dir}/docs/sbc" name="sbc.docs.tomcat.dir"/>
-  <property location="${release.as7.dir}/docs/sbc" name="sbc.docs.as7.dir"/>
+  <property location="${release.as10.dir}/docs/sbc" name="sbc.docs.as10.dir"/>
  
   <property location="${workspace.sbc.dir}/configuration" name="configuration.directory"/>
   
@@ -22,24 +22,38 @@
   <condition property="wget.executable" value="C:\Program Files (x86)\GnuWin32\bin\wget" else="wget">
 	 <os family="windows" />
   </condition>
+  
+  <!--Get last restcomm-sip-servlets build version-->
+  <property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>
+  
+  <exec executable="${wget.executable}" failonerror="true">
+    <arg value="--no-check-certificate"/>
+    <arg value="${sipservlets.version.download.url}"/>
+  </exec>
+	<loadfile srcfile="restcomm-sip-servlets-version.txt" property="sipservlets-build-version" >
+	<filterchain>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
 
   <!--mobicents binaries versions-->
-  <property name="sipservlets-build" value="773"/>
-  <property name="sipservlets-as7.version" value="3.1.${sipservlets-build}"/>
+  <property name="sipservlets-build" value="${sipservlets-build-version}"/>
+  <property name="sipservlets-as10.version" value="${sipservlets-build}"/>
 
   <!-- mobicents SIP Servlets 7.x on Tomcat 7 -->
-  <property name="sipservlets.tomcat.distro.version" value="${sipservlets-as7.version}-apache-tomcat-7.0.64"/>
+  <property name="sipservlets.tomcat.distro.version" value="${sipservlets-as10.version}-apache-tomcat-7.0.64"/>
   <property name="sipservlets.tomcat.download.distro.file" value="restcomm-sip-servlets-${sipservlets.tomcat.distro.version}.zip"/>
   <property name="sipservlets.tomcat.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/${sipservlets-build}/artifact/${sipservlets.tomcat.download.distro.file}"/>
   <property name="sipservlets.tomcat.distro.zip.path" value="${checkout.dir}/${sipservlets.tomcat.download.distro.file}"/>
 
   <!-- mobicents SIP Servlets 7.x on JBoss AS7-->
-  <property name="sipservlets.as7.distro.version" value="${sipservlets-as7.version}-jboss-as-7.2.0.Final"/>
-  <property name="sipservlets.as7.download.distro.file" value="restcomm-sip-servlets-${sipservlets.as7.distro.version}.zip"/>
-  <property name="sipservlets.as7.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/${sipservlets-build}/artifact/${sipservlets.as7.download.distro.file}"/>
-  <property name="sipservlets.as7.distro.zip.path" value="${checkout.dir}/${sipservlets.as7.download.distro.file}"/>
+  <property name="sipservlets.as10.distro.version" value="${sipservlets-as10.version}-wildfly-10.0.0.Final"/>
+  <property name="sipservlets.as10.download.distro.file" value="restcomm-sip-servlets-${sipservlets.as10.distro.version}.zip"/>
+  <property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>
+  <property name="sipservlets.as10.distro.zip.path" value="${checkout.dir}/${sipservlets.as10.download.distro.file}"/>
 
   <property location="${release.tomcat.dir}/restcomm-sip-servlets-${sipservlets.tomcat.distro.version}" name="build.work.dir"/>
+  <property location="${release.as10.dir}/restcomm-sip-servlets-${sipservlets.as10.distro.version}" name="build.as10work.dir"/>
 	 
   <property name="release.build.goals" value="clean install -Dmaven.test.skip=true"/>
   <property name="release.build.goals2" value="install -Dmaven.test.skip=true"/>
@@ -84,17 +98,18 @@
   </target>
 
   <!--GET Sip=Servlets  - downloads-->
-  <!-- 
-  <target depends="get-sipservlets-tomcat,get-sipservlets-as7" name="get-deps"/>
-  <target depends="extract-sipservlets-tomcat,extract-sipservlets-as7" name="extract-deps"/>
-  -->
+   
+  <target depends="get-sipservlets-tomcat,get-sipservlets-as10" name="get-deps"/>
+  <target depends="extract-sipservlets-tomcat,extract-sipservlets-as10" name="extract-deps"/>
+  
+  <!--
   <target depends="get-sipservlets-tomcat" name="get-deps"/>
   <target depends="extract-sipservlets-tomcat" name="extract-deps"/>
-
+-->
   <!--SipServlets Tomcat-->
   <available file="${sipservlets.tomcat.distro.zip.path}" property="got.sipservlets-tomcat"/>
   <target name="get-sipservlets-tomcat" unless="got.sipservlets-tomcat">
-    <echo>Downloading SipServlets Tomcat version: ${sipservlets-as7.version}</echo>
+    <echo>Downloading SipServlets Tomcat version: ${sipservlets-as10.version}</echo>
     <exec executable="${wget.executable}" failonerror="true">
       <arg value="--no-check-certificate"/>
       <arg value="${sipservlets.tomcat.download.url}"/>
@@ -102,29 +117,29 @@
     <move file="${base.dir}/release/${sipservlets.tomcat.download.distro.file}" todir="${checkout.dir}"/>
   </target>
 
-  <!--SipServlets JBoss AS7 -->
+  <!--SipServlets Wildfly 10 -->
   
-  <available file="${sipservlets.as7.distro.zip.path}" property="got.sipservlets-as7"/>
-  <target name="get-sipservlets-as7" unless="got.sipservlets-as7">
-    <echo>Downloading SipServlets JBoss AS7 version: ${sipservlets-as7.version}</echo>
+  <available file="${sipservlets.as10.distro.zip.path}" property="got.sipservlets-as10"/>
+  <target name="get-sipservlets-as10" unless="got.sipservlets-as10">
+    <echo>Downloading SipServlets Wildfly version: ${sipservlets-as10.version}</echo>
     <exec executable="${wget.executable}" failonerror="true">
       <arg value="--no-check-certificate"/>
-      <arg value="${sipservlets.as7.download.url}"/>
+      <arg value="${sipservlets.as10.download.url}"/>
     </exec>
-    <move file="${base.dir}/build/${sipservlets.as7.download.distro.file}" todir="${checkout.dir}"/>
+    <move file="${base.dir}/release/${sipservlets.as10.download.distro.file}" todir="${checkout.dir}"/>
   </target>
 
   <target depends="get-sipservlets-tomcat" name="extract-sipservlets-tomcat">
     <delete dir="${checkout.sipservlets-tomcat.dir}" failonerror="false"/>
     <unzip dest="${release.tomcat.dir}" src="${sipservlets.tomcat.distro.zip.path}">
-      <mapper from="mss-${sipservlets-as7.version}-apache-tomcat-7.0.50/*" to="*" type="glob"/>
+      <mapper from="mss-${sipservlets-as10.version}-apache-tomcat-7.0.50/*" to="*" type="glob"/>
     </unzip>
   </target>
 
-  <target depends="get-sipservlets-as7" name="extract-sipservlets-as7">
-    <delete dir="${checkout.sipservlets-as7.dir}" failonerror="false"/>
-    <unzip dest="${release.as7.dir}" src="${sipservlets.as7.distro.zip.path}">
-      <mapper from="mss-${sipservlets-as7.version}-jboss-as-7.2.0.Final/*" to="*" type="glob"/>
+  <target depends="get-sipservlets-as10" name="extract-sipservlets-as10">
+    <delete dir="${checkout.sipservlets-as10.dir}" failonerror="false"/>
+    <unzip dest="${release.as10.dir}" src="${sipservlets.as10.distro.zip.path}">
+      <mapper from="mss-${sipservlets-as10.version}wildfly-10.0.0.Final/*" to="*" type="glob"/>
     </unzip>
   </target>
 
@@ -193,33 +208,35 @@
 
 
     <!--JBoss AS7-->
-    <!-- 
-    <delete failonerror="false" file="${release.as7.dir}/standalone/configuration/dars/mobicents-dar.properties"/>
- 
-    <copy failonerror="true" file="${configuration.directory}/mobicents-dar.properties" tofile="${release.as7.dir}/standalone/configuration/dars/mobicents-dar.properties"/>
-    <copy failonerror="true" file="${configuration.directory}/mss-sip-stack.properties" overwrite="true" tofile="${release.as7.dir}/standalone/configuration/mss-sip-stack.properties"/>
     
-    <copy failonerror="true" todir="${release.as7.dir}/standalone/deployments/restcomm-sbc.war">
+    <delete failonerror="false" file="${build.as10work.dir}/standalone/configuration/dars/mobicents-dar.properties"/>
+ 
+    <copy failonerror="true" file="${configuration.directory}/mobicents-dar.properties" tofile="${build.as10work.dir}/standalone/configuration/dars/mobicents-dar.properties"/>
+    <copy failonerror="true" file="${configuration.directory}/mss-sip-stack.properties" overwrite="true" tofile="${build.as10work.dir}/standalone/configuration/mss-sip-stack.properties"/>
+    
+    <!--
+	<copy failonerror="true" todir="${build.as10work.dir}/standalone/deployments/restcomm-sbc.war">
       <fileset dir="${workspace.sbc.dir}/application/target/restcomm-sbc">
         <include name="**/*"/>
       </fileset>
     </copy>
-    <touch file="${release.as7.dir}/standalone/deployments/restcomm-sbc.war.dodeploy"/>
-
+	-->
+    <!-- <touch file="${build.as7work.dir}/standalone/deployments/restcomm-sbc.war.dodeploy"/> -->
+	<copy failonerror="true" file="${workspace.sbc.dir}/application/target/restcomm-sbc-wildfly.war" overwrite="true" tofile="${build.as10work.dir}/standalone/deployments/restcomm-sbc-wildfly.war"/>
    
-    <echo append="true" file="${release.as7.dir}/bin/standalone.conf">
+    <echo append="true" file="${build.as10work.dir}/bin/standalone.conf">
       export APPSERVER_PLATFORM='TELESTAX' 
     </echo>
 	
- 
-    <copy failonerror="true" toDir="${release.as7.dir}/bin/restcomm-sbc">
+ <!--
+    <copy failonerror="true" toDir="${build.as7work.dir}/bin/restcomm-sbc">
       <fileset dir="${configuration.directory}/config-scripts/as7-config-scripts/restcomm-sbc">
         <include name="**/*"/>
       </fileset>
     </copy>
-
-    <chmod dir="${release.as7.dir}/bin" includes="**/*.sh" perm="ugo+rx"/>
-	-->
+-->
+    <chmod dir="${build.as10work.dir}/bin" includes="**/*.sh" perm="ugo+rx"/>
+	
   </target>
 
   <target name="copy-docs">
@@ -246,18 +263,17 @@
       </fileset>
     </copy>
     <!--docs JBoss AS7-->
-    <!-- 
-    <mkdir dir="${sbc.docs.as7.dir}"/>
-    <copy failonerror="true" file="${workspace.sbc.dir}/README.md" todir="${sbc.docs.as7.dir}">
+    
+    <mkdir dir="${sbc.docs.as10.dir}"/>
+    <copy failonerror="true" file="${workspace.sbc.dir}/README.md" todir="${sbc.docs.as10.dir}">
      
     </copy>
-    <mkdir dir="${sbc.docs.as7.dir}/sbc-javadocs"/>
-    <copy failonerror="true" todir="${sbc.docs.as7.dir}/sbc-javadocs">
+    <mkdir dir="${sbc.docs.as10.dir}/sbc-javadocs"/>
+    <copy failonerror="true" todir="${sbc.docs.as10.dir}/sbc-javadocs">
       <fileset dir="${workspace.sbc.dir}/application/target/site/apidocs">
         <include name="**/*"/>
       </fileset>
     </copy>
-    -->
   </target>
 
   <target depends="set-time-stamp" name="make-final-zip">
@@ -265,20 +281,20 @@
     <fixcrlf eof="remove" eol="lf" includes="*.sh" srcdir="${release.as7.dir}/bin"/>
   -->
     <fixcrlf eof="remove" eol="lf" includes="*.sh" srcdir="${build.work.dir}/bin"/>
-<!-- 
-    <zip destfile="${base.dir}/SBC-JBoss-AS7-${sbc.release.version}.zip" filesonly="false">
-      <zipfileset dir="${release.as7.dir}/bin" filemode="755" prefix="SBC-JBoss-AS7-${sbc.release.version}/bin">
+
+    <zip destfile="${base.dir}/SBC-JBoss-AS10-${sbc.release.version}.zip" filesonly="false">
+      <zipfileset dir="${build.as10work.dir}/bin" filemode="755" prefix="SBC-JBoss-AS10-${sbc.release.version}/bin">
         <include name="*.sh"/>
         <include name="**/*.sh"/>
       </zipfileset>
-      <zipfileset dir="${release.as7.dir}/bin" prefix="SBC-JBoss-AS7-${sbc.release.version}/bin">
+      <zipfileset dir="${build.as10work.dir}/bin" prefix="SBC-JBoss-AS10-${sbc.release.version}/bin">
         <exclude name="*.sh"/>
         <exclude name="**/*.sh"/>
       </zipfileset>
   
-      <zipfileset dir="${release.as7.dir}" excludes="**/bin/** **/server/*/log/** **/server/*/tmp/** **/server/*/work/** **/server/tmp/**" prefix="SBC-JBoss-AS7-${sbc.release.version}"/>
+      <zipfileset dir="${build.as10work.dir}" excludes="**/bin/** **/server/*/log/** **/server/*/tmp/** **/server/*/work/** **/server/tmp/**" prefix="SBC-JBoss-AS10-${sbc.release.version}"/>
     </zip>
-  -->  
+ 
     <zip destfile="${base.dir}/SBC-Tomcat7-${sbc.release.version}.zip" filesonly="false" >
       <zipfileset dir="${build.work.dir}"  prefix="SBC-Tomcat7-${sbc.release.version}"/>
       <zipfileset dir="${build.work.dir}/bin" filemode="755" prefix="SBC-Tomcat7-${sbc.release.version}/bin">
@@ -303,8 +319,7 @@
 	
   <target name="clean">
     <delete dir="${release.tomcat.dir}"/>
-   <!-- 
-    <delete dir="${release.as7.dir}"/>
-    -->
+    <delete dir="${release.as10.dir}"/>
+    <delete file="restcomm-sip-servlets-version.txt"/>
   </target>
 </project>

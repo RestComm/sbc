@@ -615,7 +615,8 @@
 							<webXml>src/main/webapp/WEB-INF/web-tomcat.xml</webXml>
 							<packagingExcludes>
 							**/*-wildfly.xml,
-							**/*-tomcat.xml
+							**/*-tomcat.xml,
+							**/*/jboss-*.xml
 							</packagingExcludes>
 						</configuration>
 					</plugin>
