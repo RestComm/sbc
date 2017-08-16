@@ -73,14 +73,13 @@ public final class ServiceLauncher extends SipServlet {
 		Configuration configuration = (Configuration) context.getAttribute(Configuration.class.getName());
 		ConfigurationCache.build(sipFactory, configuration);
 		DaoManager storage = ShiroResources.getInstance().get(DaoManager.class);
-		
-        try {
-        	//launchJMXServer();
-			bindConnectors(storage);
-			
-		} catch (Exception e) {
-			LOG.error("Cannot bind connectors!",e);
-		}
+		//skip automatic add sip-connector to standalone-sip.xml
+//        try {
+//			bindConnectors(storage);
+//			
+//		} catch (Exception e) {
+//			LOG.error("Cannot bind connectors!",e);
+//		}
        
         
         Monitor monitor=Monitor.getMonitor();
@@ -96,6 +95,7 @@ public final class ServiceLauncher extends SipServlet {
     	JMXProvider jmxManager=null;
     	boolean status;
     	jmxManager = JMXProviderFactory.getJMXProvider();
+    	
 		
     	ConnectorsDao dao=storage.getConnectorsDao();
     	for(Connector connector:dao.getConnectors()) {

@@ -22,13 +22,6 @@
 	<listener>
 		<listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
 	</listener>
-	<servlet>
-		<servlet-name>Jersey</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-		<load-on-startup>0</load-on-startup>
-	</servlet>
-	
-	
 	<context-param>
 		<param-name>resteasy.scan</param-name>
 		<param-value>false</param-value>
@@ -52,10 +45,6 @@
 		</init-param>
         <load-on-startup>1</load-on-startup>
 	</servlet>
-	<servlet-mapping>
-		<servlet-name>Jersey</servlet-name>
-		<url-pattern>/2012-04-24/*</url-pattern>
-	</servlet-mapping>
 	<servlet-mapping>
     	<servlet-name>default</servlet-name>
    	 	<url-pattern>/webrtc/*</url-pattern>

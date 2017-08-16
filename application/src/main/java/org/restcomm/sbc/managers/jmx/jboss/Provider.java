@@ -27,39 +27,27 @@ import java.util.List;
 import java.util.Set;
 import org.mobicents.servlet.sip.startup.SipProtocolHandler;
 
-import javax.annotation.Resource;
-import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
-import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
-import javax.management.InvalidAttributeValueException;
 import javax.management.JMX;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.management.RuntimeOperationsException;
-import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.servlet.sip.SipFactory;
-
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipConnector;
-import org.mobicents.servlet.sip.catalina.SipStandardService;
-import org.mobicents.servlet.sip.core.SipService;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
@@ -89,7 +77,7 @@ public class Provider implements JMXProvider,
 	public Provider() throws IOException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException {
 		
 		
-		String urlString			="service:jmx:remoting-jmx://localhost:9999";
+		String urlString			="service:jmx:http-remoting-jmx://127.0.0.1:9990";
 		String objectNamePointer	="jboss.sip:type=SipConnector,*";
 		String osNamePointer	    ="java.lang:type=OperatingSystem";
 		String sipNamePointer	    ="jboss.as:subsystem=sip";
@@ -106,67 +94,26 @@ public class Provider implements JMXProvider,
 			LOG.debug("\nCreate an RMI connector client on: " +urlString);
 				
 		}
-		
-		//ObjectName objectName = new ObjectName(objectNamePointer);  
-		
-		
+
 		osMBeanName = new ObjectName(osNamePointer);
 		sipMBeanName = new ObjectName(sipNamePointer);
-				
-				
-				/*
-				Set<ObjectInstance> mbeansn = mbsc.queryMBeans(null, null);
-				
-				for (Object mbean : mbeansn)	{
-					if(LOG.isDebugEnabled()) {
-						ObjectInstance instance=(ObjectInstance)mbean;
-						
-						System.err.println("Ontree: "+instance.getObjectName());
-						//readAttributes(mbsc, (ObjectInstance)mbean);
-						//readOperations(mbsc, (ObjectInstance)mbean);
-					}
-				}
-				*/
 				
 		objectMBeanName=new ObjectName(objectNamePointer);
 		Set<ObjectInstance> mbeans = mbsc.queryMBeans(objectMBeanName, null);
 		ObjectName interfaceMBeanName = new ObjectName("jboss.as:interface=mz-201");	
-		//Interface interfaceMBean=new Interface();
-		//interfaceMBean.setName("mz-201");
-		//interfaceMBean.setInetAddress("192.168.88.2");
 		MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-		
-		
-			InterfaceMBean interfaceProxy = JMX.newMBeanProxy(
-			         mbsc, interfaceMBeanName, InterfaceMBean.class);
-			interfaceProxy.setName("mz-201");
-			interfaceProxy.setInetAddress("192.168.88.2");
-		//	ObjectInstance instance = server.registerMBean(interfaceMBean, interfaceMBeanName);
-		//	System.out.println("Instance="+instance);
-		//	System.out.println("Oname="+instance.getObjectName());
-			
-			
-		
-		
-		
-			for (Object mbean : mbeans)	{
-				
-				
-				if(LOG.isDebugEnabled()) {
-					System.err.println("SipConnector Ontree: "+(ObjectInstance)mbean);
-					ObjectInstance oInstance = (ObjectInstance)mbean;
-					
-					System.err.println("Class  Name:t" + oInstance.getClassName());
-					
-					//readAttributes(mbsc, (ObjectInstance)mbean);
-					//readOperations(mbsc, (ObjectInstance)mbean);
-				}
+	
+		InterfaceMBean interfaceProxy = JMX.newMBeanProxy(mbsc, interfaceMBeanName, InterfaceMBean.class);
+		//interfaceProxy.setName("mz-201");
+		//interfaceProxy.setInetAddress("192.168.88.2");
+		for (Object mbean : mbeans)	
+		{
+			if(LOG.isDebugEnabled()) {
+				System.err.println("SipConnector Ontree: "+(ObjectInstance)mbean);
+				ObjectInstance oInstance = (ObjectInstance)mbean;
+				System.err.println("Class  Name:t" + oInstance.getClassName());
 			}
-			
-		
-		//mbsc.addNotificationListener(objectName, this, null, null);
-		
-
+		}
 	}
 	
 	
@@ -215,69 +162,27 @@ public class Provider implements JMXProvider,
         //sipConnector.setPort(port);
         //sipConnector.setTransport(transport);
         
-        SipConnectorProxy sipConnector = JMX.newMBeanProxy(
-                mbsc, sipMBeanName, SipConnectorProxy.class);
+        SipConnectorProxy sipConnector = JMX.newMBeanProxy(mbsc, sipMBeanName, SipConnectorProxy.class);
         sipConnector.addConnector(
         					"sip-"+transport+"-"+ipAddress+"-"+port,  	// name
-        					 port,				// loadBalancerSip Port			
-        					 false,				// useStun
-        					 ipAddress,			// staticServerAddress
-        					 port,				// staticServerPort
-        					 "sip-"+transport,  // socketBinding
-        					 "",				// loadBalancerAddress
-        					 "sip",				// scheme
-        					 "sip-"+transport,	// name
-        					 true,				// useStaticAddress
-        					 ipAddress,			// hostNames
-        					 "",				// stunServerAddress
-        					 true,				// enabled
-        					 "SIP/2.0",			// protocol
-        					 1099,				// loadBalancerRMIPort
-        					 3079,				// stunServerPort
-        					 false				// useLoadBalancer);
-        					 );
-        
-       /*
-        Boolean stat = (Boolean) mbsc.invoke(sipMBeanName, "addConnector",
-        		new Object[] {
-        					 "SipConnector",	// name
-        					 port,				// loadBalancerSip Port			
-        					 false,				// useStun
-        					 ipAddress,			// staticServerAddress
-        					 port,				// staticServerPort
-        					 "sip-"+transport,  // socketBinding
-        					 "",				// loadBalancerAddress
-        					 "sip",				// scheme
-        					 "sip-"+transport,	// name
-        					 false,				// useStaticAddress
-        					 ipAddress,			// hostNames
-        					 "",				// stunServerAddress
-        					 true,				// enabled
-        					 "SIP/2.0",			// protocol
-        					 1099,				// loadBalancerRMIPort
-        					 3079,				// stunServerPort
-        					 false				// useLoadBalancer
-        					 }, 
-        		new String[] {
-        					 String.class.getCanonicalName(),
-        					 Integer.class.getCanonicalName(),
-        					 Boolean.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 Integer.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 Boolean.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 Boolean.class.getCanonicalName(),
-        					 String.class.getCanonicalName(),
-        					 Integer.class.getCanonicalName(),
-        					 Integer.class.getCanonicalName(),
-        					 Boolean.class.getCanonicalName()
-        					 });
-        					 */
+        					true,				// enabled
+        					ipAddress,			// hostNames
+        					null,				// loadBalancerAddress
+        					2080,				// loadBalancerRMIPort
+        					5060,				// loadBalancerSip Port
+        					"sip-"+transport,	// name1
+        					"SIP/2.0",			// protocol
+        					"sip",				// scheme
+        					"sip-"+transport,  // socketBinding
+        					ipAddress,			// staticServerAddress
+        					port,				// staticServerPort
+        					null,				// stunServerAddress
+        					1111,				// stunServerPort
+        					false,				// useLoadBalancer
+        					false,				// useStaticAddress
+        					false				// useStun
+       					 );
+
 		return true;
 	}
 	
@@ -370,9 +275,9 @@ public class Provider implements JMXProvider,
 		   String attributeName = "StartTime";
 
 		   String host = "localhost";
-		   int port = 9999;  // management-native port
+		   int port = 9990;  // management-native port
 
-		   String urlString = System.getProperty("jmx.service.url","service:jmx:remoting-jmx://" + host + ":" + port);
+		   String urlString = System.getProperty("jmx.service.url","service:jmx:http-remoting-jmx://" + host + ":" + port);
 		   JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 		   JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
 		   MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
@@ -438,22 +343,22 @@ public class Provider implements JMXProvider,
 	public interface SipConnectorProxy {
 		
 		void addConnector(  String name,
-        				    int	 loadBalancerSipPort,			
-        					boolean useStun,
-        					String staticServerAddress,
-        					int staticServerPort,
-        					String socketBinding,
-        					String loadBalancerAddress,
-        					String scheme,
-        					String name1,
-        					boolean useStaticAddress,
-        					String hostNames,
-        					String stunServerAddress,
-        					boolean enabled,
-        					String protocol,
-        					int loadBalancerRMIPort,
-        					int stunServerPort,
-        					boolean useLoadBalancer);
+							boolean enabled,
+							String hostNames,
+							String loadBalancerAddress,
+							int loadBalancerRMIPort,
+							int	 loadBalancerSipPort,
+							String name1,
+							String protocol,
+							String scheme,
+							String socketBinding,
+							String staticServerAddress,
+							int staticServerPort,
+							String stunServerAddress,
+							int stunServerPort,
+							boolean useLoadBalancer,
+							boolean useStaticAddress,
+							boolean useStun);
 
 		void setTransport(String transport);
 
