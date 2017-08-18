@@ -49,7 +49,9 @@
   <!-- mobicents SIP Servlets 7.x on JBoss AS7-->
   <property name="sipservlets.as10.distro.version" value="${sipservlets-as10.version}-wildfly-10.0.0.Final"/>
   <property name="sipservlets.as10.download.distro.file" value="restcomm-sip-servlets-${sipservlets.as10.distro.version}.zip"/>
-  <property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>
+	<!-- TEMPORARY -->
+  <!--<property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>-->
+  <property name="sipservlets.as10.download.url" value="https://webukraine-my.sharepoint.com/personal/denis_zaytsev_mobius-software_com/_layouts/15/guestaccess.aspx?docid=06c327c14d89c47cba37a391bead1d666&amp;authkey=AQZXBap2bYM1oLBLRnwjfD0"/>
   <property name="sipservlets.as10.distro.zip.path" value="${checkout.dir}/${sipservlets.as10.download.distro.file}"/>
 
   <property location="${release.tomcat.dir}/restcomm-sip-servlets-${sipservlets.tomcat.distro.version}" name="build.work.dir"/>
@@ -125,6 +127,8 @@
     <exec executable="${wget.executable}" failonerror="true">
       <arg value="--no-check-certificate"/>
       <arg value="${sipservlets.as10.download.url}"/>
+	<arg value="-O"/>
+	<arg value="${sipservlets.as10.download.distro.file}"/>
     </exec>
     <move file="${base.dir}/release/${sipservlets.as10.download.distro.file}" todir="${checkout.dir}"/>
   </target>
@@ -141,6 +145,11 @@
     <unzip dest="${release.as10.dir}" src="${sipservlets.as10.distro.zip.path}">
       <mapper from="mss-${sipservlets-as10.version}wildfly-10.0.0.Final/*" to="*" type="glob"/>
     </unzip>
+
+	<!-- TEMPORARY -->
+	<move todir="${build.as10work.dir}">
+		<fileset dir="${release.as10.dir}/TelScale-SIP-Servlets-8.0.0.24-wildfly-10.0.0.Final"/>
+	</move>
   </target>
 
   <target name="build-sbc">
@@ -207,7 +216,7 @@
   	<chmod dir="${build.work.dir}/webapps/restcomm-sbc/WEB-INF/scripts" includes="**/*.sh" perm="ugo+rx"/>
 
 
-    <!--JBoss AS7-->
+    <!--JBoss AS10-->
     
     <delete failonerror="false" file="${build.as10work.dir}/standalone/configuration/dars/mobicents-dar.properties"/>
  
@@ -223,7 +232,7 @@
 	-->
     <!-- <touch file="${build.as7work.dir}/standalone/deployments/restcomm-sbc.war.dodeploy"/> -->
 	<copy failonerror="true" file="${workspace.sbc.dir}/application/target/restcomm-sbc-wildfly.war" overwrite="true" tofile="${build.as10work.dir}/standalone/deployments/restcomm-sbc-wildfly.war"/>
-   
+	<delete failonerror="false" file="${build.as10work.dir}/standalone/deployments/media-jsr309-servlet.war"/>
     <echo append="true" file="${build.as10work.dir}/bin/standalone.conf">
       export APPSERVER_PLATFORM='TELESTAX' 
     </echo>
@@ -262,7 +271,7 @@
         <include name="**/*"/>
       </fileset>
     </copy>
-    <!--docs JBoss AS7-->
+    <!--docs JBoss AS10-->
     
     <mkdir dir="${sbc.docs.as10.dir}"/>
     <copy failonerror="true" file="${workspace.sbc.dir}/README.md" todir="${sbc.docs.as10.dir}">

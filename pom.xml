@@ -61,6 +61,7 @@
 		<jersey.version>1.13</jersey.version>
 		<json.version>20140107</json.version>
 		<log4j.version>1.2.17</log4j.version>
+		<!--<jboss-client.version>4.2.2.GA</jboss-client.version>-->
 		<slf4j.version>1.5.5</slf4j.version>
 		<junit.version>4.12</junit.version>
 		<commons-configuration.version>1.7</commons-configuration.version>
@@ -115,8 +116,13 @@
     			<artifactId>log4j</artifactId>
     			<version>${log4j.version}</version>
 			</dependency>
-
-
+			<!--
+			<dependency>
+    			<groupId>org.jboss.client</groupId>
+				<artifactId>jboss-client</artifactId>
+    			<version>${jboss-client.version}</version>
+			</dependency>
+			-->
 
 			<dependency>
 				<groupId>org.slf4j</groupId>
@@ -612,7 +618,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
 						<configuration>
-							<webXml>src/main/webapp/WEB-INF/web-tomcat.xml</webXml>
+							<webXml>src/main/webapp/WEB-INF/web.xml</webXml>
 							<packagingExcludes>
 							**/*-wildfly.xml,
 							**/*-tomcat.xml,
@@ -671,7 +677,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
 						<configuration>
-							<webXml>src/main/webapp/WEB-INF/web-wildfly.xml</webXml>
+							<webXml>src/main/webapp/WEB-INF/web.xml</webXml>
 							<warName>restcomm-sbc-wildfly</warName>
 							<packagingExcludes>
 							**/*-wildfly.xml,
