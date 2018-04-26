@@ -14,6 +14,7 @@
 			<param-name>configPath</param-name>
 			<param-value>/WEB-INF/shiro.ini</param-value>
 		</init-param>
+		
 	</filter>
 	<filter-mapping>
 		<filter-name>ShiroFilter</filter-name>
@@ -25,7 +26,14 @@
 	<servlet>
 		<servlet-name>Jersey</servlet-name>
 		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<!-- 
+		<init-param>
+  			<param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+  			<param-value>org.restcomm.sbc.rest.CORSResponseFilter</param-value>
+		</init-param>
+		-->
 		<load-on-startup>0</load-on-startup>
+		
 	</servlet>
 	
 	
@@ -43,8 +51,9 @@
 		<param-name>resteasy.scan.resources</param-name>
 		<param-value>false</param-value>
 	</context-param>
+	
 	<servlet>
-        <servlet-name>default</servlet-name>
+        <servlet-name>default2</servlet-name>
         <servlet-class>
           org.apache.catalina.servlets.DefaultServlet
         </servlet-class>
@@ -58,6 +67,7 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
+   
 	<servlet-mapping>
 		<servlet-name>Jersey</servlet-name>
 		<url-pattern>/2012-04-24/*</url-pattern>

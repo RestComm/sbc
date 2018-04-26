@@ -1,0 +1,19 @@
+<jboss-deployment-structure> 
+<deployment>
+
+      <dependencies>
+     
+        <module name="org.jboss.remoting3.remoting-jmx" services="import"/>
+		<module name="org.jboss.remoting3"/>
+		<module name="org.jboss.logging"/>
+		<module name="org.jboss.xnio"/>
+		<module name="org.jboss.xnio.nio"/>
+		<module name="org.jboss.sasl"/>
+		<module name="org.jboss.marshalling"/>
+		<module name="org.jboss.marshalling.river"/>
+		
+      </dependencies>
+
+  </deployment>
+
+</jboss-deployment-structure>

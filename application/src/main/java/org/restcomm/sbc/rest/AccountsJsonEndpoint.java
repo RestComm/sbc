@@ -25,6 +25,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -52,6 +53,11 @@ public final class AccountsJsonEndpoint extends AccountsEndpoint {
 
     @GET
     public Response getAccounts() {
+        return getAccounts(APPLICATION_JSON_TYPE);
+    }
+    
+    @OPTIONS
+    public Response getAccountsOptions() {
         return getAccounts(APPLICATION_JSON_TYPE);
     }
 

@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import javax.servlet.sip.Address;
 import javax.servlet.sip.ServletParseException;
 
+import org.apache.log4j.Logger;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.managers.NetworkManager;
 
@@ -43,9 +44,10 @@ public class Connector {
 	private Transport transport;
 	private String point;
 	private InetSocketAddress outboundInterface;
-	
+	private static transient Logger LOG = Logger.getLogger(Connector.class);
 	public Connector(final Sid sid, final Sid accountSid, final int port, final Transport transport, final String point, final State state) {
-		
+		if(LOG.isInfoEnabled())
+			LOG.info("Building Connector on NetworkPoint "+point+" port "+port+" transport "+transport+" state "+state);
 		this.sid = sid;
 		this.port = port;
 		this.state = state;

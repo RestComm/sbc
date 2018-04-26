@@ -176,8 +176,8 @@ public class NetworkManager  {
 		        	point.setPrefixMask(inetAddress.getNetworkPrefixLength());
 		        	id++;
 		            eths.add(point);
-		            if(LOG.isTraceEnabled()) {
-		            	LOG.trace("Detected interface "+point.toPrint());
+		            if(LOG.isInfoEnabled()) {
+		            	LOG.info("Detected interface "+point.toPrint());
 		            }
 		        }
 		        group++;
