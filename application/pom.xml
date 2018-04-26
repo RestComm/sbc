@@ -38,6 +38,27 @@
     	
 		</dependency>
 
+		 <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-client-all</artifactId>
+                 <version>10.0.0.Final</version>
+            </dependency>
+
+<!--
+<dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb-client-bom</artifactId>
+            <type>pom</type>
+			<version>10.0.0.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jms-client-bom</artifactId>
+            <type>pom</type>
+			<version>10.0.0.Final</version>
+        </dependency>
+		-->
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -176,26 +197,6 @@
 			<artifactId>json</artifactId>
 			
 		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-server</artifactId>
-			
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-client</artifactId>
-			
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-servlet</artifactId>
-			
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
-			
-		</dependency>
 		
 		<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -254,6 +255,11 @@
 			<dependency>
 			    <groupId>org.mobicents.media.io</groupId>
 			    <artifactId>sdp</artifactId>
+			</dependency>
+			<dependency>
+    			<groupId>javax.ws.rs</groupId>
+    			<artifactId>javax.ws.rs-api</artifactId>
+    			<version>2.0</version>
 			</dependency>		
 				
 	</dependencies>

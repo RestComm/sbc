@@ -45,7 +45,7 @@ SBC is built on [RestComm SIP Servlets](https://github.com/RestComm/sip-servlets
 
 Downloads
 ========
-Download source code and build from [here](https://github.com/RestComm/sbc/releases) or Continuous Delivery binary from [CloudBees](https://mobicents.ci.cloudbees.com/job/RestComm-SBC/)
+Simply download the source code version of your choice and build from source.
 
 Want to Contribute ? 
 ========

@@ -69,10 +69,15 @@
 		</servlet-mapping>
 		
 	</servlet-selection>
+	<servlet-selection>
+		<main-servlet>
+			Bootstrapper
+		</main-servlet>
+	</servlet-selection>
 
 	<servlet>
-		<servlet-name>SBC</servlet-name>
-		<display-name>SBC</display-name>
+		<servlet-name>Bootstrapper</servlet-name>
+		<display-name>Bootstrapper</display-name>
 		<description>The SBC Servlet.</description>
 		<servlet-class>
 			org.restcomm.sbc.Bootstrapper

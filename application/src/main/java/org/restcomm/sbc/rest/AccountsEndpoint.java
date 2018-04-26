@@ -21,7 +21,6 @@ package org.restcomm.sbc.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.thoughtworks.xstream.XStream;
 
 import java.net.URI;
@@ -36,6 +35,7 @@ import static javax.ws.rs.core.MediaType.*;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.*;
@@ -221,7 +221,7 @@ public abstract class AccountsEndpoint extends SecuredEndpoint {
                 accountsDao.addAccount(account);
 
                 // Create default SIP client data
-                MultivaluedMap<String, String> clientData = new MultivaluedMapImpl();
+                MultivaluedMap<String, String> clientData = new MultivaluedHashMap<String, String>();
                 String username = data.getFirst("EmailAddress").split("@")[0];
                 clientData.add("Login", username);
                 clientData.add("Password", data.getFirst("Password"));

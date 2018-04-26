@@ -14,7 +14,6 @@
 			<param-name>configPath</param-name>
 			<param-value>/WEB-INF/shiro.ini</param-value>
 		</init-param>
-		
 	</filter>
 	<filter-mapping>
 		<filter-name>ShiroFilter</filter-name>
@@ -23,7 +22,6 @@
 	<listener>
 		<listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
 	</listener>
-
 	<context-param>
 		<param-name>resteasy.scan</param-name>
 		<param-value>false</param-value>
@@ -38,7 +36,6 @@
 		<param-name>resteasy.scan.resources</param-name>
 		<param-value>false</param-value>
 	</context-param>
-
     <servlet>
     	<servlet-name>default</servlet-name>
 		<servlet-class>io.undertow.servlet.handlers.DefaultServlet</servlet-class>
@@ -48,7 +45,6 @@
 		</init-param>
         <load-on-startup>1</load-on-startup>
 	</servlet>
-
 	<servlet-mapping>
     	<servlet-name>default</servlet-name>
    	 	<url-pattern>/webrtc/*</url-pattern>
