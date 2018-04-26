@@ -1,8 +1,8 @@
-
 <jboss-deployment-structure>
   <deployment>
     <dependencies>
       <module name="org.mobicents.javax.servlet.sip" />
     </dependencies>
   </deployment>
+
 </jboss-deployment-structure>

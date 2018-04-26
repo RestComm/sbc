@@ -1,0 +1,58 @@
+	<target name="genKeystore">
+	  <mkdir dir="${verisign.output.dir}" />
+	  <delete failonerror="false" file="${verisign.output.dir}/.keystore"/>	 
+	  <genkey alias="sbc-web" verbose="true"
+	storepass="${verisign.key.storepass}" keypass="${verisign.key.pass}"
+	validity="365" keyalg="RSA" keysize="2048" keystore="${verisign.output.dir}/.keystore">
+	    <dname>
+	      <param name="CN" value="SBC Project"/>
+	      <param name="OU" value="Osky"/>
+	      <param name="O" value="sbc.eolos.la"/>
+	      <param name="C" value="US"/>
+	    </dname>
+	  </genkey>
+	<delete failonerror="false" file="${verisign.output.dir}/.keystore-server"/>	 
+			  <genkey alias="sbc-server-dtls" verbose="true"
+			storepass="${verisign.key.storepass}" keypass="${verisign.key.pass}"
+			validity="365" sigalg="SHA256withECDSA" keyalg="EC" keysize="256" keystore="${verisign.output.dir}/.keystore-server">
+			    <dname>
+			      <param name="CN" value="SBC Project"/>
+			      <param name="OU" value="Osky"/>
+			      <param name="O" value="sbc.eolos.la"/>
+			      <param name="C" value="US"/>
+			    </dname>
+			  </genkey>
+	
+	<delete failonerror="false" file="${verisign.output.dir}/.keystore-server-key"/>	 
+				  <genkey alias="sbc-server-key-dtls" verbose="true"
+				storepass="${verisign.key.storepass}" keypass="${verisign.key.pass}"
+				validity="365" sigalg="SHA256withECDSA" keyalg="EC" keysize="256" keystore="${verisign.output.dir}/.keystore-server-key">
+				    <dname>
+				      <param name="CN" value="SBC Project"/>
+				      <param name="OU" value="Osky"/>
+				      <param name="O" value="sbc.eolos.la"/>
+				      <param name="C" value="US"/>
+				    </dname>
+				  </genkey>		
+		<exec executable="keytool" failonerror="true">
+		    <arg value="-exportcert"/>
+		    <arg line="-keystore ${verisign.output.dir}/.keystore-server"/>
+		    <arg line="-alias sbc-server-dtls"/>
+		    <arg line="-storepass ${verisign.key.storepass}"/>
+			<arg line="-rfc"/>
+		    <arg line="-file ${verisign.output.dir}/x509-server-ecdsa.pem"/>
+		</exec>
+		<exec executable="keytool" failonerror="true">
+				    <arg value="-importkeystore"/>
+				    <arg line="-srckeystore ${verisign.output.dir}/.keystore-server"/>
+					<arg line="-destkeystore ${verisign.output.dir}/.keystore-server-key.pem"/>
+					
+				    <arg line="-srcalias sbc-server-dtls"/>
+				    <arg line="-deststorepass ${verisign.key.storepass}"/>
+					<arg line="-destkeypass ${verisign.key.storepass}"/>
+					<arg line="-srckeypass ${verisign.key.storepass}"/>
+					<arg line="-rfc"/>
+				   
+		</exec>
+		
+  </target>

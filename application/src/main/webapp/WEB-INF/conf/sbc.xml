@@ -44,6 +44,7 @@
                		<!-- <provider>org.restcomm.sbc.managers.jmx.tomcat.Provider</provider> -->
                		<!-- JBOSS -->
                		<provider>org.restcomm.sbc.managers.jmx.jboss.Provider</provider> 		
+
                	</jmx-management>
                 
                 <domain>10.0.0.10</domain>
