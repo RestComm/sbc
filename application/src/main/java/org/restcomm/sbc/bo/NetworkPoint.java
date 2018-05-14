@@ -46,6 +46,12 @@ public class NetworkPoint {
 		this.tag=Tag.IDLE;
 	}
 	
+	public NetworkPoint(String id, InetAddress address) {
+		this.id = id;
+		this.tag=Tag.IDLE;
+		this.address = address;
+	}
+	
 	public NetworkPoint(final String id, final Sid accountSid, final Tag tag) {
 		this.id = id;
 		this.accountSid = accountSid;

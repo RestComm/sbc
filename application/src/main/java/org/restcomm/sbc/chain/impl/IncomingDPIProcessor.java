@@ -45,7 +45,7 @@ import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 import org.restcomm.sbc.managers.RouteManager;
 import org.restcomm.sbc.media.MediaController.StreamProfile;
 import org.restcomm.sbc.media.MediaSession;
-import org.restcomm.sbc.router.RoutingPolicy;
+
 
 
 
@@ -59,9 +59,6 @@ import org.restcomm.sbc.router.RoutingPolicy;
 public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
-	private RouteManager routeManager = RouteManager.getRouteManager();
-	private RoutingPolicy routingPolicy=ConfigurationCache.getRoutingPolicy();
-	private LocationManager locationManager = LocationManager.getLocationManager();
 	
 	public IncomingDPIProcessor(ProcessorChain callback) {
 		super(callback);
@@ -111,10 +108,10 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		if (RouteManager.isFromDMZ(m.getContent())) {
 			m.setDirection(Message.SOURCE_DMZ);
 			try {		
-				connector = routeManager.getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
+				connector = RouteManager.getRouteManager().getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
 						sm.getInitialTransport());	
 				m.setTargetLocalAddress(connector.getHost());
-				m.setTargetRemoteAddress(routingPolicy.getCandidate().getHost());
+				m.setTargetRemoteAddress(ConfigurationCache.getRoutingPolicy().getCandidate().getHost());
 				m.setTargetTransport(connector.getTransport().toString());		
 
 			} catch (Exception e) {
@@ -132,13 +129,13 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				Location location = null;
 				
 				try {
-					location = locationManager.getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
+					location = LocationManager.getLocationManager().getLocation(toURI.getUser() + "@" + ConfigurationCache.getDomain());
 					m.setTargetRemoteAddress(location.getHost());
 					m.setTargetTransport(location.getTransport().toUpperCase());
 				} catch (LocationNotFoundException e) {
 					LOG.warn(toURI.getUser()+" is not a registered user in the domain "+ ConfigurationCache.getDomain());
 					LOG.warn(" this UAC may be registered directly in the back-Sip REGISTRAR");
-					m.setTargetRemoteAddress(routingPolicy.getCandidate().getHost());
+					m.setTargetRemoteAddress(ConfigurationCache.getRoutingPolicy().getCandidate().getHost());
 							
 				}
 			}
@@ -176,10 +173,10 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 			m.setDirection(Message.SOURCE_DMZ);
 			m.setTarget(Message.TARGET_B2BUA);
 			try {		
-				connector = routeManager.getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
+				connector = RouteManager.getRouteManager().getRouteToMZ(sm.getLocalAddr(), sm.getLocalPort(),
 						sm.getInitialTransport());	
 				m.setTargetLocalAddress(connector.getHost());
-				m.setTargetRemoteAddress(routingPolicy.getCandidate().getHost());
+				m.setTargetRemoteAddress(ConfigurationCache.getRoutingPolicy().getCandidate().getHost());
 				m.setTargetTransport(connector.getTransport().toString());		
 
 			} catch (Exception e) {
@@ -195,7 +192,7 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				Location location = null;
 				
 				try {
-					location = locationManager.getLocation(fromURI.getUser() + "@" + ConfigurationCache.getDomain());
+					location = LocationManager.getLocationManager().getLocation(fromURI.getUser() + "@" + ConfigurationCache.getDomain());
 					m.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
 					m.setTargetRemoteAddress(location.getHost());
 					m.setTargetTransport(location.getTransport().toUpperCase());

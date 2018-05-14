@@ -64,6 +64,7 @@ public class Connector {
 		this.transport = transport;
 		this.point = point;
 		this.outboundInterface = new InetSocketAddress(NetworkManager.getIpAddress(point), port);
+
 		
 	}
 	
@@ -154,7 +155,7 @@ public class Connector {
 	}
 	
 	public Connector setTransport(Transport transPort) {
-		return new Connector(sid, accountSid, port, transport, point, state);
+		return new Connector(sid, accountSid, port, transPort, point, state);
 	}
 	
 	public Connector setState(State state) {
@@ -217,10 +218,12 @@ public class Connector {
 	}
 
 	public String toPrint() {
-		return "["+NetworkManager.getIpAddress(point)+":"+transport+":"+port+"] "+point+"/"+outboundInterface.toString()+":"+state;
+		return "["+NetworkManager.getIpAddress(point)+":"+transport+":"+port+"] "+point+"/"+((outboundInterface!=null)?outboundInterface.toString():"lazy")+":"+state;
 	}
 
 	public InetSocketAddress getOutboundInterface() {
+		if(this.outboundInterface==null)
+			this.outboundInterface = new InetSocketAddress(NetworkManager.getIpAddress(point), port);
 		return outboundInterface;
 	}
 

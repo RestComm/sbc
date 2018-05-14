@@ -56,14 +56,14 @@ public class SBCMessengerServlet extends SipServlet {
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> Messenger Servlet init()");
+		if(LOG.isInfoEnabled()){
+	          LOG.info(">> Messenger Servlet init()");
 	    }
 		super.init(servletConfig);
 		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 		final ServletContext context = servletConfig.getServletContext();
 		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
-		ConfigurationCache.build(sipFactory, configuration);
+		//ConfigurationCache.build(sipFactory, configuration);
 		
 		upChain=new UpstreamMessengerProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
@@ -71,6 +71,10 @@ public class SBCMessengerServlet extends SipServlet {
 		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
 		
 		
+		
+	}
+	
+	public void lazyStart() {
 		
 	}
 	

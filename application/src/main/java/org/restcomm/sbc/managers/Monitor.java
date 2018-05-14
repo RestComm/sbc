@@ -8,11 +8,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.sip.SipFactory;
 import javax.swing.event.EventListenerList;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.BanList;
+import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.BanList.Reason;
 import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.call.CallManager;
@@ -22,11 +26,12 @@ import org.restcomm.sbc.bo.Statistics;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.BlackListDao;
 import org.restcomm.sbc.dao.CallDetailRecordsDao;
+import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
-import org.restcomm.sbc.managers.jmx.JMXProvider;
-import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
+import org.restcomm.sbc.managers.controller.ManagementProvider;
+import org.restcomm.sbc.managers.controller.ManagementProviderFactory;
 import org.restcomm.sbc.notification.AlertListener;
 import org.restcomm.sbc.notification.NotificationListener;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
@@ -53,17 +58,19 @@ public class Monitor {
 	@SuppressWarnings("unused")
 	private SuspectActivityCache<String, SuspectActivityElectable> cache;
 	private DaoManager daoManager;
-	private JMXProvider jmxManager;
+	private ManagementProvider jmxManager;
 	private CallManager callManager;
 	private ThreatManager threatManager;
 	private ScheduledExecutorService scheduledExecutorService;
+	private static boolean init=false;
+	private static boolean reloaded=false;
 	
 	private Monitor() {
 		threatManager=ThreatManager.getThreatManager();
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		try {
-			jmxManager=JMXProviderFactory.getJMXProvider();
+			jmxManager=ManagementProviderFactory.getProvider(false);
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}
@@ -252,22 +259,57 @@ public class Monitor {
 	    // return sipManager.getRejectedSipApplicationSessions();        
 	}
 	
-	public void start() {
+	public void start(SipFactory sipFactory, Configuration configuration) {
 		
+
 		scheduledExecutorService =
 		        Executors.newSingleThreadScheduledExecutor();
 
-		    scheduledExecutorService.scheduleWithFixedDelay(new Task(),
-		    LOOP_INTERVAL,
+		    scheduledExecutorService.scheduleWithFixedDelay(new Task(sipFactory, configuration),
+		    LOOP_INTERVAL/6,
 		    LOOP_INTERVAL,
 		    TimeUnit.SECONDS);
-
+		    
 	}
 	
 	public void stop() throws IOException {		
 		scheduledExecutorService.shutdown();
 		jmxManager.close();
 	}
+	
+	private void reload() {
+		jmxManager.reload();
+	}
+	
+	private void bindConnectors() throws Exception {
+    	
+    	boolean status;
+    	DaoManager daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
+		ManagementProvider jmxManager = null;
+		try {
+			jmxManager =ManagementProviderFactory.getProvider(true);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			LOG.error("JMX Error", e);
+		}
+    	ConnectorsDao dao=daoManager.getConnectorsDao();
+    	for(Connector connector:dao.getConnectors()) {
+    		String npoint=connector.getPoint();
+    		String ipAddress=NetworkManager.getNetworkPoint(npoint).getAddress().getHostAddress();
+    		if(connector.getState()==Connector.State.UP) {
+	    		status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString(), npoint);
+	    		if(status) {
+		    		if(LOG.isDebugEnabled()) {
+		    			LOG.debug("Binding Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
+		    		}
+	    		}	
+	    		else {
+		    			LOG.error("CANNOT Bind Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
+		    		
+	    		}
+    		}
+    	}
+    	
+    }
 	
 	class ProcessorHook extends Thread {
 		 
@@ -284,15 +326,39 @@ public class Monitor {
 	}
 	
 	class Task implements Runnable {
+		private Configuration configuration;
+		private SipFactory sipFactory;
+
+		public Task(SipFactory sipFactory, Configuration configuration) {
+			this.sipFactory = sipFactory;
+			this.configuration = configuration;
+		}
 		
 		@Override
 		public void run() {
+			
 			//SipApplicationSession aSession = sipFactory.createApplicationSession();
 			//sipManager = ((MobicentsSipApplicationSessionFacade) aSession).getSipContext().getSipManager();	
 			//System.out.println(DateTime.now()+" Monitor Thread tick pass");
 			if(LOG.isInfoEnabled()) {
 				LOG.info("Monitor Thread tick pass");
 			}
+			/*
+			if(init && !reloaded) {
+				reload();
+				reloaded = true;
+			}*/
+			if(!init && !reloaded) {
+				try {
+					bindConnectors();
+					RouteManager.getRouteManager(); // init routes
+				} catch (Exception e) {
+					LOG.error("Cannot bind connectors", e);
+				}
+				ConfigurationCache.build(sipFactory, configuration);
+				init = true;
+			}
+			
 			try {
 				
 				synchronizeCDR();
@@ -336,11 +402,6 @@ public class Monitor {
         }
     };
     
-    public static void main(String argv[]) {
-    	Monitor monitor=Monitor.getMonitor();
-    	monitor.start();
-    }
-
-
-
+   
+	
 }

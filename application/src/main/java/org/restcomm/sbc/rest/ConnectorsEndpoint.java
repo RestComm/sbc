@@ -27,8 +27,8 @@ import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.managers.NetworkManager;
-import org.restcomm.sbc.managers.jmx.JMXProvider;
-import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
+import org.restcomm.sbc.managers.controller.ManagementProvider;
+import org.restcomm.sbc.managers.controller.ManagementProviderFactory;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.bo.Account;
@@ -44,9 +44,6 @@ import org.restcomm.sbc.rest.converter.ConnectorListConverter;
 import org.restcomm.sbc.rest.converter.RestCommResponseConverter;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.NotThreadSafe;
 import javax.annotation.PostConstruct;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -84,7 +81,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
     protected AccountsDao accountsDao;
     protected String instanceId;
 	protected ConnectorListConverter listConverter;
-	protected JMXProvider jmxManager;
+	protected ManagementProvider jmxManager;
 
 	private static transient Logger LOG = Logger.getLogger(ConnectorsEndpoint.class);
     public ConnectorsEndpoint() {
@@ -112,7 +109,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         xstream.registerConverter(listConverter);
         instanceId = RestcommConfiguration.getInstance().getMain().getInstanceId();
         try {
-			jmxManager=JMXProviderFactory.getJMXProvider();
+			jmxManager=ManagementProviderFactory.getProvider(true);
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}
@@ -178,7 +175,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         if(point!=null) {
         	try {
 				status=jmxManager.removeSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
-			} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
+			} catch (IOException e) {
 				LOG.error("JMX Manager failed");
 			}
 
@@ -285,15 +282,15 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         switch(state){
 	        case UP:
 	        	try {
-	    			status=jmxManager.addSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
-	    		} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
+	    			status=jmxManager.addSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString(), point.getId());
+	    		} catch (IOException e) {
 	    			LOG.error("JMX Manager failed");
 	    		}
 	        	break;
 	        case DOWN:
 	        	try {
 	    			status=jmxManager.removeSipConnector(point.getAddress().getHostAddress(), connector.getPort(), connector.getTransport().toString());
-	    		} catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException e) {
+	    		} catch (IOException e) {
 	    			LOG.error("JMX Manager failed");
 	    		}
 	        	break;

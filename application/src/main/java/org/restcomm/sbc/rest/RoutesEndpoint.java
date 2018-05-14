@@ -27,7 +27,6 @@ import org.restcomm.sbc.dao.AccountsDao;
 import org.restcomm.sbc.dao.ConnectorsDao;
 import org.restcomm.sbc.dao.RoutesDao;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.managers.jmx.tomcat.Provider;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
 import org.restcomm.sbc.bo.Account;
@@ -79,7 +78,7 @@ public abstract class RoutesEndpoint extends SecuredEndpoint {
     protected AccountsDao accountsDao;
     protected String instanceId;
 	protected RouteListConverter listConverter;
-	protected Provider jmxManager;
+
 	protected RouteManager routeManager;
 
 	//private static transient Logger LOG = Logger.getLogger(RoutesEndpoint.class);
