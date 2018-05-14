@@ -24,8 +24,8 @@
   </condition>
   
   <!--Get last restcomm-sip-servlets build version-->
-  <property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>
-  
+  <!--<property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>-->
+  <property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>
   <exec executable="${wget.executable}" failonerror="true">
     <arg value="--no-check-certificate"/>
     <arg value="${sipservlets.version.download.url}"/>
@@ -43,15 +43,15 @@
   <!-- mobicents SIP Servlets 7.x on Tomcat 7 -->
   <property name="sipservlets.tomcat.distro.version" value="${sipservlets-as10.version}-apache-tomcat-7.0.64"/>
   <property name="sipservlets.tomcat.download.distro.file" value="restcomm-sip-servlets-${sipservlets.tomcat.distro.version}.zip"/>
-  <property name="sipservlets.tomcat.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/${sipservlets.tomcat.download.distro.file}"/>
+  <property name="sipservlets.tomcat.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/${sipservlets.tomcat.download.distro.file}"/>
   <property name="sipservlets.tomcat.distro.zip.path" value="${checkout.dir}/${sipservlets.tomcat.download.distro.file}"/>
 
   <!-- mobicents SIP Servlets 7.x on JBoss AS7-->
   <property name="sipservlets.as10.distro.version" value="${sipservlets-as10.version}-wildfly-10.0.0.Final"/>
   <property name="sipservlets.as10.download.distro.file" value="restcomm-sip-servlets-${sipservlets.as10.distro.version}.zip"/>
 	<!-- TEMPORARY -->
-  <!--<property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>-->
-  <property name="sipservlets.as10.download.url" value="https://webukraine-my.sharepoint.com/personal/denis_zaytsev_mobius-software_com/_layouts/15/guestaccess.aspx?docid=06c327c14d89c47cba37a391bead1d666&amp;authkey=AQZXBap2bYM1oLBLRnwjfD0"/>
+  <property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>
+  <!--<property name="sipservlets.as10.download.url" value="https://webukraine-my.sharepoint.com/personal/denis_zaytsev_mobius-software_com/_layouts/15/guestaccess.aspx?docid=06c327c14d89c47cba37a391bead1d666&amp;authkey=AQZXBap2bYM1oLBLRnwjfD0"/>-->
   <property name="sipservlets.as10.distro.zip.path" value="${checkout.dir}/${sipservlets.as10.download.distro.file}"/>
 
   <property location="${release.tomcat.dir}/restcomm-sip-servlets-${sipservlets.tomcat.distro.version}" name="build.work.dir"/>
@@ -148,7 +148,8 @@
 
 	<!-- TEMPORARY -->
 	<move todir="${build.as10work.dir}">
-		<fileset dir="${release.as10.dir}/TelScale-SIP-Servlets-8.0.0.24-wildfly-10.0.0.Final"/>
+		<!--<fileset dir="${release.as10.dir}/TelScale-SIP-Servlets-8.0.0.24-wildfly-10.0.0.Final"/>-->
+		<fileset dir="${release.as10.dir}/restcomm-sip-servlets-${sipservlets-as10.version}-wildfly-10.0.0.Final"/>
 	</move>
   </target>
 

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.managers.jmx.tomcat;
+package org.restcomm.sbc.managers.controller.tomcat;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -47,7 +47,8 @@ import org.mobicents.servlet.sip.listener.SipConnectorListener;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.NetworkPoint;
 import org.restcomm.sbc.managers.NetworkManager;
-import org.restcomm.sbc.managers.jmx.JMXProvider;
+import org.restcomm.sbc.managers.controller.ManagementProvider;
+import org.restcomm.sbc.managers.controller.tomcat.Provider;
 
 
 /**
@@ -56,7 +57,7 @@ import org.restcomm.sbc.managers.jmx.JMXProvider;
  * @class   TomcatJMXManager.java
  *
  */
-public class Provider implements JMXProvider,
+public class Provider implements ManagementProvider,
  NotificationListener, SipConnectorListener {
 	private static transient Logger LOG = Logger.getLogger(Provider.class);
 	
@@ -149,16 +150,22 @@ public class Provider implements JMXProvider,
 	    }
 	}
 	
-	public boolean removeSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+	public boolean removeSipConnector(String ipAddress, int port, String transport) throws IOException {
 		
-        Boolean stat=(Boolean) mbsc.invoke(objectName, "removeSipConnector",
-        		new Object[] {ipAddress , port, transport},
-        		new String[]{String.class.getCanonicalName(), int.class.getCanonicalName(), String.class.getCanonicalName()});
+        Boolean stat;
+		try {
+			stat = (Boolean) mbsc.invoke(objectName, "removeSipConnector",
+					new Object[] {ipAddress , port, transport},
+					new String[]{String.class.getCanonicalName(), int.class.getCanonicalName(), String.class.getCanonicalName()});
+		} catch (InstanceNotFoundException | MBeanException | ReflectionException e) {
+			// TODO Auto-generated catch block
+			throw new IOException(e.getMessage());
+		}
         return stat;
 		
 	}
 	
-	public boolean addSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+	public boolean addSipConnector(String ipAddress, int port, String transport, String interfaceName) throws IOException {
 		
 		// adding connector
         SipConnector sipConnector = new SipConnector();
@@ -166,9 +173,15 @@ public class Provider implements JMXProvider,
         sipConnector.setPort(port);
         sipConnector.setTransport(transport);
        
-        Boolean stat = (Boolean) mbsc.invoke(objectName, "addSipConnector",
-        		new Object[] {sipConnector}, 
-        		new String[]{SipConnector.class.getCanonicalName()});
+        Boolean stat;
+		try {
+			stat = (Boolean) mbsc.invoke(objectName, "addSipConnector",
+					new Object[] {sipConnector}, 
+					new String[]{SipConnector.class.getCanonicalName()});
+		} catch (InstanceNotFoundException | MBeanException | ReflectionException e) {
+			// TODO Auto-generated catch block
+			throw new IOException(e.getMessage());
+		}
 		return stat;
 	}
 	
@@ -263,6 +276,30 @@ public class Provider implements JMXProvider,
 	@Override
 	public void sipConnectorRemoved(SipConnector arg0) {
 		LOG.info("REMOVED "+arg0);
+		
+	}
+
+
+
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public boolean addInterface(String name, String ipAddress) throws IOException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+
+	@Override
+	public void reload() {
+		// TODO Auto-generated method stub
 		
 	}
 

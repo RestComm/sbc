@@ -71,7 +71,7 @@
 		<commons-lang.version>2.2</commons-lang.version>
 		<javamail.version>1.4</javamail.version>
 		<servletapi.version>2.5</servletapi.version>
-    	<sipservletapi.version>3.1.695</sipservletapi.version>
+    	<sipservletapi.version>3.2.0-98</sipservletapi.version>
 		<servlet-api.version>7.0.50</servlet-api.version>
     	<sip-ri.version>1.2.277</sip-ri.version>
 		<!--tomcat.version>6.0.35</tomcat.version -->
@@ -83,7 +83,7 @@
 		<shiroweb.version>1.2.0</shiroweb.version>
 		<mybatis.version>3.2.2</mybatis.version>
 		<jodatime.version>2.0</jodatime.version>
-		<mysql.version>5.1.6</mysql.version>
+		<mariadb.version>1.7.3</mariadb.version>
 		<restcomm.api.version>1.0.0.CR1</restcomm.api.version>
 		<gson.version>2.3.1</gson.version>
 		<xstream.version>1.4.2</xstream.version>
@@ -205,12 +205,15 @@
 				<artifactId>mail</artifactId>
 				<version>${javamail.version}</version>
 			</dependency>
-			<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+	
+			    <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
 			<dependency>
-			    <groupId>mysql</groupId>
-			    <artifactId>mysql-connector-java</artifactId>
-			    <version>${mysql.version}</version>
+			    <groupId>org.mariadb.jdbc</groupId>
+			    <artifactId>mariadb-java-client</artifactId>
+			    <version>${mariadb.version}</version>
 			</dependency>
+
+			
 			
 			
 		<dependency>
@@ -263,6 +266,14 @@
 				<version>3.0.1</version>
 				<scope>provided</scope>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/javax.servlet/jstl -->
+			<dependency>
+			    <groupId>javax.servlet.jsp.jstl</groupId>
+			    <artifactId>jstl-api</artifactId>
+			    <version>1.2</version>
+			    <scope>provided</scope>
+			</dependency>
+			
 			<dependency>
 				<groupId>org.mobicents.servlet.sip</groupId>
 				<artifactId>sip-servlets-spec</artifactId>
