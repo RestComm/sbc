@@ -57,15 +57,15 @@ public class SBCRegistrarServlet extends SipServlet {
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> Registrar Servlet init()");
+		if(LOG.isInfoEnabled()){
+	          LOG.info(">> Registrar Servlet init()");
 	    }
 		super.init(servletConfig);
 		this.config=servletConfig;
 		sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 		final ServletContext context = servletConfig.getServletContext();
 		configuration=(Configuration) context.getAttribute(Configuration.class.getName());
-		ConfigurationCache.build(sipFactory, configuration);
+		//ConfigurationCache.build(sipFactory, configuration);
 		
 		upChain=new UpstreamRegistrarProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
@@ -75,6 +75,7 @@ public class SBCRegistrarServlet extends SipServlet {
 		
 		
 	}
+	
 	
 	@Override
 	protected void doRegister(SipServletRequest sipServletRequest) throws ServletException, IOException {

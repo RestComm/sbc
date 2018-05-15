@@ -72,8 +72,8 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		
 		LOG.info("Call sip servlet has been started");
 		
-		if(LOG.isTraceEnabled()){
-	          LOG.trace(">> init()");
+		if(LOG.isInfoEnabled()){
+	          LOG.info(">> Call Servlet init()");
 	    }
 			
 		upChain=new UpstreamInviteProcessorChain();

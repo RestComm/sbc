@@ -17,13 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.managers.jmx;
+package org.restcomm.sbc.managers.controller;
 
 import java.io.IOException;
 import java.util.List;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
 import org.restcomm.sbc.bo.Connector;
 
 
@@ -31,18 +28,24 @@ import org.restcomm.sbc.bo.Connector;
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    22 nov. 2016 3:24:55
- * @class   JMXProvider.java
+ * @class   ManagementProvider.java
  *
  */
-public interface JMXProvider  {	
+public interface ManagementProvider  {	
 	
-	public boolean removeSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException;
+	public void init();
 	
-	public boolean addSipConnector(String ipAddress, int port, String transport) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException;
+	public boolean removeSipConnector(String ipAddress, int port, String transport) throws IOException;
+	
+	public boolean addSipConnector(String ipAddress, int port, String transport, String interfaceName) throws IOException;
+	
+	public boolean addInterface(String name, String ipAddress) throws IOException;
 	
 	public List<Connector> getConnectors();
 		
-	public void close() throws IOException;
+	public void close() throws IOException;	
+	
+	public void reload();
 	
 	public int getCPULoadAverage();
 	

@@ -18,12 +18,13 @@
  *
  */
 
-package org.restcomm.sbc.managers.jmx;
+package org.restcomm.sbc.managers.controller;
 
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
+
 
 
 
@@ -33,19 +34,19 @@ import org.restcomm.sbc.bo.shiro.ShiroResources;
  * @class   JMXProviderFactory.java
  *
  */
-public class JMXProviderFactory {
+public class ManagementProviderFactory {
 	
-	private static transient Logger LOG = Logger.getLogger(JMXProviderFactory.class);
+	private static transient Logger LOG = Logger.getLogger(ManagementProviderFactory.class);
 	
-	private static JMXProvider instance;
+	private static ManagementProvider instance;
 	
-	private JMXProviderFactory() {
+	private ManagementProviderFactory() {
 		
 		
 	}
 	
-	public static JMXProvider getJMXProvider() throws ClassNotFoundException, InstantiationException, IllegalAccessException  {
-		if(instance!=null)
+	public static ManagementProvider getProvider(boolean reopen) throws ClassNotFoundException, InstantiationException, IllegalAccessException  {
+		if(instance!=null && !reopen)
 			return instance;
 		
 		String providerClass;
@@ -53,22 +54,22 @@ public class JMXProviderFactory {
 		Configuration configuration = (Configuration) ShiroResources.getInstance().get(Configuration.class);
 		
 		if(configuration==null) {
-			providerClass="org.restcomm.sbc.managers.jmx.tomcat.Provider";
+			providerClass="org.restcomm.sbc.managers.controller.wildfly.Provider";
 			
 		}
 		else {
 			providerClass=configuration.getString("jmx-management.provider");
 			
 			if(providerClass==null) {
-				providerClass="org.restcomm.sbc.managers.jmx.tomcat.Provider";
+				providerClass="org.restcomm.sbc.managers.controller.wildfly.Provider";
 				
 			}
 		}
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Factoring JMXProvider "+providerClass);
+		if(LOG.isInfoEnabled()) {
+			LOG.info("Factoring ManagerProvider "+providerClass);
 		}
 		Class<?> factory=Class.forName(providerClass);
-		instance=(JMXProvider) factory.newInstance();
+		instance=(ManagementProvider) factory.newInstance();
 		return instance;
 		
 	}

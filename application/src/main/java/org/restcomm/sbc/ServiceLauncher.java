@@ -28,14 +28,9 @@ import javax.servlet.sip.SipServlet;
 import org.apache.commons.configuration.Configuration;
 
 import org.apache.log4j.Logger;
-import org.restcomm.sbc.dao.ConnectorsDao;
-import org.restcomm.sbc.dao.DaoManager;
-import org.restcomm.sbc.bo.Connector;
-import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.managers.Monitor;
-import org.restcomm.sbc.managers.NetworkManager;
-import org.restcomm.sbc.managers.jmx.JMXProvider;
-import org.restcomm.sbc.managers.jmx.JMXProviderFactory;
+
+
 
 
 
@@ -63,60 +58,26 @@ public final class ServiceLauncher extends SipServlet {
     @Override
     public void init(final ServletConfig servletConfig) throws ServletException {
     	super.init(servletConfig);
-    	if(LOG.isTraceEnabled()){
-	          LOG.trace(">> ServiceLauncher Servlet init()");
+    	if(LOG.isInfoEnabled()){
+	          LOG.info(">> ServiceLauncher Servlet init()");
 	    }
         final ServletContext context = servletConfig.getServletContext();
        
 		SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 		
 		Configuration configuration = (Configuration) context.getAttribute(Configuration.class.getName());
-		ConfigurationCache.build(sipFactory, configuration);
-		DaoManager storage = ShiroResources.getInstance().get(DaoManager.class);
-		//skip automatic add sip-connector to standalone-sip.xml
-//        try {
-//			bindConnectors(storage);
-//			
-//		} catch (Exception e) {
-//			LOG.error("Cannot bind connectors!",e);
-//		}
-       
-        
+		
         Monitor monitor=Monitor.getMonitor();
-        monitor.start();
-       
+        monitor.start(sipFactory, configuration);
+		
+
         
         
     }
     
+    
+    
    
-    private void bindConnectors(DaoManager storage) throws Exception {
-    	
-    	JMXProvider jmxManager=null;
-    	boolean status;
-    	jmxManager = JMXProviderFactory.getJMXProvider();
-    	
-		
-    	ConnectorsDao dao=storage.getConnectorsDao();
-    	for(Connector connector:dao.getConnectors()) {
-    		String npoint=connector.getPoint();
-    		String ipAddress=NetworkManager.getIpAddress(npoint);
-    		if(connector.getState()==Connector.State.UP) {
-	    		status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString());
-	    		if(status) {
-		    		if(LOG.isDebugEnabled()) {
-		    			LOG.debug("Binding Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
-		    		}
-	    		}	
-	    		else {
-		    		if(LOG.isDebugEnabled()) {
-		    			LOG.debug("CANNOT Bind Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());
-		    		}
-	    		}
-    		}
-    	}
-    	
-    }
- 
+   
     
 }

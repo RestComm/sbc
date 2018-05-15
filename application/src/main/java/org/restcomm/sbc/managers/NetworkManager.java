@@ -20,11 +20,11 @@
 
 package org.restcomm.sbc.managers;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -37,6 +37,9 @@ import org.restcomm.sbc.bo.NetworkPoint.Tag;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.dao.NetworkPointsDao;
+import org.restcomm.sbc.managers.controller.ManagementProvider;
+import org.restcomm.sbc.managers.controller.ManagementProviderFactory;
+
 
 
 /**
@@ -52,14 +55,14 @@ public class NetworkManager  {
 
 	private static ArrayList<NetworkPoint> eths;
 	private static ArrayList<NetworkPoint> tots;
-	
-	
+
+
 	static {
 		eths = new ArrayList<NetworkPoint>();
 		tots = new ArrayList<NetworkPoint>();
 		try {
 			init();
-		} catch (SocketException e) {
+		} catch (IOException e) {
 			LOG.error("Can't Obtain Interface data", e);
 		}
 		
@@ -154,8 +157,15 @@ public class NetworkManager  {
 		return false;
 	}
 
-	private static void init() throws SocketException {
+	private static void init() throws IOException {
+			ManagementProvider jmxManager = null;
 			int id=0;
+			try {
+				jmxManager = ManagementProviderFactory.getProvider(false);
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+				LOG.error("JMX Error", e);
+			}
+			
 	        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 	        int group=0;
 	        for (NetworkInterface netIf : Collections.list(nets)) {
@@ -166,8 +176,8 @@ public class NetworkManager  {
 	        	List<InterfaceAddress> inetAddresses =  netIf.getInterfaceAddresses();
 	 	       
 		        for (InterfaceAddress inetAddress : inetAddresses) {
-		        	NetworkPoint point=new NetworkPoint(netIf.getName()+"-"+id);
-		        	
+		        	NetworkPoint point=new NetworkPoint("eth-"+mac+"-"+id, inetAddress.getAddress());
+		        	jmxManager.addInterface("eth-"+mac+"-"+id, inetAddress.getAddress().getHostAddress());
 		        	point.setGroup(group);
 		        	point.setDescription(netIf.getDisplayName());
 		        	point.setMacAddress(mac);

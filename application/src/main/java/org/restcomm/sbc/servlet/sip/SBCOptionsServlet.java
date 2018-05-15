@@ -50,9 +50,11 @@ public class SBCOptionsServlet extends SipServlet {
 	
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		
-		LOG.info("OPTIONS sip servlet has been started");
 		super.init(servletConfig);
+		if(LOG.isInfoEnabled()){
+	          LOG.info(">> Options Servlet init()");
+	    }
+		
 		
 		upChain=new UpstreamOptionsProcessorChain();
 		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());

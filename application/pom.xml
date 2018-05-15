@@ -32,17 +32,20 @@
 			<artifactId>config</artifactId>
 			
 		</dependency>
-		<dependency>
-    		<groupId>log4j</groupId>
-    		<artifactId>log4j</artifactId>
-    	
-		</dependency>
 
 		 <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-client-all</artifactId>
                  <version>10.0.0.Final</version>
-            </dependency>
+         </dependency>
+         
+         <!-- https://mvnrepository.com/artifact/org.jboss.threads/jboss-threads -->
+		<dependency>
+		    <groupId>org.jboss.threads</groupId>
+		    <artifactId>jboss-threads</artifactId>
+		    <version>2.3.2.Final</version>
+		</dependency>
+
 
 <!--
 <dependency>
@@ -58,16 +61,33 @@
 			<version>10.0.0.Final</version>
         </dependency>
 		-->
+		<!-- https://mvnrepository.com/artifact/org.wildfly/wildfly-network -->
+		<!-- https://mvnrepository.com/artifact/org.jboss.as/jboss-as-controller-client -->
+		<!-- https://mvnrepository.com/artifact/org.wildfly/wildfly-controller-client -->
+		<dependency>
+		    <groupId>org.wildfly</groupId>
+		    <artifactId>wildfly-controller-client</artifactId>
+		    <version>8.2.1.Final</version>
+		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.wildfly/wildfly-threads -->
+		<dependency>
+		    <groupId>org.wildfly</groupId>
+		    <artifactId>wildfly-threads</artifactId>
+		    <version>8.2.1.Final</version>
+		</dependency>
+		
+		
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.jboss.as/jboss-as-jmx -->
+		<!-- https://mvnrepository.com/artifact/org.wildfly/wildfly-system-jmx -->
 		<dependency>
-		    <groupId>org.jboss.as</groupId>
-		    <artifactId>jboss-as-jmx</artifactId>
-		    <version>7.1.1.Final</version>
+		    <groupId>org.wildfly</groupId>
+		    <artifactId>wildfly-system-jmx</artifactId>
+		    <version>12.0.0.Final</version>
 		</dependency>
 
 		
@@ -155,8 +175,12 @@
 				
 		</dependency>
 		<dependency>
-			    <groupId>mysql</groupId>
-			    <artifactId>mysql-connector-java</artifactId>
+	<!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
+
+	    <groupId>org.mariadb.jdbc</groupId>
+	    <artifactId>mariadb-java-client</artifactId>
+
+
 		</dependency>
 		<dependency>
 				<groupId>org.mybatis</groupId>
@@ -260,8 +284,18 @@
     			<groupId>javax.ws.rs</groupId>
     			<artifactId>javax.ws.rs-api</artifactId>
     			<version>2.0</version>
-			</dependency>		
-				
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>2.6.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>2.6.2</version>
+			</dependency>
 	</dependencies>
 
 	<build>
