@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
@@ -34,6 +33,7 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.CallDetailRecord;
 import org.restcomm.sbc.bo.Sid;
 import org.restcomm.sbc.call.CallStateChanged.State;
+import org.restcomm.sbc.managers.utils.CreateCall;
 import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.media.MediaSessionListener;
 import org.restcomm.sbc.media.MediaZone;
@@ -57,17 +57,33 @@ public class Call implements MediaSessionListener {
 	private Direction direction;
 	private String sessionId;
 	
+	
+	  
+	private final CreateCall.Type type;
+	   
+	private final DateTime dateCreated;
+	private final DateTime dateConUpdated;
+	private final String fromName;
+	private final String from;
+	private final String to;
+
+	
 	private EventListenerList listenerList = new EventListenerList();
 	
 	protected Call(Call parent, final String sessionId, final String to, final String from,    
             final String direction, 
-            final String callerName) {
+            final String fromName) {
 		
 		this.parent=parent;
 		this.sessionId=sessionId;
 		this.sid=Sid.generate(Sid.Type.RANDOM);
 		Sid parentCallSid=Sid.generate(Sid.Type.RANDOM);
-		DateTime dateCreated=DateTime.now();
+		this.dateCreated=DateTime.now();
+		this.dateConUpdated=DateTime.now();
+		this.type = CreateCall.Type.SIP;
+		this.to= to;
+		this.from = from;
+		this.fromName = fromName;
 		String apiVersion=ConfigurationCache.getApiVersion();
 		
 		mediaSession=new MediaSession(sessionId);
@@ -85,7 +101,7 @@ public class Call implements MediaSessionListener {
 			
 		this.cdr=new CallDetailRecord(sid, "", parentCallSid, dateCreated, dateCreated, to, from, 
                 status.name(), dateCreated, dateCreated, 0, new BigDecimal(0), null, direction, null, apiVersion, null,
-                callerName, uri, null, 0, false, false);	
+                fromName, uri, null, 0, false, false);	
 	}
 	
 	public void addCallListener(CallListener listener) {
@@ -258,6 +274,30 @@ public class Call implements MediaSessionListener {
 			LOG.error("Cannot start MediaSession/Zone",e);
 		}
 		
+	}
+
+	public CreateCall.Type getType() {
+		return type;
+	}
+
+	public DateTime getDateCreated() {
+		return dateCreated;
+	}
+
+	public DateTime getDateConUpdated() {
+		return dateConUpdated;
+	}
+
+	public String getFromName() {
+		return fromName;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public String getTo() {
+		return to;
 	}
 
 	
