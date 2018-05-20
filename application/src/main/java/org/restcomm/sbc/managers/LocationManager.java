@@ -24,12 +24,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.event.EventListenerList;
+
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationFilter;
 import org.restcomm.sbc.bo.LocationNotFoundException;
-import org.restcomm.sbc.bo.Sid;
+
+
 
 
 /**
@@ -44,7 +48,8 @@ public class LocationManager  {
 	private static LocationManager locationManager;
 	private static final Logger LOG = Logger.getLogger(LocationManager.class);
 
-	
+	private EventListenerList listenerList = new EventListenerList();
+
 	private LocationManager() {
 		registers = CacheManager.getCacheManager().getCache("location");
 		registers.start();
@@ -59,8 +64,8 @@ public class LocationManager  {
 		return locationManager;
 	}
 	
-	public Location create(String user, String domain, String host, int port, String transport, Sid connector) {
-		return new Location(user, domain, host, port, transport, connector);
+	public void addLocationListener(LocationListener listener) {
+	     listenerList.add(LocationListener.class, listener);
 	}
 	
 	public void register(Location location, String userAgent, String callID, int cSeq, int ttl) {
@@ -70,6 +75,7 @@ public class LocationManager  {
 		location.setcSeq(cSeq);
 		location.setExpirationTimeInSeconds(ttl);
 		registers.put(key(location.getUser(),location.getDomain()), location, ttl, TimeUnit.SECONDS);
+		this.fireRegisteredEvent(location);
 		
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("registers.put "+key(location.getUser(),location.getDomain())+":"+ttl+" secs.");
@@ -78,10 +84,20 @@ public class LocationManager  {
 	}
 	
 	public Location unregister(String user, String domain) {
+		try {
+			this.fireUnregisteredEvent(this.getLocation(user, domain));
+		} catch (LocationNotFoundException e) {
+			
+		}
 		return registers.remove(key(user, domain));
 	}
 	
 	public Location unregister(String aor) {
+		try {
+			this.fireUnregisteredEvent(this.getLocation(aor));
+		} catch (LocationNotFoundException e) {
+			
+		}
 		return registers.remove(aor);
 	}
 	
@@ -211,5 +227,35 @@ public class LocationManager  {
 	private String key(String user, String domain) {
 		return user+"@"+domain;
 	}
+	
+	/*
+	 */
+	protected void fireRegisteredEvent(Location location) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==LocationListener.class) {             
+	             ((LocationListener)listeners[i+1]).onRegistered(location);
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireUnregisteredEvent(Location location) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==LocationListener.class) {             
+	             ((LocationListener)listeners[i+1]).onUnregistered(location);
+	         }
+	         
+	     }
+	 }
 	
 }

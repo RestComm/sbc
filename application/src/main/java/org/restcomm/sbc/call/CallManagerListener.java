@@ -37,5 +37,5 @@ public interface CallManagerListener extends EventListener {
 	void onCallAnswered(Call call);
 	void onCallReleased(Call call);
 	void onCallRejected(Call call);
-	
+	void onCallStateChanged(Call call, CallStateChanged.State state);
 }

@@ -11,5 +11,6 @@ public interface CallListener extends EventListener {
 	void onCallRinging();
 	void onCallAlerting();
 	void onCallBridged();
+	void onCallStateChanged(CallStateChanged.State state);
 	
 }

@@ -33,6 +33,7 @@ import org.joda.time.DateTime;
 import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.CallDetailRecord;
 import org.restcomm.sbc.bo.Sid;
+import org.restcomm.sbc.call.CallStateChanged.State;
 import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.media.MediaSessionListener;
 import org.restcomm.sbc.media.MediaZone;
@@ -52,7 +53,7 @@ public class Call implements MediaSessionListener {
 	private Sid sid;
 	private CallDetailRecord cdr;
 	private MediaSession mediaSession;
-	private Status status;
+	private State status;
 	private Direction direction;
 	private String sessionId;
 	
@@ -80,10 +81,10 @@ public class Call implements MediaSessionListener {
 		}
 		
 		this.direction=Direction.getValueOf(direction);
-		this.status=Status.INITIATING;
+		this.status=State.QUEUED;
 			
 		this.cdr=new CallDetailRecord(sid, "", parentCallSid, dateCreated, dateCreated, to, from, 
-                status.text, dateCreated, dateCreated, 0, new BigDecimal(0), null, direction, null, apiVersion, null,
+                status.name(), dateCreated, dateCreated, 0, new BigDecimal(0), null, direction, null, apiVersion, null,
                 callerName, uri, null, 0, false, false);	
 	}
 	
@@ -100,35 +101,7 @@ public class Call implements MediaSessionListener {
 	}
 		
 	
-	public enum Status {
-		INITIATING("initiating"),
-		BRIDGED("bridged"),
-        COMPLETED("completed"),
-        FAILED("failed"),
-        RINGING("ringing"),
-        ALERTING("alerting");
-
-        private final String text;
-
-        private Status(final String text) {
-            this.text = text;
-        }
-
-        public static Status getValueOf(final String text) {
-            Status[] values = values();
-            for (final Status value : values) {
-                if (value.toString().equals(text)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(text + " is not a valid call status.");
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
+	
 
 	public enum Direction {
 		INBOUND("inbound"),
@@ -157,7 +130,7 @@ public class Call implements MediaSessionListener {
     }
 
 
-	public Status getStatus() {
+	public State getStatus() {
 		return status;
 	}
 
@@ -175,26 +148,26 @@ public class Call implements MediaSessionListener {
 	
 	protected void setStatus(int statusCode, String reasonPhrase) {
 		if(statusCode>=400 )
-			setStatus(Call.Status.FAILED);
+			setStatus(CallStateChanged.State.FAILED);
 		else if(statusCode>=200)
-			setStatus(Call.Status.COMPLETED);
+			setStatus(CallStateChanged.State.COMPLETED);
 	
 	}
 
-	protected void setStatus(Status status) {
+	protected void setStatus(State status) {
 		
 		if(LOG.isTraceEnabled()) {
-			LOG.trace("Call was in status "+getStatus()+", now changing to "+status.text);
+			LOG.trace("Call was in status "+getStatus()+", now changing to "+status.name());
 		}
 		
 		this.status = status;
-		cdr=cdr.setStatus(status.text);
+		cdr=cdr.setStatus(status.name());
 				
 		switch(status) {
 		case RINGING:
 			cdr=cdr.setStartTime(DateTime.now());
 			break;
-		case BRIDGED:
+		case IN_PROGRESS:
 			if(LOG.isTraceEnabled()) {
 				LOG.trace("Datecreated "+cdr.getDateCreated());
 				LOG.trace("StartTime   "+cdr.getStartTime());
