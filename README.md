@@ -43,29 +43,13 @@ Java based and Follows RFC 5853 and built upon a B2BUA architecture (NAT & inter
 
 SBC is built on [RestComm SIP Servlets](https://github.com/RestComm/sip-servlets).
 
-Downloads
-========
-Simply download the source code version of your choice and build from source.
 
-Want to Contribute ? 
-========
-[See our Contributors Guide](https://github.com/RestComm/Restcomm-Conect/wiki/Contribute-to-RestComm) and our [Open Source Playbook](https://docs.google.com/document/d/1RZz2nd2ivCK_rg1vKX9ansgNF6NpK_PZl81GxZ2MSnM/edit?usp=sharing)
 
-Issue Tracking and Roadmap
-========
-[Issue Tracker](https://github.com/RestComm/sbc/issues)
 
-Questions ?
-========
-Please ask your question on [StackOverflow](http://stackoverflow.com/questions/tagged/restcomm) or the Google [public forum](http://groups.google.com/group/restcomm)
 
-License
-========
+[Try Restcomm Cloud NOW for FREE!](https://www.restcomm.com/sign-up/) Zero download and install required.
 
-RestComm SBC is lead by [TeleStax, Inc.](http://www.telestax.com/), [Eolos](http://www.eolos.la/) and developed collaboratively by a community of individual and enterprise contributors.
 
-RestComm SBC is licensed under dual license policy. The default license is the Free Open Source GNU Affero GPL v3.0. Alternatively a commercial license can be obtained from Telestax ([contact form](http://www.telestax.com/contactus/#InquiryForm))
+All Restcomm [docs](https://www.restcomm.com/docs/) and [downloads](https://www.restcomm.com/downloads/) are now available at [Restcomm.com](https://www.restcomm.com).
 
-Acknowledgements
-========
-[See who has been contributing to RestComm](http://www.telestax.com/opensource/acknowledgments/)
+
