@@ -1,3 +1,16 @@
+
+
+
+
+[Try Restcomm Cloud NOW for FREE!](https://www.restcomm.com/sign-up/) Zero download and install required.
+
+
+All Restcomm [docs](https://www.restcomm.com/docs/) and [downloads](https://www.restcomm.com/downloads/) are now available at [Restcomm.com](https://www.restcomm.com).
+
+
+
+
+
 RestComm Session Border Controller
 ============
 The Restcomm Session Border Controller (SBC) is a device regularly deployed in Voice over Internet Protocol (VoIP) networks to exert control over the signaling and usually also the media streams involved in setting up, conducting, and tearing down telephone calls or other interactive media communications.
@@ -43,13 +56,5 @@ Java based and Follows RFC 5853 and built upon a B2BUA architecture (NAT & inter
 
 SBC is built on [RestComm SIP Servlets](https://github.com/RestComm/sip-servlets).
 
-
-
-
-
-[Try Restcomm Cloud NOW for FREE!](https://www.restcomm.com/sign-up/) Zero download and install required.
-
-
-All Restcomm [docs](https://www.restcomm.com/docs/) and [downloads](https://www.restcomm.com/downloads/) are now available at [Restcomm.com](https://www.restcomm.com).
 
 
