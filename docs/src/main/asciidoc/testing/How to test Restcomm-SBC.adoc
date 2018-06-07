@@ -1,0 +1,121 @@
+[[build-from-source]]
+= How to test Restcomm-SBC
+
+
+=== Restcomm-SBC testing bed.
+
+RestComm-SBC is a Sip-servlet environment. As so, A Java Sip-Servlet container is needed to build a mockable platform for testing.
+In order to deploy this kind of environment we need to deploy its servlets into a compliant container. Arquillian testing framework was chosen due to its ability to hook Sip Servlets implemtation from mobicents framework.
+    Despite of it, as an SBC is a cross-domain platform, we need to setup an out-of-domain SIP termination endpoint responsible of call initiation/termination at the DMZ side.
+This endpoint could be any SIP Server compliant box (RestComm-Connect, Sipp, Freeswitch, Asterisk, etc). We choose to configure an Asterisk box in order to provide an DMZ inter-working testing bed not relaying on the same SIP protocol implementation on both sides. 
+
+
+[TIP]
+====
+RestComm Connect and RestComm SBC are founded on same Jain SIP implementation
+====
+
+Testsuite project contained in RestComm-SBC has everything you need to perform testing of its critical components including REST API interaction.
+
+We will ennounce here some tips regarding DMZ out-of-domain configuration in order to perform SIP use cases's testing for an Asterisk box.
+
+==== Asterisk configuration
+
+Asterisk confguration files are plain ASCII text files key/value pair based.
+A standard Asterisk distribution comes pre-configured and ready-to-run for a common closed environment. We will reconfigure some files in order to allow initiating of DMZ calls, register users and test media flow.
+
+sip.conf
+[source,decode:true]
+
+----
+[general]
+
+context=default                 ; Default context for incoming calls
+allowguest=yes                  ; Allow or reject guest calls
+                                ; (default is yes)
+match_auth_username=yes         ; if available, match user entry using
+                                ; the 'username' field from the  
+                                ; authentication line
+                                ; instead of the From: field.
+allowoverlap=no                 ; Disable overlap dialing support. (Default is yes)
+;allowtransfer=no               ; Disable all transfers (unless enabled in peers or users)
+                                ; Default is enabled. The Dial()
+                                ; options 't' and 'T' are not
+                                ; related as to whether SIP transfers
+                                ; are allowed or not.
+realm=telecom                   ; Realm for digest authentication
+                                ; defaults to "asterisk". 
+                                ; If you set a system name in
+                                ; asterisk.conf, it defaults to that
+                                ; system name
+                                ; Realms MUST be globally unique
+                                ; according to RFC 3261
+                                ; Set this to your host name or domain
+                                ; name
+
+udpbindaddr=0.0.0.0             ; IP address to bind UDP listen socket
+                                ; to (0.0.0.0 binds to all)
+                                ; Optionally add a port number,
+                                ; 192.168.1.1:5062 (default is port
+                                ; 5060)
+
+
+
+
+tcpenable=yes                   ; Enable server for incoming TCP
+                                ; connections (default is no)
+tcpbindaddr=0.0.0.0             ; IP address for TCP server to bind to
+                                ; (0.0.0.0 binds to all interfaces)
+                                ; Optionally add a port number,
+                                ; 192.168.1.1:5062 (default is port
+                                ; 5060)
+
+...
+[bob]
+type    =friend
+accountcode=Master
+defaultuser=bob
+secret  =1234
+host    =dynamic
+callerid=Bob
+context =default
+nat     =route
+qualify     =20000
+dtmfmode=inband
+disallow=all
+videosupport=yes
+allow=alaw
+allow=ulaw
+
+callgroup  =1
+pickupgroup=1
+
+
+[alice]
+type    =friend
+accountcode=Master
+defaultuser=alice
+secret  =1234
+host    =dynamic
+callerid=Alice
+context =default
+
+qualify     =yes
+nat     =route
+qualify     =20000
+dtmfmode=inband
+disallow=all
+
+videosupport=yes
+allow=alaw
+allow=ulaw
+
+callgroup  =1
+pickupgroup=1
+
+----
+extensions.conf
+[source,decode:true]
+
+----
+

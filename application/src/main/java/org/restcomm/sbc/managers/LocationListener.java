@@ -17,25 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.call;
+package org.restcomm.sbc.managers;
 
 import java.util.EventListener;
 
-import org.restcomm.sbc.call.Call;
+import org.restcomm.sbc.bo.Location;
+
 
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    16 feb. 2017 8:20:43
- * @class   CallManagerListener.java
+ * @date    16 feb. 2018 8:20:43
+ * @class   LocationListener.java
  *
  */
-public interface CallManagerListener extends EventListener {
+
+public interface LocationListener extends EventListener {
 	
-	void onCallCreated(Call call);
-	void onCallIncoming(Call call);
-	void onCallDialing(Call call);
-	void onCallAnswered(Call call);
-	void onCallReleased(Call call);
-	void onCallRejected(Call call);
-	void onCallStateChanged(Call call, CallStateChanged.State state);
+	void onRegistered(Location location);
+	void onUnregistered(Location location);
+	
 }

@@ -40,6 +40,7 @@ import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
 
 import org.restcomm.sbc.call.CallManager;
+import org.restcomm.sbc.call.CallStateChanged;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
 import org.restcomm.sbc.media.MediaController;
@@ -150,7 +151,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		String callSessionId=getCallSessionId(response.getRequest());
 		
 		if(response.getStatus()==SipServletResponse.SC_RINGING) {
-			callManager.changeCallStatus(callSessionId, Call.Status.RINGING);
+			callManager.changeCallStatus(callSessionId, CallStateChanged.State.RINGING);
 			response.setStatus(SipServletResponse.SC_SESSION_PROGRESS, "Session Progress");
 			if (LOG.isTraceEnabled()) {
 				LOG.trace("180 Detected->183");
@@ -213,14 +214,14 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		if(callSessionId!=null)
 			call=callManager.getCall(callSessionId);
 		if(call!=null) {
-			callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);
+			callManager.changeCallStatus(callSessionId, CallStateChanged.State.COMPLETED);
 				
 		}
 		else {
 			callSessionId=request.getSession().getId();	
 			call=callManager.getCall(callSessionId);				
 			if(call!=null) {
-				callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);
+				callManager.changeCallStatus(callSessionId, CallStateChanged.State.COMPLETED);
 								
 			}
 		}
@@ -244,7 +245,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	@Override
 	protected void doAck(SipServletRequest request) throws ServletException, IOException {
 		String callSessionId=request.getSession().getId();	
-		callManager.changeCallStatus(callSessionId, Call.Status.BRIDGED);
+		callManager.changeCallStatus(callSessionId, CallStateChanged.State.IN_PROGRESS);
 		
 		
 		if(LOG.isDebugEnabled()) {
@@ -300,7 +301,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		upChain.process(new SIPMutableMessage(request));
 		
 		String callSessionId=request.getSession().getId();	
-		callManager.changeCallStatus(callSessionId, Call.Status.COMPLETED);	
+		callManager.changeCallStatus(callSessionId, CallStateChanged.State.COMPLETED);	
 		
 	}
 	

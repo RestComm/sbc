@@ -29,8 +29,8 @@ import javax.swing.event.EventListenerList;
 import org.apache.log4j.Logger;
 import org.infinispan.Cache;
 import org.restcomm.sbc.call.Call;
+import org.restcomm.sbc.call.CallStateChanged.State;
 import org.restcomm.sbc.call.Call.Direction;
-import org.restcomm.sbc.call.Call.Status;
 import org.restcomm.sbc.managers.CacheManager;
 import org.restcomm.sbc.media.MediaSession;
 import org.restcomm.sbc.bo.CallDetailRecord;
@@ -98,22 +98,23 @@ public class CallManager  {
 	
 	public void changeCallStatus(String sessionId, int statusCode, String reasonPhrase) {
 		if(statusCode>=400 )
-			changeCallStatus(sessionId, Call.Status.FAILED);
+			changeCallStatus(sessionId, State.FAILED);
 		else if(statusCode>200)
-			changeCallStatus(sessionId, Call.Status.ALERTING);
+			changeCallStatus(sessionId, State.RINGING);
 	
 	}
 	
-	public void changeCallStatus(String sessionId, Status status) {
+	public void changeCallStatus(String sessionId, State status) {
 		Call call=getCall(sessionId);
 		call.setStatus(status);
+		this.fireCallStateChangedEvent(call, status);
 		
 		switch(status) {
-			case INITIATING:
+			case QUEUED:
 				this.fireCallCreatedEvent(call);
 				this.fireCallInitiatingEvent(call);
 				break;
-			case BRIDGED:
+			case IN_PROGRESS:
 				this.fireCallAnsweredEvent(call);
 				this.fireCallBridgedEvent(call);
 				break;
@@ -127,10 +128,7 @@ public class CallManager  {
 				this.fireCallFailedEvent(call);	
 				call.getMediaSession().finalize();	
 				break;
-			case RINGING:
-				this.fireCallRingingEvent(call);
-				break;
-			case ALERTING:	
+			case RINGING:	
 				if(call.getDirection()==Direction.INBOUND)
 					this.fireCallIncomingEvent(call);
 				else
@@ -324,6 +322,21 @@ public class CallManager  {
 	     for (int i = listeners.length-2; i>=0; i-=2) {
 	         if (listeners[i]==CallListener.class) {             
 	             ((CallListener)listeners[i+1]).onCallInitiating();
+	         }
+	         
+	     }
+	 }
+	
+	/*
+	 */
+	protected void fireCallStateChangedEvent(Call call, State state) {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = call.getListeners().getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==CallListener.class) {             
+	             ((CallListener)listeners[i+1]).onCallStateChanged(state);
 	         }
 	         
 	     }

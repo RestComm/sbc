@@ -51,6 +51,12 @@ include::api/routes-api.adoc[]
 
 :leveloffset: 0
 
+:leveloffset: 1
+
+include::api/monitoring-service.adoc[]
+
+:leveloffset: 0
+
 = Restcomm SBC Rest API
 
 

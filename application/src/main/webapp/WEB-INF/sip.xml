@@ -69,12 +69,7 @@
 		</servlet-mapping>
 		
 	</servlet-selection>
-	<servlet-selection>
-		<main-servlet>
-			Bootstrapper
-		</main-servlet>
-	</servlet-selection>
-
+	
 	<servlet>
 		<servlet-name>Bootstrapper</servlet-name>
 		<display-name>Bootstrapper</display-name>
@@ -130,5 +125,14 @@
 		</servlet-class>
 		<load-on-startup>5</load-on-startup>
 	</servlet>
+	
+		
+        
+        <context-param>
+                <param-name>org.restcomm.servlets.sip.OVERRIDE_SYSTEM_HEADER_MODIFICATION
+                </param-name>
+                <param-value>Modifiable</param-value>
+        </context-param>
+	
 </sip-app>
 
