@@ -70,7 +70,7 @@ public class Monitor {
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		try {
-			jmxManager=ManagementProviderFactory.getProvider(false);
+			jmxManager=ManagementProviderFactory.getProvider();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}
@@ -287,7 +287,7 @@ public class Monitor {
     	DaoManager daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		ManagementProvider jmxManager = null;
 		try {
-			jmxManager =ManagementProviderFactory.getProvider(true);
+			jmxManager =ManagementProviderFactory.getProvider();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}

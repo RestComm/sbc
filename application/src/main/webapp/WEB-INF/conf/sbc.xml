@@ -23,8 +23,6 @@
 				<security-roles>
 					<role name="Developer">
 						<permission>RestComm:*:Accounts</permission>
-						<permission>RestComm:*:Applications</permission>
-						<permission>RestComm:*:Announcements</permission>
 						<permission>RestComm:Read,Delete:Locations</permission>
 						<permission>RestComm:*:Calls</permission>
 						<permission>RestComm:*:BanLists</permission>
@@ -43,7 +41,7 @@
                		<!-- Tomcat -->
                		<!-- <provider>org.restcomm.sbc.managers.controller.tomcat.Provider</provider> -->
                		<!-- JBOSS -->
-               		<provider>org.restcomm.sbc.managers.controller.wildfly.Provider</provider> 		
+               		<provider>org.restcomm.sbc.managers.controller.wildfly.Provider</provider>
                	</jmx-management>
                 
                 <domain>10.0.0.10</domain>

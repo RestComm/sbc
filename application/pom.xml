@@ -135,6 +135,7 @@
 			    <groupId>org.mobicents.servlet.sip</groupId>
 			    <artifactId>restcomm.commons</artifactId>		 
 		</dependency>
+		
 		<dependency>
 				<groupId>com.googlecode.libphonenumber</groupId>
 				<artifactId>libphonenumber</artifactId>
@@ -212,16 +213,28 @@
 		</dependency>
 		<dependency>
 			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-		
+			<artifactId>asm</artifactId> 
+		   	
 		</dependency>
-		
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			
 		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+		</dependency>
 		
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
+		</dependency>
 		<dependency>
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>

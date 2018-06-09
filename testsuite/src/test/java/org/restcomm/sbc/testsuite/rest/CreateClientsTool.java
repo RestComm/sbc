@@ -99,7 +99,8 @@ public class CreateClientsTool {
                 jsonResponse = jArray.get(0).getAsJsonObject();
             }
 
-            httpGet.releaseConnection();
+            
+            httpGet.abort();
         } catch (ClientProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -123,7 +124,7 @@ public class CreateClientsTool {
 
         httpPost.setEntity(new UrlEncodedFormEntity(nvps));
         HttpResponse response = httpclient.execute(httpPost);
-        httpPost.releaseConnection();
+        httpPost.abort();
     }
 
     public String createClient(String deploymentUrl, String username, String password, String voiceUrl)
@@ -159,7 +160,8 @@ public class CreateClientsTool {
             clientSid = (components[0].split(":")[1]).replaceAll("\"", "");
         }
 
-        httpPost.releaseConnection();
+        
+        httpPost.abort();
 
         return clientSid;
     }

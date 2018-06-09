@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +31,6 @@ import java.util.Map;
 
 import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
-import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.SipApplicationSession;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
@@ -56,7 +54,6 @@ import org.restcomm.sbc.bo.LocationNotFoundException;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.RouteManager;
-import org.restcomm.sbc.router.RoutingPolicy;
 
 
 /**
@@ -70,16 +67,13 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	private static transient Logger LOG = Logger.getLogger(B2BUABuilderProcessor.class);
 
 	private LocationManager locationManager;
-	private SipFactory sipFactory;
 	private SipApplicationSession aSession;
-	private RoutingPolicy routingPolicy=ConfigurationCache.getRoutingPolicy();
 	
 
 	public B2BUABuilderProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain = chain;
 		locationManager = LocationManager.getLocationManager();
-		this.sipFactory = ConfigurationCache.getSipFactory();
 		
 		
 		
@@ -151,13 +145,13 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				LOG.trace("Connector to build OB "+connector.toPrint());
 			}
 			message.setTargetLocalAddress(connector.getHost());
-			message.setTargetRemoteAddress(routingPolicy.getCandidate().getHost());
+			message.setTargetRemoteAddress(ConfigurationCache.getRoutingPolicy().getCandidate().getHost());
 			message.setTargetTransport(connector.getTransport().toString());
 			
 			// newSipUri = sipFactory.createSipURI(""/*toURI.getUser()*/,
 			// ConfigurationCache.getTargetHost());
 			// newSipUri = sipFactory.createSipURI(toURI.getUser(), ConfigurationCache.getTargetHost());
-			SipURI candidate=routingPolicy.getCandidate();
+			SipURI candidate=ConfigurationCache.getRoutingPolicy().getCandidate();
 			
 			route=candidate;
 			//route="sip:" + candidate.getHost()+":"+candidate.getPort()+";transport="+candidate.getTransportParam();
@@ -202,7 +196,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 				return;
 			}
 			
-			newSipToUri = sipFactory.createSipURI(toURI.getUser(), location.getHost());
+			newSipToUri = ConfigurationCache.getSipFactory().createSipURI(toURI.getUser(), location.getHost());
 			newSipToUri.setPort(location.getPort());
 			newSipToUri.setTransportParam(location.getTransport());
 			connector=routeManager.getDMZConnector(location.getSourceConnectorSid().toString());
@@ -268,7 +262,7 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 					}
 					// Controls expiration time of this leg
 					newRequest.getApplicationSession().setExpires(0);
-					aSession = sipFactory.createApplicationSession();
+					aSession = ConfigurationCache.getSipFactory().createApplicationSession();
 					aSession.setAttribute(request.getSession().getCallId(), newRequest);
 					LOG.trace("NEW SESSION REQ/OLD "+newRequest.getSession()+"/"+request.getSession());
 				

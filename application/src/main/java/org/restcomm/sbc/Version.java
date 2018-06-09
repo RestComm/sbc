@@ -69,6 +69,14 @@ public class Version {
                                 + releaseRevision + " date=" + releaseDate
                                 + ") Started.");
                         logger.info("*****************************************************************************");
+                        logger.info("\n==============================================================================\n"+
+                        			"==                                                                          ==\n"+
+                        			"==              Thank you for running Restcomm SBC Community code           ==\n"+
+                        			"==              		 that is licensed under AGPL	                    ==\n"+
+                        			"==   For Commercial Grade Support, please request a TelScale Subscription   ==\n"+
+                        			"==                         http://www.telestax.com/                         ==\n"+
+                        			"==                                                                          ==\n"+
+                        			"==============================================================================\n");
                     } else {
                         logger.warn("Unable to extract the version of Eolos SBC currently running");
                     }

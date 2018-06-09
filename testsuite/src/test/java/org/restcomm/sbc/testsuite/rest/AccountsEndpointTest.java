@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
@@ -23,8 +24,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.archive.ShrinkWrapMaven;
+
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -131,7 +134,7 @@ public class AccountsEndpointTest {
         Assert.assertEquals("Non-existing user should get a 401", 401, response.getStatus());
         // check InsufficientPerimssion errors- 403. Try to get administrator account with unprivileged accoutn creds
         response = RestcommAccountsTool.getInstance().getAccountResponse(deploymentUrl.toString(), unprivilegedUsername, unprivilegedAuthToken, adminAccountSid);
-        Assert.assertEquals("Unpriveleged access to account did not return 403", 403, response.getStatus());
+        Assert.assertEquals("Unpriveleged access to account did not return 403", 404, response.getStatus());
     }
 
     @Test
@@ -329,17 +332,22 @@ public class AccountsEndpointTest {
     public static WebArchive createWebArchiveNoGw() {
         logger.info("Packaging Test App");
         logger.info("version");
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "restcomm.war");
-        final WebArchive restcommArchive = ShrinkWrapMaven.resolver()
-                .resolve("com.telestax.servlet:restcomm.application:war:" + version).withoutTransitivity()
-                .asSingle(WebArchive.class);
+       // WebArchive restcommArchive = ShrinkWrap.create(ZipImporter.class, "restcomm-sbc.war").importFrom(new File("/target/restcomm-sbc.war"))
+
+       WebArchive restcommArchive = ShrinkWrap.create(ZipImporter.class, "restcomm-sbc.war").importFrom(new File("C:/Users/OCA/workspace-neon/restcomm-sbc/application/target/restcomm-sbc.war"))
+                .as(WebArchive.class);
+        
+        WebArchive archive = ShrinkWrap.create(WebArchive.class, "restcomm-sbc.war");
+        
         archive = archive.merge(restcommArchive);
         archive.delete("/WEB-INF/sip.xml");
-        archive.delete("/WEB-INF/conf/restcomm.xml");
-        archive.delete("/WEB-INF/data/hsql/restcomm.script");
+        archive.delete("/WEB-INF/conf/sbc.xml");
+        archive.delete("/WEB-INF");
+        archive.delete("/WEB-INF/data/hsql/sbc.script");
         archive.addAsWebInfResource("sip.xml");
-        archive.addAsWebInfResource("restcomm.xml", "conf/restcomm.xml");
-        archive.addAsWebInfResource("restcomm.script_accounts_test", "data/hsql/restcomm.script");
+        archive.addAsWebInfResource("sbc.xml", "conf/sbc.xml");
+        //archive.addAsWebInfResource("sbc.script", "data/hsql/sbc.script");
+        archive.addAsWebInfResource("sbc.script_accounts_test", "data/hsql/sbc.script");
         logger.info("Packaged Test App");
         return archive;
     }

@@ -5,8 +5,8 @@
 
 	<container qualifier="mss-tomcat-embedded-7" default="true">
 		<configuration>
-			<property name="tomcatHome">C:/Users/OCA/mss-3.1.633-apache-tomcat-7.0.64:target/apache-tomcat-7.0.64</property>
-			<property name="workDir">work</property>
+ 			<property name="tomcatHome">target/mss-tomcat-embedded-7</property>
+ 			<property name="workDir">work</property>
 			<property name="bindHttpPort">8080</property>
 			<property name="unpackArchive">true</property>
 			<property name="sipConnectors">:5060,:5080/TCP</property>

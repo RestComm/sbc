@@ -109,7 +109,7 @@ public abstract class ConnectorsEndpoint extends SecuredEndpoint {
         xstream.registerConverter(listConverter);
         instanceId = RestcommConfiguration.getInstance().getMain().getInstanceId();
         try {
-			jmxManager=ManagementProviderFactory.getProvider(true);
+			jmxManager=ManagementProviderFactory.getProvider();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			LOG.error("JMX Error", e);
 		}

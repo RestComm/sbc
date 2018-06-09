@@ -70,6 +70,10 @@ public class NetworkPoint {
 		return new NetworkPoint( id, accountSid, tag);
 	}
 	
+	public NetworkPoint setAccountSid(Sid accountSid) {
+		return new NetworkPoint( id, accountSid, tag);
+	}
+	
 	public String getId() {
 		return id;
 	}

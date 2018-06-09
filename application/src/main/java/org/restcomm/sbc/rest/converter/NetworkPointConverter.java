@@ -32,6 +32,7 @@ import java.lang.reflect.Type;
 import org.apache.commons.configuration.Configuration;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 import org.restcomm.sbc.bo.NetworkPoint;
+import org.restcomm.sbc.managers.NetworkManager;
 
 
 
@@ -73,7 +74,8 @@ public final class NetworkPointConverter extends AbstractConverter implements Js
     @Override
     public JsonElement serialize(final NetworkPoint point, Type type, final JsonSerializationContext context) {
         final JsonObject object = new JsonObject();
-       
+        writeID(NetworkManager.getNetworkPoint(point.getId()).getAddress().getHostAddress(), "ip_address", object);
+
         writeId(point.getId(), object);
         writeMAC(point.getMacAddress(), object);
         writeDescription(point.getDescription(), object);
@@ -81,6 +83,18 @@ public final class NetworkPointConverter extends AbstractConverter implements Js
         writeAccountSid(point.getAccountSid(), object);
         
         return object;
+    }
+    
+    private void writeID(final String id, final String name, final HierarchicalStreamWriter writer) {
+        writer.startNode(name);
+        if (id != null) {
+            writer.setValue(id);
+        }
+        writer.endNode();
+    }
+
+    private void writeID(final String id, final String name, final JsonObject object) {
+        object.addProperty(name, id);
     }
 
     private void writeId(final String id, final HierarchicalStreamWriter writer) {

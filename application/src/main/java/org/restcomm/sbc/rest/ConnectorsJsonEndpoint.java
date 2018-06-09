@@ -17,44 +17,62 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-
 package org.restcomm.sbc.rest;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 
 import static javax.ws.rs.core.MediaType.*;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
+import org.restcomm.sbc.bo.Sid;
 
-@Path("/Locations.json")
+
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    27 jul. 2016 19:44:29
+ * @class   ConnectorsXmlEndpoint.java
+ *
+ */
+@Path("/Connectors.json")
 @ThreadSafe
-public final class LocationsJsonEndpoint extends LocationsEndpoint {
-    public LocationsJsonEndpoint() {
+public final class ConnectorsJsonEndpoint extends ConnectorsEndpoint {
+    public ConnectorsJsonEndpoint() {
         super();
     }
 
-    @GET
-    public Response getLocationsAsJson(@Context UriInfo info) {
-        return getLocations(info, APPLICATION_JSON_TYPE);
-    }
     
-    @Path("/{aor}.json")
-    @GET
-    public Response getLocationAsJson(@PathParam("aor") final String aor) {
-        return getLocation(aor, APPLICATION_JSON_TYPE);
-    }
-    
-    @Path("/{aor}.json")
+    @Path("/{sid}.json")
     @DELETE
-    public Response deleteLocationAsJson(@PathParam("aor") final String aor) {
-        return deleteLocation(aor);
+    public Response deleteConnectorAsJson(@PathParam("sid") final String sid) {
+        return deleteConnector(new Sid(sid));
     }
 
+    @GET
+    public Response getConnectors(@Context UriInfo info) {
+        return getConnectors(info, APPLICATION_JSON_TYPE);
+    }
+
+    
+    @Path("/{sid}.json")
+    @Consumes(APPLICATION_FORM_URLENCODED)
+    @POST
+    public Response updateConnectorAsJsonPost(@PathParam("sid") final String sid,
+            final MultivaluedMap<String, String> data) {
+    	return updateConnector(new Sid(sid), data, APPLICATION_JSON_TYPE);
+        
+    }
+    
     
 }

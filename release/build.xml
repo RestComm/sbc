@@ -19,38 +19,27 @@
   
 	
   <!--os dependant binaries-->
-  <condition property="wget.executable" value="C:\Program Files (x86)\GnuWin32\bin\wget" else="wget">
+  <condition property="wget.executable" value="C:\Users/OCA/wget\wget" else="wget">
 	 <os family="windows" />
   </condition>
   
-  <!--Get last restcomm-sip-servlets build version-->
-  <!--<property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Release/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>-->
-  <property name="sipservlets.version.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/restcomm-sip-servlets-version.txt"/>
-  <exec executable="${wget.executable}" failonerror="true">
-    <arg value="--no-check-certificate"/>
-    <arg value="${sipservlets.version.download.url}"/>
-  </exec>
-	<loadfile srcfile="restcomm-sip-servlets-version.txt" property="sipservlets-build-version" >
-	<filterchain>
-        <striplinebreaks/>
-      </filterchain>
-    </loadfile>
+  
 
   <!--mobicents binaries versions-->
-  <property name="sipservlets-build" value="${sipservlets-build-version}"/>
+  <property name="sipservlets-build" value="3.2.0-89"/>
   <property name="sipservlets-as10.version" value="${sipservlets-build}"/>
 
   <!-- mobicents SIP Servlets 7.x on Tomcat 7 -->
   <property name="sipservlets.tomcat.distro.version" value="${sipservlets-as10.version}-apache-tomcat-7.0.64"/>
   <property name="sipservlets.tomcat.download.distro.file" value="restcomm-sip-servlets-${sipservlets.tomcat.distro.version}.zip"/>
-  <property name="sipservlets.tomcat.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/${sipservlets.tomcat.download.distro.file}"/>
+  <property name="sipservlets.tomcat.download.url" value="https://github.com/RestComm/sip-servlets/releases/download/3.2.0-89/restcomm-sip-servlets-3.2.0-89-apache-tomcat-7.0.64.zip"/>
   <property name="sipservlets.tomcat.distro.zip.path" value="${checkout.dir}/${sipservlets.tomcat.download.distro.file}"/>
 
   <!-- mobicents SIP Servlets 7.x on JBoss AS7-->
   <property name="sipservlets.as10.distro.version" value="${sipservlets-as10.version}-wildfly-10.0.0.Final"/>
   <property name="sipservlets.as10.download.distro.file" value="restcomm-sip-servlets-${sipservlets.as10.distro.version}.zip"/>
 	<!-- TEMPORARY -->
-  <property name="sipservlets.as10.download.url" value="https://mobicents.ci.cloudbees.com/job/RestcommSipServlets-Specify-Branch/lastSuccessfulBuild/artifact/${sipservlets.as10.download.distro.file}"/>
+  <property name="sipservlets.as10.download.url" value="https://github.com/RestComm/sip-servlets/releases/download/3.2.0-89/restcomm-sip-servlets-3.2.0-89-wildfly-10.0.0.Final.zip"/>
   <!--<property name="sipservlets.as10.download.url" value="https://webukraine-my.sharepoint.com/personal/denis_zaytsev_mobius-software_com/_layouts/15/guestaccess.aspx?docid=06c327c14d89c47cba37a391bead1d666&amp;authkey=AQZXBap2bYM1oLBLRnwjfD0"/>-->
   <property name="sipservlets.as10.distro.zip.path" value="${checkout.dir}/${sipservlets.as10.download.distro.file}"/>
 
@@ -111,9 +100,9 @@
   <!--SipServlets Tomcat-->
   <available file="${sipservlets.tomcat.distro.zip.path}" property="got.sipservlets-tomcat"/>
   <target name="get-sipservlets-tomcat" unless="got.sipservlets-tomcat">
-    <echo>Downloading SipServlets Tomcat version: ${sipservlets-as10.version}</echo>
+    <echo>Downloading SipServlets Tomcat version: ${sipservlets-as10.version} from ${sipservlets.tomcat.download.url}</echo>
     <exec executable="${wget.executable}" failonerror="true">
-      <arg value="--no-check-certificate"/>
+    <arg value="--no-check-certificate"/> 
       <arg value="${sipservlets.tomcat.download.url}"/>
     </exec>
     <move file="${base.dir}/release/${sipservlets.tomcat.download.distro.file}" todir="${checkout.dir}"/>

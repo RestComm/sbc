@@ -14,10 +14,10 @@ CREATE USER SA PASSWORD ""
 GRANT DBA TO SA
 SET WRITE_DELAY 10
 SET SCHEMA PUBLIC
-INSERT INTO "restcomm_accounts" VALUES('ACae6e420f425248d6a26948c17a9e2acf','2012-04-24 00:00:00.000000000','2012-04-24 00:00:00.000000000','administrator@company.com','Default Administrator Account',NULL,'Full','uninitialized','77f8c12cc7b8f8423e5c38b035249166','Administrator','/2012-04-24/Accounts/ACae6e420f425248d6a26948c17a9e2acf')
+INSERT INTO "restcomm_accounts" VALUES('ACae6e420f425248d6a26948c17a9e2acf','2012-04-24 00:00:00.000000000','2012-04-24 00:00:00.000000000','administrator@company.com','Default Administrator Account',NULL,'Full','active','77f8c12cc7b8f8423e5c38b035249166','Administrator','/2012-04-24/Accounts/ACae6e420f425248d6a26948c17a9e2acf')
 
-INSERT INTO "restcomm_network_points" VALUES('eth-C4E98401EAA4-0','ACae6e420f425248d6a26948c17a9e2acf','MZ')
-INSERT INTO "restcomm_network_points" VALUES('eth-448A5B2D1934-0','ACae6e420f425248d6a26948c17a9e2acf','DMZ')
+INSERT INTO "restcomm_network_points" VALUES('eth-C4E98401EAA4-0','ACae6e420f425248d6a26948c17a9e2acf','DMZ')
+INSERT INTO "restcomm_network_points" VALUES('eth-448A5B2D1934-0','ACae6e420f425248d6a26948c17a9e2acf','MZ')
 
 INSERT INTO "restcomm_connectors" VALUES('CNae6e420f425248d6a26948c17a9e2aaa','ACae6e420f425248d6a26948c17a9e2acf',5060,'UDP','UP','eth-448A5B2D1934-0')
 INSERT INTO "restcomm_connectors" VALUES('CNae6e420f425248d6a26948c17a9e2ccc','ACae6e420f425248d6a26948c17a9e2acf',5083,'WSS','UP','eth-448A5B2D1934-0')
