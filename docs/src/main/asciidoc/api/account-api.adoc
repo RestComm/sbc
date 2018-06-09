@@ -1,4 +1,4 @@
-= Restcomm API – Account
+= Restcomm SBC API – Account
 
 [[Accounts]]
 == Accounts

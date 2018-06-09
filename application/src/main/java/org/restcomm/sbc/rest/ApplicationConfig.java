@@ -11,15 +11,22 @@ public class ApplicationConfig extends Application {
 public Set<Class<?>> getClasses() {
     return new HashSet<Class<?>>(
     		Arrays.asList(
+    				AccountsXmlEndpoint.class,
     				AccountsJsonEndpoint.class,
     				BlackListsJsonEndpoint.class,
     				BlackListsXmlEndpoint.class,
-    				
+    				CallsJsonEndpoint.class,
+    				CallsXmlEndpoint.class,
     				ConnectorsXmlEndpoint.class,
+    				ConnectorsJsonEndpoint.class,
     				LocationsJsonEndpoint.class,
     				LocationsXmlEndpoint.class,
     				NetworkPointsXmlEndpoint.class,
+    				NetworkPointsJsonEndpoint.class,
     				RoutesXmlEndpoint.class,
+    				RoutesJsonEndpoint.class,
+    				StatisticsXmlEndpoint.class,
+    				SupervisorJsonEndpoint.class,
     				WhiteListsJsonEndpoint.class,
     				WhiteListsXmlEndpoint.class));
 }

@@ -45,8 +45,8 @@ public class ManagementProviderFactory {
 		
 	}
 	
-	public static ManagementProvider getProvider(boolean reopen) throws ClassNotFoundException, InstantiationException, IllegalAccessException  {
-		if(instance!=null && !reopen)
+	public static ManagementProvider getProvider() throws ClassNotFoundException, InstantiationException, IllegalAccessException  {
+		if(instance!=null )
 			return instance;
 		
 		String providerClass;

@@ -88,6 +88,7 @@ public class NetworkManager  {
 					persistentPoint.setMacAddress(realPoint.getMacAddress());
 					persistentPoint.setDescription(realPoint.getDescription());
 					persistentPoint.setAddress(realPoint.getAddress());
+					persistentPoint.setAccountSid(realPoint.getAccountSid());
 					tots.remove(realPoint);
 					tots.add(persistentPoint);		
 				}
@@ -161,7 +162,7 @@ public class NetworkManager  {
 			ManagementProvider jmxManager = null;
 			int id=0;
 			try {
-				jmxManager = ManagementProviderFactory.getProvider(false);
+				jmxManager = ManagementProviderFactory.getProvider();
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 				LOG.error("JMX Error", e);
 			}
@@ -184,6 +185,7 @@ public class NetworkManager  {
 		        	point.setAddress(inetAddress.getAddress());
 		        	point.setBroadcast(inetAddress.getBroadcast());
 		        	point.setPrefixMask(inetAddress.getNetworkPrefixLength());
+		        	
 		        	id++;
 		            eths.add(point);
 		            if(LOG.isInfoEnabled()) {

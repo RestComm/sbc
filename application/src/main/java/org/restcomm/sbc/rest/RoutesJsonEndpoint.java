@@ -17,44 +17,59 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-
 package org.restcomm.sbc.rest;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 
 import static javax.ws.rs.core.MediaType.*;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
+import org.restcomm.sbc.bo.Sid;
 
-@Path("/Locations.json")
+
+
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    30 ago. 2016 15:12:21
+ * @class   RoutesXmlEndpoint.java
+ *
+ */
+@Path("/Routes.json")
 @ThreadSafe
-public final class LocationsJsonEndpoint extends LocationsEndpoint {
-    public LocationsJsonEndpoint() {
+public final class RoutesJsonEndpoint extends RoutesEndpoint {
+    public RoutesJsonEndpoint() {
         super();
     }
 
-    @GET
-    public Response getLocationsAsJson(@Context UriInfo info) {
-        return getLocations(info, APPLICATION_JSON_TYPE);
-    }
     
-    @Path("/{aor}.json")
-    @GET
-    public Response getLocationAsJson(@PathParam("aor") final String aor) {
-        return getLocation(aor, APPLICATION_JSON_TYPE);
-    }
-    
-    @Path("/{aor}.json")
+    @Path("/{sid}.json")
     @DELETE
-    public Response deleteLocationAsJson(@PathParam("aor") final String aor) {
-        return deleteLocation(aor);
+    public Response deleteRouteAsXml(@PathParam("sid") final String sid) {
+        return deleteRoute(new Sid(sid));
     }
 
+    @GET
+    public Response getRoutingPolicies(@Context UriInfo info) {
+        return getRoutes(info, APPLICATION_JSON_TYPE);
+    }
+
+    @Consumes(APPLICATION_FORM_URLENCODED)
+    @POST
+    public Response putRoute(final MultivaluedMap<String, String> data) {
+        return putRoute(data, APPLICATION_JSON_TYPE);
+    }
+    
     
 }

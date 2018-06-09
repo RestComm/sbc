@@ -38,9 +38,9 @@ import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
  */
 @Path("/Accounts/{accountSid}/Supervisor.json")
 @ThreadSafe
-public class SupservisorJsonEndpoint extends SupervisorEndpoint{
+public class SupervisorJsonEndpoint extends SupervisorEndpoint{
 
-    public SupservisorJsonEndpoint() {
+    public SupervisorJsonEndpoint() {
         super();
     }
 
