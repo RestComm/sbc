@@ -7,7 +7,6 @@
 	<welcome-file-list>
 		<welcome-file>webrtc/index.xhtml</welcome-file>
 	</welcome-file-list>
-
 	<filter>
 		<filter-name>ShiroFilter</filter-name>
 		<filter-class>org.apache.shiro.web.servlet.IniShiroFilter</filter-class>
@@ -23,9 +22,6 @@
 	<listener>
 		<listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
 	</listener>
-	
-
-
 	<context-param>
 		<param-name>resteasy.scan</param-name>
 		<param-value>false</param-value>
@@ -40,7 +36,7 @@
 		<param-name>resteasy.scan.resources</param-name>
 		<param-value>false</param-value>
 	</context-param>
-	<servlet>
+    <servlet>
     	<servlet-name>default</servlet-name>
 		<servlet-class>io.undertow.servlet.handlers.DefaultServlet</servlet-class>
 		<init-param>
