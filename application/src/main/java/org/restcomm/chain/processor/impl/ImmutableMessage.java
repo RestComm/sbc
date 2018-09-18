@@ -31,5 +31,7 @@ import org.restcomm.chain.processor.Message;
  */
 public interface ImmutableMessage extends Message {
 	Object getContent() ;
-	
+	/* It is up to the implementation to deal with unchecked exceptions, informational only */
+	void setContent(Object value) throws IllegalStateException;
+
 }
