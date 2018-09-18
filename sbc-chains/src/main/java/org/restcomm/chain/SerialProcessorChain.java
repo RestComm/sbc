@@ -19,9 +19,8 @@
  *******************************************************************************/
 package org.restcomm.chain;
 
-import org.restcomm.chain.impl.MalformedProcessorChainException;
 import org.restcomm.chain.processor.Processor;
-
+import org.restcomm.chain.impl.MalformedProcessorChainException;
 
 /**
  * 

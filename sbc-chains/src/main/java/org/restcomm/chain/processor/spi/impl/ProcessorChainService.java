@@ -31,21 +31,48 @@
 
 package org.restcomm.chain.processor.spi.impl;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+
 import org.restcomm.chain.ProcessorChain;
 
 
-public class ProcessorChainFactory {
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    28 sept. 2016 18:00:44
+ * @class   ProcessorChainService.java
+ *
+ */
+public class ProcessorChainService {
 
-  public static void main(String[] args) {
+    private static ProcessorChainService service;
+    private ServiceLoader<ProcessorChain> loader;
 
-    System.out.println(ProcessorChainFactory.lookup("book"));
-    System.out.println(ProcessorChainFactory.lookup("editor"));
-    System.out.println(ProcessorChainFactory.lookup("xml"));
-    System.out.println(ProcessorChainFactory.lookup("REST"));
-  }
+    private ProcessorChainService() {
+        loader = ServiceLoader.load(ProcessorChain.class);
+    }
 
-  public static ProcessorChain lookup(String name) {
-	ProcessorChainService service = ProcessorChainService.getInstance();
-    return service.getProcessorChain(name);
-  }
+    public static synchronized ProcessorChainService getInstance() {
+        if (service == null) {
+            service = new ProcessorChainService();
+        }
+        return service;
+    }
+
+
+    public ProcessorChain getProcessorChain(String name) {
+    		ProcessorChain p=null;
+        
+        	
+            Iterator<ProcessorChain> processors = loader.iterator();
+            while (processors.hasNext()) {
+                p = processors.next();
+                if(p.getName().equalsIgnoreCase(name)){
+                	return p;
+                }
+                
+            }
+       
+        return p;
+    }
 }
