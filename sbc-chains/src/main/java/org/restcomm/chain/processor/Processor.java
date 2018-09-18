@@ -21,7 +21,6 @@ package org.restcomm.chain.processor;
 
 import java.io.IOException;
 
-import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 
@@ -95,7 +94,7 @@ public interface Processor {
 	 * @return message
 	 */
 	
-	void process(MutableMessage message) throws ProcessorParsingException;
+	void process(Message message) throws ProcessorParsingException;
 	
 	/**
 	 * Gets Callback

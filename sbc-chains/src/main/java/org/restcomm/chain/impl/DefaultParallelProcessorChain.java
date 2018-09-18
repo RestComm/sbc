@@ -26,11 +26,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ParallelProcessorChain;
+import org.restcomm.chain.processor.Message;
 import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ImmutableMessage;
-import org.restcomm.chain.processor.impl.MutableMessage;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 
@@ -64,7 +64,7 @@ public abstract class DefaultParallelProcessorChain extends DefaultDPIProcessor
 	}
 	
 	@Override
-	public void process(MutableMessage message) throws ProcessorParsingException  {
+	public void process(Message message) throws ProcessorParsingException  {
 		
 			
 			final ImmutableMessage immutableMessage=(ImmutableMessage)message;

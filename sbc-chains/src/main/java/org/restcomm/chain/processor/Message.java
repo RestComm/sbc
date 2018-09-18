@@ -126,4 +126,6 @@ public interface Message {
 	 */
 	
 	boolean isAborted();
+
+	void setContent(Object value);
 }

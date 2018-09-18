@@ -54,12 +54,13 @@
 			<artifactId>akka-actor_2.10</artifactId>
 			
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-slf4j_2.10</artifactId>
 			
 		</dependency>
-
+	-->
 
 		<dependency>
 			<groupId>log4j</groupId>
@@ -67,17 +68,17 @@
 		
 			<scope>provided</scope>
 		</dependency>
-
+<!--
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-
+ 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
@@ -95,19 +96,36 @@
   			<artifactId>infinispan-core</artifactId>
   		
 		</dependency>
+	<!-- 	
+    <dependency>
+      <groupId>org.jboss.spec.javax.ws.rs</groupId>
+      <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
+      <version>1.0.0.Final</version>
+      <scope>test</scope>
+    </dependency>
+		
+		<dependency>
+    			<groupId>javax.ws.rs</groupId>
+    			<artifactId>javax.ws.rs-api</artifactId>
+    			<version>2.0</version>
+			</dependency>
+			-->
+			<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-jaxrs -->
+
+
+   	
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
-			
-		</dependency>
 
+		</dependency>
+		
+		
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
-			<version>${jersey.version}</version>
 		</dependency>
-
-
+		
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
@@ -210,7 +228,6 @@
 		<dependency>
 			<groupId>javax.sip</groupId>
 			<artifactId>jain-sip-api</artifactId>
-			<version>1.2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -220,14 +237,14 @@
 			<version>1.4</version>
 			<scope>test</scope>
 		</dependency>
-
+<!-- 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>4.2.2</version>
 			<scope>test</scope>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
@@ -253,7 +270,7 @@
 			<version>${tomcat7.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-jasper</artifactId>
@@ -276,7 +293,6 @@
 			<artifactId>tomcat-catalina</artifactId>
 			<version>${tomcat7.version}</version>
 		</dependency>
-
 		
 		<dependency>
 			<groupId>org.mobicents.arquillian.container</groupId>
@@ -315,6 +331,7 @@
 			<version>${project.version}</version>
 			<classifier>classes</classifier>
 			<scope>test</scope>
+			
 		</dependency>
 	</dependencies>
 
@@ -349,7 +366,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.19.1</version>
 					<configuration>
-						<argLine>-Xms1024m -Xmx2048m -XX:MaxPermSize=1024m</argLine>
+						<argLine>-Xms1024m -Xmx2048m -XX:MaxPermSize=1024m -Dcom.sun.management.jmxremote.port=9999  -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false</argLine>
 						<!-- <excludes> <exclude>**/SmsSessionTest.java</exclude> </excludes> -->
 					
 						<forkCount>1</forkCount>

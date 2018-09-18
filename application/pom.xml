@@ -20,8 +20,11 @@
 	<!-- For 3.5 and older -->
 
 	<dependencies>
-
-
+		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-chains</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
@@ -151,7 +154,7 @@
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>1.8.0.10</version>
+			
 		</dependency>
 		
 		<dependency>
@@ -211,16 +214,19 @@
 				<artifactId>slf4j-log4j12</artifactId>
 			
 		</dependency>
+		<!-- 
 		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId> 
-		   	
+		    <groupId>org.ow2.asm</groupId>
+		    <artifactId>asm</artifactId>
+		   
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			
 		</dependency>
+		 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
@@ -230,11 +236,12 @@
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
 		</dependency>
-		
+		<!-- 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-servlet</artifactId>
 		</dependency>
+		-->
 		<dependency>
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>
@@ -293,12 +300,18 @@
 			    <groupId>org.mobicents.media.io</groupId>
 			    <artifactId>sdp</artifactId>
 			</dependency>
+			 
 			<dependency>
     			<groupId>javax.ws.rs</groupId>
     			<artifactId>javax.ws.rs-api</artifactId>
     			<version>2.0</version>
 			</dependency>
-
+			<!-- 
+			<dependency>
+				<groupId>com.sun.jersey</groupId>
+				<artifactId>jersey-core</artifactId>
+			</dependency>
+			-->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>

@@ -17,43 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  *******************************************************************************/
-package org.restcomm.chain;
-
-import org.restcomm.chain.impl.MalformedProcessorChainException;
-import org.restcomm.chain.processor.Processor;
-
-
+package org.restcomm.chain.testsuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 
-/**
- * A ProcessorChain is a component of a chain of responsibility
- * responsible in the construction of the chain of Processors
- * that will interact in the transformation of the message.
- * it enqueues processors and controls the chain life-cycle.
- * 
- * 
- */
-/**
- * @author  ocarriles@eolos.la (Oscar Andres Carriles)
- * @date    18/5/2016 12:12:24
- * @class   ParallelProcessorChain.java
- *
- */
-public interface ParallelProcessorChain extends ProcessorChain {
-		
-	
-	/**
-	 * adds Processor to the chain
-	 * 
-	 * @param processor
-	 */
-	void link(Processor processor) throws MalformedProcessorChainException ;
-	
-	/**
-	 * adds next hop Processor to the chain
-	 * 
-	 * @param processor
-	 */
-	void setNextLink(Processor processor) throws MalformedProcessorChainException ;
-	
-}
+@RunWith(Suite.class)
+@SuiteClasses({ 
+				
+				ProcessorTest.class,
+				SerialChainTest.class,
+				ParallelChainTest.class,
+				ReusableSerialChainTest.class,
+				ReusableComplexChainTest.class
+				
+				})
+
+public class AllTest {
+
+} 

@@ -138,7 +138,7 @@ public abstract class DefaultProcessor implements Processor {
 	     }
 	 }
 	
-	public void process(MutableMessage message) throws ProcessorParsingException {
+	public void process(Message message) throws ProcessorParsingException {
 		if(message==null) {
 			throw new ProcessorParsingException("null Messages not allowed");
 		}
