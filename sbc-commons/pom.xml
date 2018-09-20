@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.restcomm</groupId>
+    <artifactId>restcomm-sbc</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>sbc-commons</artifactId>
+
+  <name>RestComm SBC :: Apps :: ${project.artifactId}</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+			
+				<scope>provided</scope>
+	</dependency>
+	<dependency>
+  				<groupId>org.apache.commons</groupId>
+  				<artifactId>commons-exec</artifactId>
+  				
+			</dependency>
+	<dependency>
+				<groupId>commons-configuration</groupId>
+				<artifactId>commons-configuration</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.mobicents.servlet.sip</groupId>
+				<artifactId>restcomm.commons</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.mobicents.servlet.sip</groupId>
+				<artifactId>restcomm.api</artifactId>
+			</dependency>
+			<dependency>
+  				<groupId>org.infinispan</groupId>
+  				<artifactId>infinispan-core</artifactId>
+  				
+			</dependency>
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-actor_2.10</artifactId>
+			</dependency>
+  </dependencies>
+</project>

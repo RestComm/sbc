@@ -33,6 +33,7 @@ import org.restcomm.chain.processor.impl.DefaultProcessor;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
 import org.restcomm.sbc.media.MediaSession;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.MessageUtil;
@@ -54,8 +55,9 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
 	private String name="INVITE Processor";
 	
-	private CallManager callManager=CallManager.getCallManager();
 	
+	private CallManager callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
+
 	
 	public InviteProcessor(ProcessorChain chain) {
 		super(chain);

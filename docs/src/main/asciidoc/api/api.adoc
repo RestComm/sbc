@@ -53,6 +53,12 @@ include::api/routes-api.adoc[]
 
 :leveloffset: 1
 
+include::api/usage-records.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
 include::api/monitoring-service.adoc[]
 
 :leveloffset: 0
@@ -80,3 +86,5 @@ Click on a link to read the API documentation for accessing or modifying each re
 * <<connectors-api.adoc#connectorsapi, Restcomm SBC API - Connector>>
 * <<net-points-api.adoc#netpointsapi, Restcomm SBC API - NetworkPoint>>
 * <<routes-api.adoc#routesapi, Restcomm SBC API - Route>>
+* <<usage-records.adoc#usageapi, Restcomm SBC API - Usage>>
+

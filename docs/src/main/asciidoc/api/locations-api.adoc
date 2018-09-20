@@ -1,4 +1,4 @@
-= Restcomm API – Location
+= Restcomm SBC API – Location
 
 [[Locations]]
 == Locations

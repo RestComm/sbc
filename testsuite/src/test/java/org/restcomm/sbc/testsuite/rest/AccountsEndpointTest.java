@@ -327,13 +327,14 @@ public class AccountsEndpointTest {
         ClientResponse response = RestcommAccountsTool.getInstance().getAccountResponse(deploymentUrl.toString(),unprivilegedUsername, unprivilegedAuthToken, unprivilegedSid);
         Assert.assertEquals(200,response.getStatus());
     }
+    
 
-    @Deployment(name = "ClientsEndpointTest", managed = true, testable = false)
+
+    @Deployment(name = "AccountsEndpointTest", managed = true, testable = false)
     public static WebArchive createWebArchiveNoGw() {
         logger.info("Packaging Test App");
         logger.info("version");
-       // WebArchive restcommArchive = ShrinkWrap.create(ZipImporter.class, "restcomm-sbc.war").importFrom(new File("/target/restcomm-sbc.war"))
-
+       
        WebArchive restcommArchive = ShrinkWrap.create(ZipImporter.class, "restcomm-sbc.war").importFrom(new File("C:/Users/OCA/workspace-neon/restcomm-sbc/application/target/restcomm-sbc.war"))
                 .as(WebArchive.class);
         
@@ -341,12 +342,13 @@ public class AccountsEndpointTest {
         
         archive = archive.merge(restcommArchive);
         archive.delete("/WEB-INF/sip.xml");
+        archive.delete("/WEB-INF/web.xml");
         archive.delete("/WEB-INF/conf/sbc.xml");
-        archive.delete("/WEB-INF");
         archive.delete("/WEB-INF/data/hsql/sbc.script");
         archive.addAsWebInfResource("sip.xml");
+        archive.addAsWebInfResource("web.xml", "web.xml");
+
         archive.addAsWebInfResource("sbc.xml", "conf/sbc.xml");
-        //archive.addAsWebInfResource("sbc.script", "data/hsql/sbc.script");
         archive.addAsWebInfResource("sbc.script_accounts_test", "data/hsql/sbc.script");
         logger.info("Packaged Test App");
         return archive;

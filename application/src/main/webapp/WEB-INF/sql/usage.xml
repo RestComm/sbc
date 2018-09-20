@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  @author brainslog@gmail.com (Alexandre Mendonca)
+-->
+<mapper namespace="org.restcomm.sbc.dao.UsageDao">
+
+        <select id="getDailyRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        #{category} AS "category",                       
+                        COUNT(1) as "count",
+                        "${usageExprPre}${usageExprCol}${usageExprSuf}" as "usage",                        
+                        AVG("call_rate") as "rate",
+                        TO_CHAR("date_created", 'YYYY-MM-DD') AS "start_date",
+						TO_CHAR(DATE_ADD("date_created", INTERVAL 1 DAY), 'YYYY-MM-DD') AS "end_date"                      
+                FROM
+                        "${tableName}"
+                WHERE                       
+                        "date_created" &gt;= #{startDate} AND
+                        "date_created" &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+                GROUP BY
+						"start_date", "end_date", "live_call_count"
+                ORDER BY
+                        "start_date"
+        </select>
+        
+        <select id="getWeeklyRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        #{category} AS "category",
+                        
+                        COUNT(1) as "count",
+                        "${usageExprPre}${usageExprCol}${usageExprSuf}" as "usage",
+                        
+                        AVG("call_rate") as "rate",
+                        TO_CHAR(MIN("date_created"), 'YYYY-MM-DD') AS "start_date",
+						TO_CHAR(MAX("date_created"), 'YYYY-MM-DD') as "end_date"
+                FROM
+                        "${tableName}"
+                WHERE
+                        
+                        date_created >= #{startDate} AND
+                        date_created &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+                GROUP BY
+						"start_date", "end_date", "live_call_count"
+				ORDER BY
+                        "start_date"
+        </select>
+        
+        <select id="getMonthlyRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        #{category} AS "category",
+                       
+                        COUNT(1) as "count",
+                        "${usageExprPre}${usageExprCol}${usageExprSuf}" as "usage",
+                        AVG("call_rate") as "rate",
+                        TO_CHAR(MIN("date_created"), 'YYYY-MM-DD') AS "start_date",
+                        TO_CHAR(MAX("date_created"), 'YYYY-MM-DD') as "end_date"
+                FROM
+                        "${tableName}"
+                WHERE
+                        
+                        "date_created" >= #{startDate} AND
+                        "date_created" &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+                GROUP BY
+                        "start_date", "end_date", "live_call_count"
+                ORDER BY
+                        "start_date"
+        </select>
+
+        <select id="getYearlyRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        #{category} AS "category",
+                        
+                        COUNT(1) as "count",
+                        ${usageExprPre} as "usage",
+                        SUM("call_rate") as "rate",
+   						TO_CHAR(MIN("date_created"), 'YYYY-MM-DD') AS "start_date",
+                        TO_CHAR(MAX("date_created"), 'YYYY-MM-DD') as "end_date"
+                FROM
+                        "${tableName}"
+                WHERE
+                        
+                        "date_created" &gt;= #{startDate} AND
+                        "start_time" &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+                GROUP BY
+                        "start_date", "end_date", "live_call_count"
+                ORDER BY
+                        "start_date"
+        </select>
+
+        <select id="getAllTimeRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        #{category} AS "category",
+                      
+                        COUNT(1) as "count",
+                        "${usageExprPre}${usageExprCol}${usageExprSuf}" as "usage",
+                        
+                        AVG("call_rate") as "rate",
+                        date_format(MIN("date_created"), '%Y-%m-%d') as "start_date",
+                        date_format(MAX("date_created"), '%Y-%m-%d') as "end_date"
+                FROM
+                        "${tableName}"
+                WHERE
+                        
+                        "date_created" &gt;= #{startDate} AND
+                        "date_created" &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+                
+                ORDER BY
+                        "start_date"
+        </select>
+
+        <!--
+        <select id="getTodayRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        'Records' AS "category",
+                        "account_sid",
+                        "group_sid",
+                        COUNT(1) as "count",
+                        COALESCE(SUM("duration"),0) as "usage",
+                        SUM(CONVERT("emotion_rate",SQL_FLOAT)) as "emotion_rate",
+                        TO_CHAR(TODAY(), 'YYYY-MM-DD') AS "start_date",
+                        TO_CHAR(TODAY(), 'YYYY-MM-DD') as "end_date",
+                        '/todo' AS "uri"
+                FROM
+                        "restcomm_call_detail_records"
+                WHERE
+                        "account_sid"=#{sid} AND
+                        EXTRACT (DAY FROM "start_time") = EXTRACT (DAY FROM TODAY()) AND
+                        EXTRACT (MONTH FROM "start_time") = EXTRACT (MONTH FROM TODAY()) AND
+                        EXTRACT (YEAR FROM "start_time") = EXTRACT (YEAR FROM TODAY())
+                GROUP BY
+                        EXTRACT (MONTH FROM "start_time"), "account_sid", "group_sid"
+                ORDER BY
+                        "start_date"
+                          </select>
+
+        <select id="getYesterdayRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        'Records' AS "category",
+                        "account_sid",
+                        "group_sid",
+                        COUNT(1) as "count",
+                        COALESCE(SUM("duration"),0) as "usage",
+                        SUM(CONVERT("emotion_rate",SQL_FLOAT)) as "emotion_rate",
+                        TO_CHAR(DATE_SUB(TODAY(), INTERVAL 1 DAY), 'YYYY-MM-DD') AS "start_date",
+                        TO_CHAR(DATE_SUB(TODAY(), INTERVAL 1 DAY), 'YYYY-MM-DD') as "end_date",
+                        '/todo' AS "uri"
+                FROM
+                        "restcomm_call_detail_records"
+                WHERE
+                        "account_sid"=#{sid} AND
+                        EXTRACT (DAY FROM "start_time") = EXTRACT (DAY FROM DATE_SUB(TODAY(), INTERVAL 1 DAY)) AND
+                        EXTRACT (MONTH FROM "start_time") = EXTRACT (MONTH FROM DATE_SUB(TODAY(), INTERVAL 1 DAY)) AND
+                        EXTRACT (YEAR FROM "start_time") = EXTRACT (YEAR FROM DATE_SUB(TODAY(), INTERVAL 1 DAY))
+                GROUP BY
+                        "account_sid", "group_sid"
+                ORDER BY
+                        "start_date"
+        </select>
+
+        <select id="getThisMonthRecords" parameterType="string" resultType="hashmap">
+                SELECT
+                        'Records' AS "category",
+                        "account_sid",
+                        "group_sid",
+                        COUNT(1) as "count",
+                        COALESCE(SUM("duration"),0) as "usage",
+                        SUM(CONVERT("emotion_rate",SQL_FLOAT)) as "emotion_rate",
+                        CONCAT(TO_CHAR(TODAY(), 'YYYY-MM-'),'01') AS "start_date",
+                        TO_CHAR(LAST_DAY(TODAY()), 'YYYY-MM-DD') as "end_date",
+                        '/todo' AS "uri"
+                FROM
+                        "restcomm_call_detail_records"
+                WHERE
+                        "account_sid"=#{sid} AND
+                        EXTRACT (MONTH FROM "start_time") = EXTRACT (MONTH FROM TODAY()) AND
+                        EXTRACT (YEAR FROM "start_time") = EXTRACT (YEAR FROM TODAY())
+                GROUP BY
+                        EXTRACT (MONTH FROM "start_time"), "account_sid", "group_sid"
+                ORDER BY
+                        "start_date"
+        </select>
+
+        <select id="getLastMonthRecords" parameterType="map" resultType="hashmap">
+                SELECT
+                        'Records' AS "category",
+                        "account_sid",
+                        "group_sid",
+                        COUNT(1) as "count",
+                        COALESCE(SUM("duration"),0) as "usage",
+                        SUM(CONVERT("emotion_rate",SQL_FLOAT)) as "emotion_rate",
+                        CONCAT(TO_CHAR(LAST_DAY(DATE_SUB(TODAY(), INTERVAL 1 MONTH)), 'YYYY-MM-'),'01') AS "start_date",
+                        TO_CHAR(LAST_DAY(DATE_SUB(TODAY(), INTERVAL 1 MONTH)), 'YYYY-MM-DD') as "end_date",
+                        '/todo' AS "uri"
+                        
+                FROM
+                        "restcomm_call_detail_records"
+                WHERE
+                        "account_sid"=#{sid} AND
+                        EXTRACT (MONTH FROM "start_time") = EXTRACT (MONTH FROM DATE_SUB(TODAY(), INTERVAL 1 MONTH)) AND
+                        EXTRACT (YEAR FROM "start_time") = EXTRACT (YEAR FROM DATE_SUB(TODAY(), INTERVAL 1 MONTH))
+                GROUP BY
+                        EXTRACT (MONTH FROM "start_time"), "account_sid", "group_sid"
+                ORDER BY
+                        "start_date"
+        </select>
+        -->
+</mapper>
+
+                        

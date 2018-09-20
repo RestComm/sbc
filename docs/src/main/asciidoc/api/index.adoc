@@ -20,3 +20,4 @@ Click on a link to read the API documentation for accessing or modifying each re
 * <<connectors-api.adoc#connectorsapi, Restcomm SBC API - Connector>>
 * <<net-points-api.adoc#netpointsapi, Restcomm SBC API - NetworkPoint>>
 * <<routes-api.adoc#routesapi, Restcomm SBC API - Route>>
+* <<usage-records.adoc#usageapi, Restcomm SBC API - Usage>>

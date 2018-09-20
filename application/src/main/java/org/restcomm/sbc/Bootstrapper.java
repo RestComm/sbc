@@ -34,12 +34,14 @@ import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.identity.IdentityContext;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
+import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
 import org.restcomm.sbc.loader.ObjectFactory;
 import org.restcomm.sbc.loader.ObjectInstantiationException;
 
 
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.Config;
 
 
 public final class Bootstrapper extends SipServlet {
@@ -91,8 +93,9 @@ public final class Bootstrapper extends SipServlet {
         // Initialize global dependencies.
         final ClassLoader loader = getClass().getClassLoader();
         // Create the actor system.
-        //final Config settings = ConfigFactory.load();
-        ConfigFactory.load();
+        final Config settings = ConfigFactory.load();
+        
+        
         // Create the storage system.
         DaoManager storage = null;
         try {
@@ -111,6 +114,18 @@ public final class Bootstrapper extends SipServlet {
         IdentityContext identityContext = new IdentityContext(xml);
         context.setAttribute(IdentityContext.class.getName(), identityContext);
         
+      //Initialize CallManager
+        
+        CallManager callManager=new CallManager();
+        if (callManager != null) {
+            context.setAttribute(CallManager.class.getName(), callManager);
+            if (LOG.isInfoEnabled()) {
+                LOG.info("CallManager created and stored in the context");
+            }
+        }
+       
+        ShiroResources.getInstance().set(CallManager.class, callManager);
+
         Version.printVersion();
        
     }
@@ -124,8 +139,20 @@ public final class Bootstrapper extends SipServlet {
         LOG.info("DaoManager started");
         return daoManager;
     }
-    
+    /*
+    private ActorRef monitoringService(final Configuration configuration, final DaoManager daoManager, final ClassLoader loader) {
+        final Props props = new Props(new UntypedActorFactory() {
+            private static final long serialVersionUID = 1L;
 
+            @Override
+            public UntypedActor create() throws Exception {
+                return new MonitoringService();
+            }
+        });
+        return system.actorOf(props);
+
+    }
+*/
     private String uri(final ServletConfig config) {
         return config.getServletContext().getContextPath();
     }

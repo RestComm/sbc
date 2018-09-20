@@ -32,6 +32,7 @@ import org.restcomm.sbc.dao.StatisticsDao;
 import org.restcomm.sbc.dao.WhiteListDao;
 import org.restcomm.sbc.managers.controller.ManagementProvider;
 import org.restcomm.sbc.managers.controller.ManagementProviderFactory;
+import org.restcomm.sbc.managers.MonitoringServiceResponse;
 import org.restcomm.sbc.notification.AlertListener;
 import org.restcomm.sbc.notification.NotificationListener;
 import org.restcomm.sbc.notification.SuspectActivityElectable;
@@ -64,17 +65,20 @@ public class Monitor {
 	private ScheduledExecutorService scheduledExecutorService;
 	private static boolean init=false;
 	private static boolean reloaded=false;
+	private int lastLiveCallMetric = 0;
+	private double callRate = 0;
 	
 	private Monitor() {
 		threatManager=ThreatManager.getThreatManager();
 		cache = SuspectActivityCache.getCache(CACHE_MAX_ITEMS, CACHE_ITEM_TTL);
 		daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
+		callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
 		try {
-			jmxManager=ManagementProviderFactory.getProvider();
+			jmxManager=ManagementProviderFactory.getDefaultProvider();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-			LOG.error("JMX Error", e);
+			LOG.error("ManagementProvider Error", e);
 		}
-		callManager=CallManager.getCallManager();
+		
 		Runtime.getRuntime().addShutdownHook(new ProcessorHook());
 	}
 	
@@ -131,7 +135,7 @@ public class Monitor {
 		BlackListDao blackListDao = daoManager.getBlackListDao();
 		
 		for(Threat threat:threatManager.getThreats()) {
-			BanList entry=new BanList(DateTime.now(), DateTime.now().plusHours(24), threat.getHost(), Sid.generate(Type.ACCOUNT), Reason.THREAT, Monitor.Action.APPLY);
+			BanList entry=new BanList(DateTime.now(), DateTime.now().plusHours(24), threat.getHost(), Sid.generate(Type.ACCOUNT), Reason.THREAT, BanList.Action.APPLY);
 			blackListDao.addBanList(entry);
 		}
 	}
@@ -148,7 +152,7 @@ public class Monitor {
 					status=ScriptDelegationService.runBanScript(entry.getIpAddress());
 					if(status==0) {
 						
-						entry=entry.setAction(Action.NONE);
+						entry=entry.setAction(BanList.Action.NONE);
 						blackListDao.updateBanList(entry);		
 						
 					}
@@ -181,7 +185,7 @@ public class Monitor {
 				case APPLY:
 					status=ScriptDelegationService.runAllowScript(entry.getIpAddress());
 					if(status==0) {
-						entry=entry.setAction(Action.NONE);
+						entry=entry.setAction(BanList.Action.NONE);
 						whiteListDao.updateBanList(entry);		
 					}
 					else {
@@ -245,28 +249,32 @@ public class Monitor {
 		
 	}
 	public int getLiveCallCount() {	 
-		return callManager.getCalls().size();
-	    // return sipManager.getActiveSipApplicationSessions();        
+		MonitoringServiceResponse calls = callManager.getMonitoringService().getLiveCalls();
+		Integer lCalls = calls.getCountersMap().get("LiveCalls");
+		callRate=(double)(lCalls-this.lastLiveCallMetric)/this.LOOP_INTERVAL;
+		this.lastLiveCallMetric=lCalls;
+		return lCalls;
+	          
 	}
 	
 	public double getCallRatePerSecond() {
-		 return 0.0;
-	     //return sipManager.getNumberOfSipApplicationSessionCreationPerSecond();        
+		 return this.callRate;
+	          
 	}
 	
 	public int getCallRejectedCount() {
-		return 0;
-	    // return sipManager.getRejectedSipApplicationSessions();        
+		MonitoringServiceResponse calls = callManager.getMonitoringService().getLiveCalls();
+		return calls.getCountersMap().get("FailedCalls");     
 	}
 	
 	public void start(SipFactory sipFactory, Configuration configuration) {
 		
-
+		
 		scheduledExecutorService =
 		        Executors.newSingleThreadScheduledExecutor();
 
 		    scheduledExecutorService.scheduleWithFixedDelay(new Task(sipFactory, configuration),
-		    LOOP_INTERVAL/6,
+		    0,
 		    LOOP_INTERVAL,
 		    TimeUnit.SECONDS);
 		    
@@ -287,9 +295,9 @@ public class Monitor {
     	DaoManager daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
 		ManagementProvider jmxManager = null;
 		try {
-			jmxManager =ManagementProviderFactory.getProvider();
+			jmxManager =ManagementProviderFactory.getDefaultProvider();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-			LOG.error("JMX Error", e);
+			LOG.error("Management Error", e);
 		}
     	ConnectorsDao dao=daoManager.getConnectorsDao();
     	for(Connector connector:dao.getConnectors()) {
@@ -357,15 +365,14 @@ public class Monitor {
 				}
 				ConfigurationCache.build(sipFactory, configuration);
 				init = true;
+				return;
 			}
 			
 			try {
-				
 				synchronizeCDR();
 				applyThreatsToBlackList();
-				applyBanningRules();
-				
-				writeStats();
+				applyBanningRules();			
+				//writeStats();
 				
 			} catch (Exception e) {
 				LOG.error("OUCH!",e);
@@ -375,32 +382,7 @@ public class Monitor {
 		}
 		
 	}
-	public enum Action {
-        APPLY("Apply"),
-		REMOVE("Remove"),
-		NONE("None");
-
-        private final String text;
-
-        private Action(final String text) {
-            this.text = text;
-        }
-
-        public static Action getValueOf(final String text) {
-            Action[] values = values();
-            for (final Action value : values) {
-                if (value.text.equals(text)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(text + " is not a valid action.");
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    };
+	
     
    
 	

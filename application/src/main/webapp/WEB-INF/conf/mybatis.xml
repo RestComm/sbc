@@ -38,5 +38,6 @@
     <mapper url="file:///${sql}/call-detail-records.xml"/>
     <mapper url="file:///${sql}/http-cookies.xml"/>
     <mapper url="file:///${sql}/accounts.xml"/>
+    <mapper url="file:///${sql}/usage.xml"/>
   </mappers>
 </configuration>

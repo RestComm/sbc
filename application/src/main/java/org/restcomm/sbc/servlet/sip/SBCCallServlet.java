@@ -35,6 +35,7 @@ import javax.servlet.sip.SipURI;
 
 import org.apache.log4j.Logger;
 import org.restcomm.chain.processor.impl.SIPMutableMessage;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.call.Call;
 import org.restcomm.sbc.chain.impl.invite.DownstreamInviteProcessorChain;
 import org.restcomm.sbc.chain.impl.invite.UpstreamInviteProcessorChain;
@@ -69,8 +70,9 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
 		
-		callManager=CallManager.getCallManager();
 		
+		callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
+
 		LOG.info("Call sip servlet has been started");
 		
 		if(LOG.isInfoEnabled()){
@@ -191,6 +193,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 			return;
 		}
 		//super.doResponse(response);
+		
 	}
 	
 	
@@ -301,6 +304,7 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		upChain.process(new SIPMutableMessage(request));
 		
 		String callSessionId=request.getSession().getId();	
+		
 		callManager.changeCallStatus(callSessionId, CallStateChanged.State.COMPLETED);	
 		
 	}

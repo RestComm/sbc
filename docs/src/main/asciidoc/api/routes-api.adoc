@@ -1,4 +1,4 @@
-= Restcomm API – Routes
+= Restcomm SBC API – Routes
 
 [[Routes]]
 == Routes

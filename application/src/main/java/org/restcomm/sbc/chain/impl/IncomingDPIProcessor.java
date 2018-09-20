@@ -38,6 +38,7 @@ import org.restcomm.sbc.ConfigurationCache;
 import org.restcomm.sbc.bo.Connector;
 import org.restcomm.sbc.bo.Location;
 import org.restcomm.sbc.bo.LocationNotFoundException;
+import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.managers.LocationManager;
 import org.restcomm.sbc.managers.MessageUtil;
@@ -59,6 +60,7 @@ import org.restcomm.sbc.media.MediaSession;
 public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorCallBack {
 
 	private static transient Logger LOG = Logger.getLogger(IncomingDPIProcessor.class);
+	
 	
 	public IncomingDPIProcessor(ProcessorChain callback) {
 		super(callback);
@@ -142,12 +144,13 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 		}
 		
 		m.setTarget(Message.TARGET_B2BUA);
-		
+		CallManager callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
+
 		
 		if(sm.getContentLength()>0 &&
 			sm.getContentType().equals("application/sdp")) {
 			try {
-				mediaSession=CallManager.getCallManager().getMediaSession(sm.getSession().getId());
+				mediaSession=callManager.getMediaSession(sm.getSession().getId());
 				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);		
 				mediaSession.buildOffer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());	
 				m.setMetadata(mediaSession);	
@@ -201,13 +204,14 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				}
 			}
 		}
-	
+		CallManager callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
+
 		if(sm.getContentLength()>0 &&
 			sm.getContentType().equals("application/sdp")) {
 			try {			
 				SipServletResponse response=(SipServletResponse) sm;
 				String callSessionId=getCallSessionId(response.getRequest());
-				mediaSession=CallManager.getCallManager().getMediaSession(callSessionId);
+				mediaSession=callManager.getMediaSession(callSessionId);
 				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);
 				mediaSession.buildAnswer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());		
 				m.setMetadata(mediaSession);		

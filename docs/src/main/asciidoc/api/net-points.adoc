@@ -1,4 +1,4 @@
-= Restcomm API – Network Point
+= Restcomm SBC API – Network Point
 
 [[MetworkPoints]]
 == NetworkPoints

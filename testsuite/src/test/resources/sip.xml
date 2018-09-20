@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is free software; you can redistribute it and/or modify it under 
+	the terms of the GNU Lesser General Public License as published by the Free 
+	Software Foundation; either version 2.1 of the License, or (at your option) 
+	any later version. This software is distributed in the hope that it will 
+	be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General 
+	Public License for more details. You should have received a copy of the GNU 
+	Lesser General Public License along with this software; if not, write to 
+	the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, 
+	MA 02110-1301 USA, or see the FSF site: http://www.fsf.org. -->
+<sip-app>
+	<app-name>RestcommSBC</app-name>
+	<display-name>Restcomm SBC</display-name>
+	<description>Restcomm SIP Session Border Controller.</description>
+	
+	<servlet-selection>
+	    
+		<servlet-mapping>
+			<servlet-name>CallManager</servlet-name>
+			<pattern>
+				<or>
+					<equal>
+						<var>request.method</var>
+						<value>INVITE</value>
+					</equal>
+				
+					<equal>
+						<var>request.method</var>
+						<value>INFO</value>
+					</equal>
+				</or>
+			</pattern>
+		</servlet-mapping>
+		 
+		<servlet-mapping>
+			<servlet-name>OptionsManager</servlet-name>
+			<pattern>
+					<equal>
+						<var>request.method</var>
+						<value>OPTIONS</value>
+					</equal>	
+			</pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>Registrar</servlet-name>
+			<pattern>
+				<or>
+					<equal>
+						<var>request.method</var>
+						<value>REGISTER</value>
+					</equal>
+				</or>
+			</pattern>
+		</servlet-mapping>
+		
+		<servlet-mapping>
+			<servlet-name>Messenger</servlet-name>
+			<pattern>
+				<or>
+					<equal>
+						<var>request.method</var>
+						<value>MESSAGE</value>
+					</equal>
+				</or>
+			</pattern>
+		</servlet-mapping>
+		
+	</servlet-selection>
+	
+
+	<servlet>
+		<servlet-name>Bootstrapper</servlet-name>
+		<display-name>Bootstrapper</display-name>
+		<description>The SBC Servlet.</description>
+		<servlet-class>
+			org.restcomm.sbc.Bootstrapper
+		</servlet-class>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>Registrar</servlet-name>
+		<display-name>Registrar</display-name>
+		<description>SBC Registrar.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCRegistrarServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>OptionsManager</servlet-name>
+		<display-name>OptionsManager</display-name>
+		<description>SBC Options Manager</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCOptionsServlet
+		</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>CallManager</servlet-name>
+		<display-name>CallManager</display-name>
+		<description>SBC Call Manager.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCCallServlet
+		</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>Messenger</servlet-name>
+		<display-name>Messenger</display-name>
+		<description>SBC Messenger.</description>
+		<servlet-class>
+			org.restcomm.sbc.servlet.sip.SBCMessengerServlet
+		</servlet-class>
+		<load-on-startup>4</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>Launcher</servlet-name>
+		<display-name>Launcher</display-name>
+		<description>SBC Service Launcher</description>
+		<servlet-class>
+			org.restcomm.sbc.ServiceLauncher
+		</servlet-class>
+		<load-on-startup>5</load-on-startup>
+	</servlet>
+</sip-app>
+
