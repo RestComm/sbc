@@ -24,8 +24,7 @@
 						<var>request.method</var>
 						<value>INVITE</value>
 					</equal>
-				</or>
-				<or>
+				
 					<equal>
 						<var>request.method</var>
 						<value>INFO</value>

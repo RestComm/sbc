@@ -109,9 +109,10 @@ public class UserAgentACLDPIProcessor extends DefaultDPIProcessor implements Pro
 		
 		String userAgent=m.getHeader("User-Agent");
 		
+		
 		userAgent=(userAgent==null||"".equals(userAgent.trim()))?"Anonymous":userAgent;
 		
-		if (userAgent.equals("Anonymous")||isAttacker(userAgent)) {
+		if (isAttacker(userAgent)) {
 			if(LOG.isInfoEnabled()){
 		          LOG.info("THREAT: Forbidden access to threat-candidate UA "+userAgent);
 		    }

@@ -39,7 +39,7 @@ public class MonitoringServiceTool {
                 deploymentUrl = deploymentUrl.substring(0, deploymentUrl.length() - 1);
             }
 
-            accountsUrl = deploymentUrl + "/2012-04-24/Accounts/" + username + "/Supervisor.json";
+            accountsUrl = deploymentUrl + "/2012-04-24/Supervisor.json";
         }
 
         return accountsUrl;

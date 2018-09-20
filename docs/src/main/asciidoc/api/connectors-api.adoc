@@ -1,4 +1,4 @@
-= Restcomm API – Connectors
+= Restcomm SBC API – Connectors
 
 [[Connectors]]
 == Connectors

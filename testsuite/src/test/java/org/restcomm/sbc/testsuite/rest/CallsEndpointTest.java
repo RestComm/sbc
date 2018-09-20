@@ -2,6 +2,7 @@ package org.restcomm.sbc.testsuite.rest;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +13,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.archive.ShrinkWrapMaven;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -201,10 +203,10 @@ public class CallsEndpointTest {
     @Deployment(name = "ClientsEndpointTest", managed = true, testable = false)
     public static WebArchive createWebArchiveNoGw() {
         logger.info("Packaging Test App");
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "restcomm.war");
-        final WebArchive restcommArchive = ShrinkWrapMaven.resolver()
-                .resolve("com.telestax.servlet:restcomm.application:war:" + version).withoutTransitivity()
-                .asSingle(WebArchive.class);
+        WebArchive restcommArchive = ShrinkWrap.create(ZipImporter.class, "restcomm-sbc.war").importFrom(new File("C:/Users/OCA/workspace-neon/restcomm-sbc/application/target/restcomm-sbc.war"))
+                .as(WebArchive.class);
+        
+        WebArchive archive = ShrinkWrap.create(WebArchive.class, "restcomm-sbc.war");
         archive = archive.merge(restcommArchive);
         archive.delete("/WEB-INF/sip.xml");
         archive.delete("/WEB-INF/conf/restcomm.xml");

@@ -1,4 +1,4 @@
-= Restcomm API – Ban List
+= Restcomm SBC API – Ban List
 
 [[BanLists]]
 == BanLists
@@ -27,7 +27,7 @@ WhiteList allows certain IP Addresses to reach DMZ interfaces while BlackList bl
 
 *HTTP GET.* Returns the representation of an BanList resource, including the properties above.
 
-* BanList Resource URI. */2012-04-24/[WhiteLists|BlackLists]/\{IpAddress}*
+* BanList Resource URI. */2012-04-24/[WhiteList|BlackList]/\{IpAddress}*
 
 **HTTP POST/PUT**. Creates a new BanList entry resource and returns the representation, including the properties above. Below you will find a list of optional parameters.
 
@@ -42,7 +42,7 @@ WhiteList allows certain IP Addresses to reach DMZ interfaces while BlackList bl
 **Get information about a BanList.**
 
 ....
-curl -X GET  http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteLists
+curl -X GET  http://ACae6e420f425248d6a26948c17a9e2acf:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteList
 ....
 
 
@@ -96,7 +96,7 @@ The above commands will print an output similar to the one below:
 Here is an example of how to create a new ban entry.
 
 ....
-curl -X POST http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteLists/ -d "IpAddress=201.215.232.188" 
+curl -X POST http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166@127.0.0.1:8080/restcomm-sbc/2012-04-24/WhiteList/ -d "IpAddress=201.215.232.188" 
 ....
 
 
@@ -107,12 +107,12 @@ curl -X POST http://administrator%40company.com:77f8c12cc7b8f8423e5c38b035249166
 
 .XML Entry Deletion
 ----
-curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/WhiteLists/<IP-ADDRESS>
+curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm-sbc/2012-04-24/WhiteList/<IP-ADDRESS>
 ----
 
 .JSON Entry Deletion
 ----
-curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm/2012-04-24/WhiteLists.json/<IP-ADDRESS>.json
+curl -X DELETE http://ACae6e420f425248d6a26948c17a9e2acf:PWD@192.168.1.3:8080/restcomm/2012-04-24/WhiteList.json/<IP-ADDRESS>.json
 ----
 
 

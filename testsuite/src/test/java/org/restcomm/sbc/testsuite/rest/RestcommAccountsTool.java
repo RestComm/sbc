@@ -3,6 +3,7 @@ package org.restcomm.sbc.testsuite.rest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.jersey.api.client.Client;
@@ -74,7 +75,7 @@ public class RestcommAccountsTool {
         WebResource webResource = jerseyClient.resource(url);
 
         // FriendlyName, status, password and auth_token are currently updated in AccountsEndpoint. Role remains to be added
-        MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> params = new com.sun.jersey.core.util.MultivaluedMapImpl();
         if (friendlyName != null)
             params.add("FriendlyName", friendlyName);
         if (password != null)
