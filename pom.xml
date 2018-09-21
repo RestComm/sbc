@@ -480,11 +480,11 @@
 		<!--module>testsuite</module-->
 		
 		<module>sbc-chains</module>
-    <module>sbc-dao</module>
-    <module>sbc-media</module>
-    <module>sbc-commons</module>
-    <module>sbc-rest</module>
-    <module>sbc-callmanager</module>
+	    <module>sbc-dao</module>
+	    <module>sbc-media</module>
+	    <module>sbc-commons</module>
+	    <module>sbc-rest</module>
+	    <module>sbc-callmanager</module>
 	</modules>
 
 	<build>

@@ -26,6 +26,31 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-dao</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-media</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restcomm</groupId>
+			<artifactId>sbc-callmanager</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 		</dependency>
@@ -321,31 +346,6 @@
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-api</artifactId>
 				<version>2.6.2</version>
-			</dependency>
-			<dependency>
-				<groupId>org.restcomm</groupId>
-				<artifactId>sbc-commons</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.restcomm</groupId>
-				<artifactId>sbc-dao</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.restcomm</groupId>
-				<artifactId>sbc-media</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.restcomm</groupId>
-				<artifactId>sbc-callmanager</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.restcomm</groupId>
-				<artifactId>sbc-rest</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 	</dependencies>
 
