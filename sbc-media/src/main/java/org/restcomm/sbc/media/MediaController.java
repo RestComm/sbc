@@ -26,16 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.io.ice.IceComponent;
-import org.mobicents.media.server.impl.rtp.crypto.CipherSuite;
+import org.mobicents.media.server.impl.rtp.crypto.SRTPParameters;
 import org.mobicents.media.server.io.sdp.SdpException;
-import org.mobicents.media.server.io.sdp.SessionDescription;
-import org.mobicents.media.server.io.sdp.SessionDescriptionParser;
 import org.mobicents.media.server.io.sdp.attributes.RtpMapAttribute;
 import org.mobicents.media.server.io.sdp.attributes.SsrcAttribute;
 import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
 import org.mobicents.media.server.io.sdp.dtls.attributes.SetupAttribute;
 import org.mobicents.media.server.io.sdp.fields.ConnectionField;
-import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
 import org.mobicents.media.server.io.sdp.fields.OriginField;
 import org.mobicents.media.server.io.sdp.fields.SessionNameField;
 import org.mobicents.media.server.io.sdp.format.AVProfile;
@@ -52,6 +49,11 @@ import org.restcomm.sbc.media.MediaZone.Direction;
 import org.restcomm.sbc.media.dtls.DtlsConfiguration;
 import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
 import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
+import org.restcomm.sbc.media.helpers.CryptoAttribute;
+import org.restcomm.sbc.media.helpers.ExtendedMediaDescriptionField;
+import org.restcomm.sbc.media.helpers.ExtendedSessionDescription;
+import org.restcomm.sbc.media.helpers.SessionDescriptionParser;
+
 
 
 
@@ -74,26 +76,26 @@ public class MediaController  {
 			MEDIATYPE_VIDEO		
 	};
 	
-	private SessionDescription sdp ;
-	private SessionDescription webrtcSdp ;
+	private ExtendedSessionDescription sdp ;
+	private ExtendedSessionDescription webrtcSdp ;
 	private MediaZone.Direction direction;
 	private MediaSession mediaSession;
-	private StreamProfile streamProfile;
 	private IceAuthenticatorImpl iceAuthenticator;
 	private static DtlsSrtpServer server;
 	
 	
 	private ConcurrentHashMap<String, MediaZone> mediaZones=new ConcurrentHashMap<String, MediaZone>();
 
-	public SessionDescription getSdp() {
+	public ExtendedSessionDescription getSdp() {
 		return sdp;
 	}
 
-    public MediaController(MediaSession session, StreamProfile streamProfile, MediaZone.Direction  direction, String sdpText, String targetProxyAddress) throws SdpException, UnknownHostException {
+    public MediaController(MediaSession session, ExtendedSessionDescription sdp,  MediaZone.Direction direction, String targetProxyAddress) throws SdpException, UnknownHostException {
     	this.mediaSession=session;
-    	this.sdp=SessionDescriptionParser.parse(sdpText);
+    	this.sdp=sdp;
+    	
     	this.direction=direction;
-    	this.streamProfile=streamProfile;
+    	
     	buildMediaZones(targetProxyAddress);
 		
     }
@@ -120,7 +122,7 @@ public class MediaController  {
     			int rtcpPort;
     			boolean canMux;
     			
-    			MediaDescriptionField mediaDescription = sdp.getMediaDescription(supportedMediaTypes[type]);
+    			ExtendedMediaDescriptionField mediaDescription =  sdp.getExtendedMediaDescription(supportedMediaTypes[type]);
     			
     			
     			if(mediaDescription==null) {
@@ -145,13 +147,14 @@ public class MediaController  {
     			else {
     				ip=mediaDescription.getConnection().getAddress();
     			}
+    			StreamProfile streamProfile=StreamProfile.getValueOf(mediaDescription.getProtocol());
     			
     			switch(streamProfile) {
-	    			case WEBRTC:
+	    			case SAVPF:
 	    				if(ConfigurationCache.isMediaDecryptionEnabled()) {
 	    					// DTLS termination
 		    				if(supportedMediaTypes[type].equals(MEDIATYPE_AUDIO)) {
-		    					mediaZone=new CryptoMediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);
+		    					mediaZone=new WEBRTCMediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);
 		    				}
 		    				else {
 		    					// Not supported yet
@@ -165,8 +168,24 @@ public class MediaController  {
 	    				}
 	    				break;
 	    			case AVP:
-	    			case SAVP:
 	    				mediaZone=new MediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);	
+	    				break;
+	    			case SAVP:
+	    				if(ConfigurationCache.isMediaDecryptionEnabled()) {
+	    					// SRTP termination
+		    				if(supportedMediaTypes[type].equals(MEDIATYPE_AUDIO)) {
+		    					mediaZone=new SAVPMediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);
+		    				}
+		    				else {
+		    					// Not supported yet
+		    					LOG.warn("Unsupported media type "+supportedMediaTypes[type]);
+		    					continue;
+		    				}
+	    				}
+	    				else {
+	    					// SRTP pass thru
+	    					mediaZone=new MediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);	
+	    				}
 	    				break;
 	    			default:
 	    				mediaZone=new MediaZone(this, direction, supportedMediaTypes[type], ip, rtpPort, rtcpPort, canMux, mediaSession.proxyPorts[type]);	
@@ -199,7 +218,7 @@ public class MediaController  {
     }
     
     public boolean isSecure(String mediaType) { 
-    	if(sdp.getMediaDescription(mediaType).getProtocol().equals("RTP/AVP")){
+    	if(sdp.getExtendedMediaDescription(mediaType).getProtocol().equals("RTP/AVP")){
     		return false;
     	}
     	return true;
@@ -272,6 +291,10 @@ public class MediaController  {
     	return patchIPAddressAndPort(StreamProfile.AVP, sdp.toString(), proxyHost);
     }
     
+    public String getSAVPProxySdp(String proxyHost) throws SdpException {  	
+    	return patchIPAddressAndPort(StreamProfile.SAVP, sdp.toString(), proxyHost);
+    }
+    
     public String getWebrtcSdp(String proxyHost) throws SdpException {
     	if(getWebrtcSdp()!=null)
     		return this.getWebrtcSdp().toString().trim().concat("\n");
@@ -280,8 +303,20 @@ public class MediaController  {
     	return wrtcSdp;
     }
     
+    public String getSAVPSdp(String proxyHost) throws SdpException {
+    	if(getSAVPSdp()!=null)
+    		return this.getSAVPSdp().toString().trim().concat("\n");
+    	String savpSdp=patchIPAddressAndPort(StreamProfile.AVP, sdp.toString(), proxyHost);
+    	savpSdp = this.buildSAVPFromSdp(savpSdp, proxyHost);
+    	return savpSdp;
+    }
+    
     public String getAVPSdp() throws SdpException { 	
     	return patchIPAddressAndPort(StreamProfile.AVP, sdp.toString(), null);
+    }
+    
+    public String getSAVPSdp() throws SdpException { 	
+    	return patchIPAddressAndPort(StreamProfile.SAVP, sdp.toString(), null);
     }
     
     
@@ -294,10 +329,91 @@ public class MediaController  {
     	}
     }
     
-    
+    private String buildSAVPFromSdp(String wsdp, String proxyHost) throws SdpException {	
+    	ExtendedSessionDescription psdp = SessionDescriptionParser.parse(wsdp);
+   		OriginField origin = psdp.getOrigin();
+   	
+   		SessionNameField sessionName=new SessionNameField("SBC Call SAVP");
+   		
+		psdp.setSessionName(sessionName);
+   		
+   		ConnectionField connection = new ConnectionField();
+   		
+   			
+	   		ExtendedMediaDescriptionField mediaDescription = psdp.getExtendedMediaDescription(MediaController.MEDIATYPE_AUDIO);
+	   		
+	   		
+	   		if(mediaDescription!=null) {
+	   			MediaZone zone=this.getMediaZone(MediaController.MEDIATYPE_AUDIO);
+	   			if(zone instanceof MediaZone) {
+	   				MediaChannel audioChannel = zone.getRtpConnection().getAudioChannel();
+	   				if (!audioChannel.isOpen()) {
+	   					// setup audio channel
+	   					audioChannel.open();
+	   				}
+	   				
+	   				if(LOG.isTraceEnabled()) {
+	   					LOG.trace("> crypto("+mediaDescription.getCryptos()[0].getCryptoSuite()+")");
+	   				}
+	   				try {
+	   				
+	   		        
+	   				byte[] secret=this.prepareSrtpSharedSecret(mediaDescription.getCryptos()[0].getCryptoSuite());
+	   				
+	   				
+		   			mediaDescription.setProtocol("RTP/SAVP");
+		   			mediaDescription.setConnection(psdp.getConnection());
+		   			RtcpMuxAttribute rtcpMux = new RtcpMuxAttribute();
+		   			SsrcAttribute ssrc = new SsrcAttribute(Long.toString(audioChannel.getSsrc()));
+		   			ssrc.addAttribute("cname", audioChannel.getCname());
+		   			
+		   			CryptoAttribute crypto=new CryptoAttribute();
+		   			crypto.setTagId((short) 1);
+		   			crypto.setCryptoSuite(mediaDescription.getCryptos()[0].getCryptoSuite());
+		   			crypto.setMasterKey(new String(secret));
+					
+		   			RtcpAttribute rtcp = new RtcpAttribute();
+		   			rtcp.setNetworkType("IN");
+		   			rtcp.setAddressType("IP4");
+		   			rtcp.setAddress(proxyHost);
+		   			rtcp.setPort(mediaDescription.getPort());
+		   			
+		   			
+		   			
+		   			
+		   			mediaDescription.setSsrc(ssrc);
+		   			mediaDescription.setRtcp(rtcp);
+		   			mediaDescription.setRtcpMux(rtcpMux);
+		   			
+		   			
+					
+					mediaDescription = psdp.getExtendedMediaDescription(MediaController.MEDIATYPE_VIDEO);
+					if(mediaDescription!=null) {
+						mediaDescription.setProtocol("RTP/SAVP");
+						mediaDescription.setConnection(psdp.getConnection());
+						
+						mediaDescription.addCrypto(crypto);
+						
+					}
+					
+	   			} catch(Exception e) {
+	   				LOG.error(e.getMessage());
+	   				zone.fireProxyFailedEvent();
+	   			}
+	   			}
+	   			else {
+	   				zone.fireProxyFailedEvent();
+	   			}
+	   			
+	   		
+   		}
+   		return psdp.toString().trim().concat("\n");
+    	
+    	
+    }
     
     private String buildWebRtcFromSdp(String wsdp, String proxyHost) throws SdpException {	
-    	SessionDescription psdp = SessionDescriptionParser.parse(wsdp);
+    	ExtendedSessionDescription psdp = SessionDescriptionParser.parse(wsdp);
    		OriginField origin = psdp.getOrigin();
    	
    		SessionNameField sessionName=new SessionNameField("SBC Call WebRTC");
@@ -311,7 +427,7 @@ public class MediaController  {
    		
    		
    			
-	   		MediaDescriptionField mediaDescription = psdp.getMediaDescription(MediaController.MEDIATYPE_AUDIO);
+	   		ExtendedMediaDescriptionField mediaDescription = psdp.getExtendedMediaDescription(MediaController.MEDIATYPE_AUDIO);
 	   		
 	   		
 	   		if(mediaDescription!=null) {
@@ -390,7 +506,7 @@ public class MediaController  {
 					mediaDescription.setFingerprint(fprint);  
 					mediaDescription.setSetup(setup); 
 					
-					mediaDescription = psdp.getMediaDescription(MediaController.MEDIATYPE_VIDEO);
+					mediaDescription = psdp.getExtendedMediaDescription(MediaController.MEDIATYPE_VIDEO);
 					if(mediaDescription!=null) {
 						mediaDescription.setProtocol("UDP/TLS/RTP/SAVPF");
 						mediaDescription.setConnection(psdp.getConnection());
@@ -417,7 +533,7 @@ public class MediaController  {
     }
     
     private String patchIPAddressAndPort(StreamProfile streamProfile, String sdp2Patch, String ip) throws SdpException  {
-   		SessionDescription psdp;
+   		ExtendedSessionDescription psdp;
 		
 		psdp = SessionDescriptionParser.parse(sdp2Patch);
 	
@@ -443,16 +559,21 @@ public class MediaController  {
    				LOG.warn("skipping MediaZone "+supportedMediaTypes[type]);
    				continue;
    			}
-	   		MediaDescriptionField mediaDescription = psdp.getMediaDescription(supportedMediaTypes[type]);
+	   		ExtendedMediaDescriptionField mediaDescription =  psdp.getExtendedMediaDescription(supportedMediaTypes[type]);
 	   		
 	   		if(mediaDescription!=null) {
+	   			
 	   			switch(streamProfile) {
 	   			case AVP:
-	   			case SAVP:
 	   				mediaDescription.removeAllCandidates();
 		   			mediaDescription.setProtocol("RTP/AVP");
 		   			break;
-	   			case WEBRTC:
+	   			case SAVP:
+	   				mediaDescription.removeAllCandidates();
+	   				//mediaDescription.removeAllCryptos();
+		   			mediaDescription.setProtocol("RTP/SAVP");
+		   			break;
+	   			case SAVPF:
 	   				mediaDescription.setProtocol("RTP/SAVPF");
 	   				break;
 	   			default:
@@ -489,7 +610,7 @@ public class MediaController  {
 	// Media formats
 	   RTPFormats rtpFormats=new RTPFormats();
 	   
-	   MediaDescriptionField description=sdp.getMediaDescription("audio");
+	   ExtendedMediaDescriptionField description=sdp.getExtendedMediaDescription("audio");
 	   RtpMapAttribute[] formats = description.getFormats();
 		for (int index = 0; index < formats.length; index++) {
 			RTPFormat f = AVProfile.audio.find(formats[index].getPayloadType());
@@ -513,9 +634,59 @@ public class MediaController  {
 	   
    }
   
+   public byte[] prepareSrtpSharedSecret(String cryptoSuite) {
+   	if(LOG.isTraceEnabled()) {
+			LOG.trace("> prepareSrtpSharedSecret()");
+		}
+   	SRTPParameters srtpParams = SRTPParameters.valueOf(cryptoSuite);
+   	final int keyLen = srtpParams.getCipherKeyLength();
+   	final int saltLen = srtpParams.getCipherSaltLength();
+   	
+   	
+       byte[] srtpMasterClientKey = new byte[keyLen];
+       byte[] srtpMasterServerKey = new byte[keyLen];
+       byte[] srtpMasterClientSalt = new byte[saltLen];
+       byte[] srtpMasterServerSalt = new byte[saltLen];
+       
+       // 2* (key + salt lenght) / 8. From http://tools.ietf.org/html/rfc5764#section-4-2
+       // No need to divide by 8 here since lengths are already in bits
+       byte[] sharedSecret = server.getKeyingMaterial(2 * (keyLen + saltLen));
+       
+       /*
+        * 
+        * See: http://tools.ietf.org/html/rfc5764#section-4.2
+        * 
+        * sharedSecret is an equivalent of :
+        * 
+        * struct {
+        *     client_write_SRTP_master_key[SRTPSecurityParams.master_key_len];
+        *     server_write_SRTP_master_key[SRTPSecurityParams.master_key_len];
+        *     client_write_SRTP_master_salt[SRTPSecurityParams.master_salt_len];
+        *     server_write_SRTP_master_salt[SRTPSecurityParams.master_salt_len];
+        *  } ;
+        *
+        * Here, client = local configuration, server = remote.
+        * NOTE [ivelin]: 'local' makes sense if this code is used from a DTLS SRTP client. 
+        *                Here we run as a server, so 'local' referring to the client is actually confusing. 
+        * 
+        * l(k) = KEY length
+        * s(k) = salt lenght
+        * 
+        * So we have the following repartition :
+        *                           l(k)                                 2*l(k)+s(k)   
+        *                                                   2*l(k)                       2*(l(k)+s(k))
+        * +------------------------+------------------------+---------------+-------------------+
+        * + local key           |    remote key    | local salt   | remote salt   |
+        * +------------------------+------------------------+---------------+-------------------+
+        */
+       System.arraycopy(sharedSecret, 0, srtpMasterClientKey, 0, keyLen); 
+       System.arraycopy(sharedSecret, keyLen, srtpMasterServerKey, 0, keyLen);
+       System.arraycopy(sharedSecret, 2*keyLen, srtpMasterClientSalt, 0, saltLen);
+       System.arraycopy(sharedSecret, (2*keyLen+saltLen), srtpMasterServerSalt, 0, saltLen);  
+       return sharedSecret; 	
+   }
    
-   
-   public SessionDescription getWebrtcSdp() {
+   public ExtendedSessionDescription getWebrtcSdp() {
 		return webrtcSdp;
 		
    }
@@ -572,8 +743,11 @@ public class MediaController  {
 	}
 	
 	public enum StreamProfile {
-	        WEBRTC("WEBRTC"), AVP("AVP"), SAVP("SAVP");
-
+			AVP("RTP/AVP"),
+			SAVP("RTP/SAVP"),
+	        SAVPF("UDP/TLS/RTP/SAVPF");
+	        
+	       
 	        private final String text;
 
 	        private StreamProfile(final String text) {
@@ -599,16 +773,16 @@ public class MediaController  {
    class Crypto {
 		
 		private int tag;
-		private CipherSuite cryptoSuite;
 		private String keyParams;
-		
+		private SRTPParameters parameters;
 		Crypto(String line) {
+			
 			String fields[]=line.split("inline:");
 			keyParams=fields[1];
 			String crypto[]=fields[0].split(" ");
 			tag=Integer.parseInt(crypto[0]);
-			//cryptoSuite=CipherSuite.valueOf(crypto[1]);
-			cryptoSuite=CipherSuite.TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA;
+			parameters=SRTPParameters.valueOf(crypto[1]);
+			
 		}
 		
 		public int getTag() {
@@ -617,11 +791,12 @@ public class MediaController  {
 		public void setTag(int tag) {
 			this.tag = tag;
 		}
-		public CipherSuite getCryptoSuite() {
-			return cryptoSuite;
+		public SRTPParameters getParameters() {
+			return parameters;
 		}
-		public void setCryptoSuite(CipherSuite cryptoSuite) {
-			this.cryptoSuite = cryptoSuite;
+		
+		public void setParameters(SRTPParameters params) {
+			this.parameters = params;
 		}
 		public String getKeyParams() {
 			return keyParams;
@@ -631,7 +806,7 @@ public class MediaController  {
 		}
 		
 		public String toString() {
-			return "Crypto [tag="+tag+", crypto-suite="+cryptoSuite+", key="+keyParams+"]";
+			return "Crypto [tag="+tag+", crypto-suite="+parameters.getProfile()+", key="+keyParams+"]";
 		}
 		
    }
@@ -979,7 +1154,8 @@ a=ssrc:709767935 label:37205f02-f32f-4625-be06-061c2c837db7
 "a=imageattr:99 send * recv [x=[0-1680],y=[0-1050]]\n"+
 "a=rtpmap:106 H263-1998/90000\n"+
 "a=fmtp:106 CUSTOM=1680,1050,2;VGA=2;CIF=1;QCIF=1\n";
-			MediaController offer=session.buildOffer(StreamProfile.AVP, sdpOffer,"192.168.12.10");
+			ExtendedSessionDescription sdpo = SessionDescriptionParser.parse(sdpOffer);
+			MediaController offer=session.buildOffer(sdpo,"192.168.12.10");
 			String sdpAnswer=
 
 "v=0\n"+
@@ -997,7 +1173,8 @@ a=ssrc:709767935 label:37205f02-f32f-4625-be06-061c2c837db7
 "a=rtpmap:106 h263-1998/90000\n"+
 "a=rtpmap:99 H264/90000\n"+
 "a=sendrecv\n";
-			MediaController answer = session.buildAnswer(StreamProfile.AVP,sdpAnswer,"192.168.12.10");
+			ExtendedSessionDescription sdpa = SessionDescriptionParser.parse(sdpAnswer);
+			MediaController answer = session.buildAnswer(sdpa,"192.168.12.10");
 			
 			offer.setLocalProxy("127.0.0.1");
 			
@@ -1041,7 +1218,7 @@ public MediaSession getMediaSession() {
 	return mediaSession;
 }
 
-public void setWebrtcSdp(SessionDescription secureSdp) {
+public void setWebrtcSdp(ExtendedSessionDescription secureSdp) {
 	this.webrtcSdp = secureSdp;
 }
 

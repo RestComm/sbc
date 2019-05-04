@@ -21,6 +21,7 @@ package org.restcomm.chain.processor;
 
 import java.io.IOException;
 
+import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.impl.ProcessorParsingException;
 
 
@@ -50,7 +51,14 @@ public interface Processor {
 	 * 
 	 * @return version
 	 */
-	String getVersion();
+	double getVersion();
+	
+	/**
+	 * Gets Processor vendor
+	 * 
+	 * @return vendor
+	 */
+	String getVendor();
 	
 	/**
 	 * Gets type
@@ -69,9 +77,9 @@ public interface Processor {
 	/**
 	 * Sets name
 	 * 
-	 * @return name
 	 */
 	void setName(String name);
+	
 	
 	/**
 	 * Gets id
@@ -85,6 +93,12 @@ public interface Processor {
 	 * @param listener
 	 */
 	void addProcessorListener(ProcessorListener listener);
+	
+	/**
+	 * EventListeners
+	 * @param listener
+	 */
+	void removeProcessorListener(ProcessorListener listener);
 	
 	/**
 	 * Processes the message

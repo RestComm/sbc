@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.restcomm.annotations.concurrency.ThreadSafe;
 
 import static org.restcomm.sbc.dao.DaoUtils.*;
@@ -44,7 +45,8 @@ import org.restcomm.sbc.bo.Sid;
 public final class MybatisConnectorsDao implements ConnectorsDao {  
 private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
     private final SqlSessionFactory sessions;
-   
+    private static final Logger LOG = Logger.getLogger(MybatisConnectorsDao.class);
+
     public MybatisConnectorsDao(final SqlSessionFactory sessions) {
         super();
         this.sessions = sessions;
@@ -93,7 +95,9 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
             final List<Connector> entrys = new ArrayList<Connector>();
             if (results != null && !results.isEmpty()) {
                 for (final Map<String, Object> result : results) {
+                	
                     entrys.add(toConnector(result));
+                	
                 }
             }
             return entrys;
@@ -102,6 +106,7 @@ private final static String namespace = "org.restcomm.sbc.dao.ConnectorsDao.";
         }
     }
 
+    
     @Override
     public List<Connector> getConnectorsByNetworkPoint(String pointId) {
         final SqlSession session = sessions.openSession();

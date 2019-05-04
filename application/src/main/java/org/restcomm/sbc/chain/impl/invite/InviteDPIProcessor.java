@@ -49,8 +49,6 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 	 * 		
 	 */
 	private static transient Logger LOG = Logger.getLogger(InviteDPIProcessor.class);
-	private String name="INVITE DPI Processor";
-	
 	
 	
 	public InviteDPIProcessor(ProcessorChain chain) {
@@ -207,21 +205,19 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 
 
 	public String getName() {
-		return name;
+		return "INVITE DPI Processor";
 	}
 
-	
 	public int getId() {
 		return this.hashCode();
 	}
 
-
+	
 	@Override
 	public void setName(String name) {
-		this.name=name;
-		
-	}
+		this.name = name;
 
+	}
 
 
 	@Override
@@ -280,8 +276,10 @@ public class InviteDPIProcessor extends DefaultDPIProcessor implements Processor
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
+	
+	
 
 }

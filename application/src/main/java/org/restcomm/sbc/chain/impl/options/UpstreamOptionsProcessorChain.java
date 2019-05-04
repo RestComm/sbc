@@ -95,10 +95,6 @@ public class UpstreamOptionsProcessorChain extends DefaultSerialProcessorChain i
 		m.setContent(doProcess(m.getContent()));
 	}
 
-	@Override
-	public String getVersion() {
-		return "1.0.0";
-	}
 	
 	@Override
 	public void onProcessorProcessing(Message message, Processor processor) {
@@ -127,4 +123,9 @@ public class UpstreamOptionsProcessorChain extends DefaultSerialProcessorChain i
 			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
 		
 	}
+	@Override
+	public double getVersion() {
+		return 1.0;
+	}
+	
 }

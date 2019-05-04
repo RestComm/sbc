@@ -105,4 +105,8 @@ private boolean ok=true;
 			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
 		
 	}
+	
+
+	
+
 }

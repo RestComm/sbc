@@ -272,7 +272,7 @@ public class Monitor {
 		
 		scheduledExecutorService =
 		        Executors.newSingleThreadScheduledExecutor();
-
+		
 		    scheduledExecutorService.scheduleWithFixedDelay(new Task(sipFactory, configuration),
 		    0,
 		    LOOP_INTERVAL,
@@ -289,7 +289,7 @@ public class Monitor {
 		jmxManager.reload();
 	}
 	
-	private void bindConnectors() throws Exception {
+	private void bindConnectors()  {
     	
     	boolean status;
     	DaoManager daoManager = (DaoManager) ShiroResources.getInstance().get(DaoManager.class);
@@ -304,7 +304,12 @@ public class Monitor {
     		String npoint=connector.getPoint();
     		String ipAddress=NetworkManager.getNetworkPoint(npoint).getAddress().getHostAddress();
     		if(connector.getState()==Connector.State.UP) {
-	    		status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString(), npoint);
+	    		try {
+					status=jmxManager.addSipConnector(ipAddress, connector.getPort(), connector.getTransport().toString(), npoint);
+				} catch (IOException e) {
+					LOG.error("Cannot add SIP Connector "+e.getMessage());
+					continue;
+				}
 	    		if(status) {
 		    		if(LOG.isDebugEnabled()) {
 		    			LOG.debug("Binding Connector on "+npoint+":"+ipAddress+":"+connector.getPort()+"/"+connector.getTransport().toString());

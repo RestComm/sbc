@@ -126,10 +126,9 @@ public class SimpleSerialProcessorChain extends DefaultSerialProcessorChain impl
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 	
-
 }

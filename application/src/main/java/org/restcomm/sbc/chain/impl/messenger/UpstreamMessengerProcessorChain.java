@@ -113,8 +113,8 @@ public class UpstreamMessengerProcessorChain extends DefaultSerialProcessorChain
 	}
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 	
 	@Override
@@ -144,4 +144,6 @@ public class UpstreamMessengerProcessorChain extends DefaultSerialProcessorChain
 			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
 		
 	}
+	
+	
 }

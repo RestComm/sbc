@@ -681,6 +681,32 @@ public class MediaZone  {
 		return "Socket Bound to "+socket.getLocalSocketAddress()+" Connected to "+socket.getRemoteSocketAddress();
 	}
 	
-	
+	public enum Packet {
+		DTLS ("dtls"),
+        ICE("ice"),
+        RTCP("rtcp"),
+        RTP("rtp");
+
+        private final String text;
+
+        private Packet(final String text) {
+            this.text = text;
+        }
+
+        public static Packet getValueOf(final String text) {
+        	Packet[] values = values();
+            for (final Packet value : values) {
+                if (value.toString().equals(text)) {
+                    return value;
+                }
+            }
+            throw new IllegalArgumentException(text + " is not a valid packet.");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
 	
 }

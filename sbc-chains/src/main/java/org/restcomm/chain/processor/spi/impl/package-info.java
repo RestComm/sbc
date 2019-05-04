@@ -19,7 +19,7 @@
  * @author Oscar Andres Carriles <ocarriles@eolos.la>.
  *******************************************************************************/
 /**
- * SBC , Helpers.
+ * Responsibility Chain Processor API Implementation.
  */
-package org.restcomm.sbc.managers;
+package org.restcomm.chain.processor.spi.impl;
 

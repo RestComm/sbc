@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.event.EventListenerList;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.io.sdp.SdpException;
+import org.mobicents.media.server.io.sdp.SessionDescription;
 import org.restcomm.sbc.media.MediaController.StreamProfile;
+import org.restcomm.sbc.media.helpers.ExtendedSessionDescription;
 
 
 
@@ -68,13 +70,13 @@ public class MediaSession  {
     	return "[MediaSession ("+sessionId+")]";
     }
 	
-	public MediaController buildOffer(StreamProfile streamProfile, String sdpOffer, String targetProxyAddress) throws UnknownHostException, SdpException {
-		this.offer=new MediaController(this, streamProfile, MediaZone.Direction.OFFER, sdpOffer, targetProxyAddress);
+	public MediaController buildOffer(ExtendedSessionDescription sdp, String targetProxyAddress) throws UnknownHostException, SdpException {
+		this.offer=new MediaController(this, sdp, MediaZone.Direction.OFFER, targetProxyAddress);
 		return this.offer;
 	}
 	
-	public MediaController buildAnswer(StreamProfile streamProfile, String sdpAnswer, String targetProxyAddress) throws UnknownHostException, SdpException {
-		this.answer=new MediaController(this, streamProfile, MediaZone.Direction.ANSWER, sdpAnswer, targetProxyAddress);
+	public MediaController buildAnswer(ExtendedSessionDescription sdp,  String targetProxyAddress) throws UnknownHostException, SdpException {
+		this.answer=new MediaController(this, sdp, MediaZone.Direction.ANSWER, targetProxyAddress);
 		return this.answer;
 	}
 	

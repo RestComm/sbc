@@ -1,4 +1,4 @@
-package org.restcomm.sbc.media;
+package org.restcomm.sbc.media.helpers;
 
 
 

@@ -31,12 +31,9 @@ import org.mobicents.media.server.impl.rtp.CnameGenerator;
 import org.mobicents.media.server.impl.rtp.RtpListener;
 
 import org.mobicents.media.server.io.sdp.SdpException;
-import org.mobicents.media.server.io.sdp.SessionDescription;
-import org.mobicents.media.server.io.sdp.SessionDescriptionParser;
 
 import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
 
-import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
 import org.mobicents.media.server.io.sdp.rtcp.attributes.RtcpAttribute;
 
@@ -50,7 +47,10 @@ import org.mobicents.media.server.utils.Text;
 import org.restcomm.sbc.media.AudioChannel;
 import org.restcomm.sbc.media.MediaController;
 import org.restcomm.sbc.media.MediaZone.Direction;
-import org.restcomm.sbc.media.SdpFactory;
+import org.restcomm.sbc.media.helpers.ExtendedMediaDescriptionField;
+import org.restcomm.sbc.media.helpers.ExtendedSessionDescription;
+import org.restcomm.sbc.media.helpers.SdpFactory;
+import org.restcomm.sbc.media.helpers.SessionDescriptionParser;
 
 
 
@@ -74,8 +74,8 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 
 
 	// Session Description
-	private SessionDescription localSdp;
-	private SessionDescription remoteSdp;
+	private ExtendedSessionDescription localSdp;
+	private ExtendedSessionDescription remoteSdp;
 
 	// Listeners
 	private ConnectionFailureListener connectionFailureListener;
@@ -214,8 +214,8 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 */
 	private void setOtherPartyInboundCall(DatagramChannel localChannel) throws IOException {
 		// Setup the audio channel based on remote offer
-		MediaDescriptionField remoteAudio = this.remoteSdp
-				.getMediaDescription("audio");
+		ExtendedMediaDescriptionField remoteAudio = this.remoteSdp
+				.getExtendedMediaDescription("audio");
 		if (remoteAudio != null) {	
 			this.audioChannel.open();
 			setupAudioChannelInbound(localChannel, remoteAudio);
@@ -230,14 +230,14 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 
 		// Reject any channels other than audio
 		
-		MediaDescriptionField remoteVideo = this.remoteSdp
-				.getMediaDescription("video");
+		ExtendedMediaDescriptionField remoteVideo = this.remoteSdp
+				.getExtendedMediaDescription("video");
 		if (remoteVideo != null) {
 			SdpFactory.rejectMediaField(this.localSdp, remoteVideo);
 		}
 		
-		MediaDescriptionField remoteApplication = this.remoteSdp
-				.getMediaDescription("application");
+		ExtendedMediaDescriptionField remoteApplication = this.remoteSdp
+				.getExtendedMediaDescription("application");
 		if (remoteApplication != null) {
 			SdpFactory.rejectMediaField(this.localSdp, remoteApplication);
 		}
@@ -263,7 +263,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
      */
     private void setOtherPartyOutboundCall() throws IOException {
         // Setup audio channel
-        MediaDescriptionField remoteAudio = this.remoteSdp.getMediaDescription("audio");
+        ExtendedMediaDescriptionField remoteAudio = this.remoteSdp.getExtendedMediaDescription("audio");
         if (remoteAudio != null) {
         	//this.audioChannel.bind(localChannel, remoteAudio.isRtcpMux());
             // Set remote DTLS fingerprint
@@ -302,7 +302,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 * @throws SocketException
 	 *             When binding the audio data channel. Non-WebRTC calls only.
 	 */
-    private void setupAudioChannelInbound(DatagramChannel localChannel, MediaDescriptionField remoteAudio) throws IOException {
+    private void setupAudioChannelInbound(DatagramChannel localChannel, ExtendedMediaDescriptionField remoteAudio) throws IOException {
     	if(logger.isTraceEnabled()) {
 	    	logger.trace(">> setupAudioChannelInbound()");
 	    }
@@ -347,7 +347,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 	 * @throws SocketException
 	 *             When binding the audio data channel. Non-WebRTC calls only.
 	 */
-	private void setupAudioChannelOutbound(MediaDescriptionField remoteAudio)
+	private void setupAudioChannelOutbound(ExtendedMediaDescriptionField remoteAudio)
 			throws IOException {
 	    if(logger.isTraceEnabled()) {
 	    	logger.trace(">> setupAudioChannelOutbound()");
@@ -428,7 +428,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
     }
     
    
-	public SessionDescription getLocalSdp() {
+	public ExtendedSessionDescription getLocalSdp() {
 		return this.localSdp;
 	}
 
@@ -442,7 +442,7 @@ public class RtpConnection extends BaseConnection implements RtpListener  {
 		return (this.remoteSdp == null) ? "" : this.remoteSdp.toString();
 	}
 	
-	public SessionDescription getRemoteSdp() {
+	public ExtendedSessionDescription getRemoteSdp() {
 		return this.remoteSdp;
 	}
 	

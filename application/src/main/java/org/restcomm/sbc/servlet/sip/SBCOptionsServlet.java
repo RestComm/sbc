@@ -57,9 +57,9 @@ public class SBCOptionsServlet extends SipServlet {
 		
 		
 		upChain=new UpstreamOptionsProcessorChain();
-		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
+		LOG.info("Loaded (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamOptionsProcessorChain();
-		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
+		LOG.info("Loaded (v. "+dwChain.getVersion()+") "+dwChain.getName());
 		
 		
 	}

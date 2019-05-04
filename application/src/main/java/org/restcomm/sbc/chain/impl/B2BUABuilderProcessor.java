@@ -32,7 +32,6 @@ import java.util.Map;
 import javax.servlet.sip.Address;
 import javax.servlet.sip.B2buaHelper;
 import javax.servlet.sip.SipApplicationSession;
-import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -69,14 +68,15 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	private LocationManager locationManager;
 	private SipApplicationSession aSession;
 	
-
+	public B2BUABuilderProcessor() {
+		// just to notify spi instantiation
+		super();
+		this.type = Type.SINGLE_PROCESSOR;
+	}
 	public B2BUABuilderProcessor(ProcessorChain chain) {
 		super(chain);
 		this.chain = chain;
-		locationManager = LocationManager.getLocationManager();
-		
-		
-		
+		locationManager = LocationManager.getLocationManager();		
 	}
 
 	public B2BUABuilderProcessor(String name, ProcessorChain chain) {
@@ -534,8 +534,8 @@ public class B2BUABuilderProcessor extends DefaultProcessor implements Processor
 	}
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 }

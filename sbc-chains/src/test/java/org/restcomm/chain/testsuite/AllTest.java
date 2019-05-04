@@ -30,7 +30,8 @@ import org.junit.runners.Suite.SuiteClasses;
 				SerialChainTest.class,
 				ParallelChainTest.class,
 				ReusableSerialChainTest.class,
-				ReusableComplexChainTest.class
+				ReusableComplexChainTest.class,
+				//SerialChainUpdateTest.class,
 				
 				})
 

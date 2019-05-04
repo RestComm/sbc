@@ -584,7 +584,7 @@
 							  <goal>copy</goal>
 							</goals>
 							<configuration>
-							  <sourceFile>src/main/webapp/WEB-INF/web-tomcat.xml</sourceFile>
+							  <sourceFile>src/main/webapp/WEB-INF/web-wildfly.xml</sourceFile>
 							  <destinationFile>src/main/webapp/WEB-INF/web.xml</destinationFile>
 							</configuration>
 						  </execution>
@@ -594,7 +594,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
 						<configuration>
-							<webXml>src/main/webapp/WEB-INF/web-tomcat.xml</webXml>
+							<webXml>src/main/webapp/WEB-INF/web-wildfly.xml</webXml>
 							<packagingExcludes>
 							**/*-wildfly.xml,
 							**/*-tomcat.xml
@@ -641,7 +641,7 @@
 							  <goal>copy</goal>
 							</goals>
 							<configuration>
-							  <sourceFile>src/main/webapp/WEB-INF/web-tomcat.xml</sourceFile>
+							  <sourceFile>src/main/webapp/WEB-INF/web-wildfly.xml</sourceFile>
 							  <destinationFile>src/main/webapp/WEB-INF/web.xml</destinationFile>
 							</configuration>
 						  </execution>

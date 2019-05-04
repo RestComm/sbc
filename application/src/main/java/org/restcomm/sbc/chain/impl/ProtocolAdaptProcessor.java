@@ -48,8 +48,7 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	implements ProcessorCallBack {
 	
 	private static transient Logger LOG = Logger.getLogger(ProtocolAdaptProcessor.class);
-	private String name="Protocol Adapt Processor";
-
+	
 	protected ProtocolAdapterFactory protocolAdapterFactory;
 	protected RouteManager routeManager;
 	
@@ -107,20 +106,18 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 
 	
 	public String getName() {
-		return name;
+		return "Protocol Adapt Processor";
 	}
-
-
 
 	public int getId() {
 		return this.hashCode();
 	}
 
-
+	
 	@Override
 	public void setName(String name) {
-		this.name=name;
-		
+		this.name = name;
+
 	}
 
 
@@ -145,8 +142,8 @@ public class ProtocolAdaptProcessor extends DefaultProcessor
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 

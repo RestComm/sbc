@@ -18,7 +18,7 @@
  *
  */
 
-package org.restcomm.sbc.media;
+package org.restcomm.sbc.media.handlers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -31,7 +31,6 @@ import org.mobicents.media.server.impl.rtcp.RtcpPacketType;
 import org.mobicents.media.server.impl.rtp.RtpPacket;
 
 import org.mobicents.media.server.io.network.channel.PacketHandlerException;
-import org.restcomm.sbc.media.dtls.DtlsHandler;
 
 
 /**

@@ -21,6 +21,8 @@ package org.restcomm.sbc.chain.impl;
 
 import java.io.IOException;
 
+
+
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -45,6 +47,8 @@ import org.restcomm.sbc.managers.MessageUtil;
 import org.restcomm.sbc.managers.ProtocolAdapterFactory;
 import org.restcomm.sbc.managers.RouteManager;
 import org.restcomm.sbc.media.MediaController.StreamProfile;
+import org.restcomm.sbc.media.helpers.ExtendedSessionDescription;
+import org.restcomm.sbc.media.helpers.SessionDescriptionParser;
 import org.restcomm.sbc.media.MediaSession;
 
 
@@ -91,8 +95,8 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 	
@@ -117,7 +121,9 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				m.setTargetTransport(connector.getTransport().toString());		
 
 			} catch (Exception e) {
-					LOG.error("ERROR", e);
+					LOG.error("ERROR "+e.getMessage()+" aborting message!");
+					message.abort();
+					return;
 			}
 		}
 		else {
@@ -151,8 +157,10 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 			sm.getContentType().equals("application/sdp")) {
 			try {
 				mediaSession=callManager.getMediaSession(sm.getSession().getId());
-				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);		
-				mediaSession.buildOffer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());	
+				ExtendedSessionDescription sdp = SessionDescriptionParser.parse(new String(sm.getRawContent()));
+				
+				//StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);		
+				mediaSession.buildOffer(sdp, m.getTargetLocalAddress());	
 				m.setMetadata(mediaSession);	
 			} catch (IOException | SdpException  e) {
 				LOG.error("Invalid MediaMetadata!", e);
@@ -195,12 +203,13 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				Location location = null;
 				
 				try {
-					location = LocationManager.getLocationManager().getLocation(fromURI.getUser() + "@" + ConfigurationCache.getDomain());
 					m.setTargetLocalAddress(ConfigurationCache.getIpOfDomain());
+					location = LocationManager.getLocationManager().getLocation(fromURI.getUser() + "@" + ConfigurationCache.getDomain());
+					
 					m.setTargetRemoteAddress(location.getHost());
 					m.setTargetTransport(location.getTransport().toUpperCase());
 				} catch (Exception e) {
-					LOG.error("ERROR", e);
+					LOG.warn("May be an incoming trunk call, let's handle that " + e.getMessage());
 				}
 			}
 		}
@@ -212,8 +221,10 @@ public class IncomingDPIProcessor extends DefaultProcessor implements ProcessorC
 				SipServletResponse response=(SipServletResponse) sm;
 				String callSessionId=getCallSessionId(response.getRequest());
 				mediaSession=callManager.getMediaSession(callSessionId);
-				StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);
-				mediaSession.buildAnswer(streamProfile, new String(sm.getRawContent()), m.getTargetLocalAddress());		
+				ExtendedSessionDescription sdp = SessionDescriptionParser.parse(new String(sm.getRawContent()));
+				
+				//StreamProfile streamProfile=(m.getSourceTransport().equals(ProtocolAdapterFactory.PROTOCOL_WSS)?StreamProfile.WEBRTC:StreamProfile.AVP);
+				mediaSession.buildAnswer(sdp, m.getTargetLocalAddress());		
 				m.setMetadata(mediaSession);		
 			} catch (IOException | SdpException  e) {
 				LOG.error("Invalid MediaMetadata!", e);

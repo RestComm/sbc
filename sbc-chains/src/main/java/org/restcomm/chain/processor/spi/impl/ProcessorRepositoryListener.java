@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * TeleStax, Open Source Cloud Communications
  * Copyright 2011-2016, Telestax Inc, Eolos IT Corp and individual contributors
  * by the @authors tag.
@@ -15,11 +15,20 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
- *
- * @author Oscar Andres Carriles <ocarriles@eolos.la>.
- *******************************************************************************/
-/**
- * SBC , Session Border Controller Sip Servlets implementation.
  */
-package org.restcomm.sbc;
+package org.restcomm.chain.processor.spi.impl;
 
+import java.util.EventListener;
+
+/**
+ * @author  ocarriles@eolos.la (Oscar Andres Carriles)
+ * @date    3 may. 2019 8:49:45
+ * @class   ProcessorRepositoryListener.java
+ *
+ */
+public interface ProcessorRepositoryListener extends EventListener {
+	
+	void onProcessorRemoved(String simpleClassName);
+	void onProcessorCreated(String simpleClassName);
+
+}

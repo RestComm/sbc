@@ -19,7 +19,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.restcomm.sbc.media.dtls;
+package org.restcomm.sbc.media.handlers;
 
 import java.nio.channels.DatagramChannel;
 import java.security.SecureRandom;
@@ -36,6 +36,7 @@ import org.mobicents.media.server.impl.rtp.crypto.SRTPPolicy;
 import org.mobicents.media.server.impl.rtp.crypto.SRTPTransformEngine;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
 import org.restcomm.sbc.media.MediaController;
+import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
 
 
 /**
@@ -72,6 +73,12 @@ public class DtlsHandler  {
     private String remoteHashFunction;
     private String remoteFingerprint;
     private String localFingerprint;
+    
+    // for crypto
+    private String localCryptoSuite;
+    private String remoteCryptoSuite;
+    private String remoteMasterkey;
+    private String localMasterkey;
     private long startTime;
 
     private final List<DtlsListener> listeners;
@@ -101,6 +108,11 @@ public class DtlsHandler  {
         this.remoteHashFunction = "";
         this.remoteFingerprint = "";
         this.localFingerprint = "";
+        
+        this.localCryptoSuite = "";
+        this.remoteCryptoSuite = "";
+        this.remoteMasterkey = "";
+        this.localMasterkey = "";
         this.startTime = 0L;
 
         this.listeners = new ArrayList<DtlsListener>();
@@ -128,7 +140,43 @@ public class DtlsHandler  {
     public boolean isHandshaking() {
         return handshaking;
     }
+    public String getLocalMasterkey() {
+        if (this.localMasterkey == null || this.localMasterkey.isEmpty()) {
+            this.localMasterkey = this.server.generateFingerprint(this.localCryptoSuite);
+        }
+        return localMasterkey;
+    }
 
+    public void resetLocalMasterkey() {
+        this.localMasterkey = "";
+    }
+    
+    public String getLocalHashFunction() {
+        return localHashFunction;
+    }
+
+    public String getRemoteCryptoSuite() {
+        return remoteCryptoSuite;
+    }
+    
+    public String getLocalCryptoSuite() {
+        return localCryptoSuite;
+    }
+
+    public String getRemoteMasterkeyValue() {
+        return remoteMasterkey;
+    }
+
+    public String getRemoteMasterkey() {
+        return remoteCryptoSuite + " inline:" + remoteMasterkey;
+    }
+
+    public void setRemoteMasterkey(String cryptoSuite, String key) {
+        this.remoteCryptoSuite = cryptoSuite;
+        this.remoteMasterkey = key;
+    }
+    
+    
     public String getLocalFingerprint() {
         if (this.localFingerprint == null || this.localFingerprint.isEmpty()) {
             this.localFingerprint = this.server.generateFingerprint(this.localHashFunction);
@@ -140,9 +188,7 @@ public class DtlsHandler  {
         this.localFingerprint = "";
     }
 
-    public String getLocalHashFunction() {
-        return localHashFunction;
-    }
+    
 
     public String getRemoteHashFunction() {
         return remoteHashFunction;

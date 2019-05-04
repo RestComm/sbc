@@ -230,6 +230,9 @@ private static transient Logger LOG = Logger.getLogger(SerialChainTest.class);
 			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
 		
 	}
+	
+
+
 	public static void main(String argv[]) {
 		SerialChainTest test=new SerialChainTest();
 		test.processShouldTraverseChain();

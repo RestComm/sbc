@@ -30,6 +30,7 @@ import java.nio.channels.DatagramChannel;
 import org.apache.log4j.Logger;
 
 import org.mobicents.media.io.ice.IceAuthenticator;
+import org.mobicents.media.io.ice.IceAuthenticatorImpl;
 import org.mobicents.media.io.ice.IceComponent;
 import org.mobicents.media.io.ice.IceHandler;
 import org.mobicents.media.io.ice.events.IceEventListener;
@@ -46,8 +47,10 @@ import org.mobicents.media.server.io.sdp.format.RTPFormats;
 
 import org.mobicents.media.server.spi.ConnectionMode;
 import org.mobicents.media.server.utils.Text;
-import org.restcomm.sbc.media.dtls.DtlsHandler;
 import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
+import org.restcomm.sbc.media.handlers.DtlsHandler;
+import org.restcomm.sbc.media.handlers.RtcpHandler;
+import org.restcomm.sbc.media.handlers.RtpHandler;
 
 
 
@@ -94,7 +97,8 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
     private boolean ice;
     private boolean secure;
     private boolean rtcpMux;
-
+    private boolean crypto;
+    
     // Listeners
     private RtpListener rtpListener;
 
@@ -504,6 +508,53 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
             }
         }
     }
+    
+    public void enableCrypto() {
+    	if (!this.crypto) {
+            this.secure = true;
+            this.crypto = true;
+            // Setup the RTP handler
+        
+            this.rtpHandler.enableSrtp(this.dtlsHandler);
+
+            // Setup the RTCP handler. RTCP-MUX channels only!
+            if (this.rtcpMux) {
+                this.rtcpHandler.enableSRTCP(this.dtlsHandler);
+            }
+            
+            // Add handler to pipeline to handle incoming DTLS packets
+            this.dtlsHandler.setChannel(this.dataChannel);
+            this.dtlsHandler.addListener(this);
+           
+        }
+        if(logger.isTraceEnabled()) {
+        	logger.trace("enableSRTP() rtpMux     " + rtcpMux);
+    		logger.trace("enableSRTP() connected  " + isConnected() );
+    		logger.trace("enableSRTP() secure     " + secure );
+    		logger.trace("enableSRTP() available  " + isAvailable());
+    	}
+		
+	}
+    
+    public void disableCrypto() {
+        if (this.secure) {
+            this.secure = false;
+
+            // setup the DTLS handler
+           
+            this.dtlsHandler.setRemoteMasterkey("", "");
+            this.dtlsHandler.resetLocalMasterkey();
+
+            // Setup the RTP handler
+           
+            this.rtpHandler.disableSrtp();
+
+            // Setup the RTCP handler
+            if (this.rtcpMux) {
+                this.rtcpHandler.disableSRTCP();
+            }
+        }
+    }
 
     public Text getWebRtcLocalFingerprint() {
         if (this.secure) {
@@ -541,6 +592,7 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
         // DTLS reset
         if (this.secure) {
             disableSRTP();
+            disableCrypto();
             this.dtlsHandler.reset();
         }
     }
@@ -579,6 +631,24 @@ public class RtpChannel extends MultiplexedChannel implements DtlsListener, IceE
 		this.rtcpMux = rtcpMux;
 	}
 
+	public Text getSAVPLocalCryptoSuite() {
+		if (this.secure) {
+            return new Text(this.dtlsHandler.getLocalCryptoSuite());
+        }
+        return new Text();
+	}
+
+	public Text getSAVPLocalMasterkey() {
+		if (this.secure) {
+            return new Text(this.dtlsHandler.getLocalMasterkey());
+        }
+        return new Text();
+	}
+
+	
+
+	
+	
 	
 
 	

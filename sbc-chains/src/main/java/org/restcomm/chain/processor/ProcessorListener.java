@@ -23,6 +23,7 @@ import java.util.EventListener;
 
 
 
+
 /**
  * @author  ocarriles@eolos.la (Oscar Andres Carriles)
  * @date    3/5/2016 22:48:22
@@ -30,7 +31,6 @@ import java.util.EventListener;
  *
  */
 public interface ProcessorListener extends EventListener {
-	
 	void onProcessorProcessing (Message message, Processor processor);
 	void onProcessorEnd        (Message message, Processor processor);
 	void onProcessorAbort      (Processor processor);

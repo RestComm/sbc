@@ -18,7 +18,7 @@
  *
  */
 
-package org.restcomm.sbc.media;
+package org.restcomm.sbc.media.handlers;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -28,7 +28,6 @@ import org.mobicents.media.server.impl.rtp.RtpPacket;
 import org.mobicents.media.server.io.network.channel.PacketHandlerException;
 import org.mobicents.media.server.io.sdp.format.RTPFormat;
 import org.mobicents.media.server.io.sdp.format.RTPFormats;
-import org.restcomm.sbc.media.dtls.DtlsHandler;
 
 
 /**
@@ -51,6 +50,7 @@ public class RtpHandler implements PacketHandler {
 	
 	// SRTP
 	private boolean secure;
+	
 	private DtlsHandler dtlsHandler;
 	
 	public RtpHandler() {
@@ -93,6 +93,7 @@ public class RtpHandler implements PacketHandler {
 	public RTPFormats getFormatMap() {
 		return this.rtpFormats;
 	}
+
 	
 	public void enableSrtp(final DtlsHandler handler) {
 		this.secure = true;
@@ -248,4 +249,7 @@ public class RtpHandler implements PacketHandler {
 		}
 		return 0;
 	}
+
+
+	
 }

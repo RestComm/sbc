@@ -106,6 +106,8 @@ public class ProcessorTest implements ProcessorListener {
 		
 	}
 	
+
+	
 	public static void main(String argv[]) {
 		ProcessorTest test=new ProcessorTest();
 		test.messageInstanceShouldBePreserved();

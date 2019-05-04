@@ -1,0 +1,18 @@
+Step 1: From your JDK/jre/bin location, run the JDK KeyTool utility with the following options:
+
+keytool -genkey -alias myapp -validity 1095 -keyalg RSA -keystore keystore.jks
+Enter the information at the prompts. Note the alias, keystore password, and key password for later use.
+
+Step 2: To list the content of the keystore, enter the following command:
+
+keytool -list -v -keystore keystore.jks
+Step 3: To list the contents of the self-signed certificate, enter the following command:
+
+keytool -list -rfc -keystore keystore.jks
+Step 4: Export the generated certificate to a file (in this example, myapp.crt).
+
+keytool -export -rfc -alias myapp -keystore keystore.jks -file myapp.crt
+Step 5: To import the keystore into a keystore package, use the following command:
+
+keytool -importkeystore -srckeystore keystore.jks -srcstoretype JKS -deststoretype PKCS12 
+        -destkeystore myapp-keystore.p12

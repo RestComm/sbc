@@ -33,6 +33,8 @@ import org.apache.commons.configuration.interpol.ConfigurationInterpolator;
 import org.apache.log4j.Logger;
 import org.restcomm.sbc.dao.DaoManager;
 import org.restcomm.sbc.identity.IdentityContext;
+import org.restcomm.chain.processor.spi.impl.ProcessorFactory;
+import org.restcomm.chain.processor.spi.impl.ProcessorLoadException;
 import org.restcomm.sbc.bo.shiro.ShiroResources;
 import org.restcomm.sbc.call.CallManager;
 import org.restcomm.sbc.configuration.RestcommConfiguration;
@@ -123,9 +125,24 @@ public final class Bootstrapper extends SipServlet {
                 LOG.info("CallManager created and stored in the context");
             }
         }
+        
+        //Initialize ProcessorFactory
+        ProcessorFactory processorFactory = null;
+        try {
+			processorFactory = ProcessorFactory.getInstance(home(config)+"/WEB-INF/");
+		} catch (ProcessorLoadException e) {
+			LOG.error("Cannot create processorFactory!");
+		}
+        if (processorFactory != null) {
+            context.setAttribute(ProcessorFactory.class.getName(), processorFactory);
+            if (LOG.isInfoEnabled()) {
+                LOG.info("ProcessorFactory created and stored in the context");
+            }
+        }
        
         ShiroResources.getInstance().set(CallManager.class, callManager);
-
+        ShiroResources.getInstance().set(ProcessorFactory.class, processorFactory);
+        
         Version.printVersion();
        
     }

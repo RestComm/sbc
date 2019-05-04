@@ -53,6 +53,7 @@ public abstract class MediaChannel {
 	protected boolean open;
 	private boolean ice;
 	private boolean dtls;
+	private boolean crypto;
 	
 	protected RTPFormats supportedFormats;
 	protected RTPFormats offeredFormats;
@@ -293,6 +294,10 @@ public abstract class MediaChannel {
 		if (this.ice) {
 			disableICE();
 		}
+		
+		if(this.crypto) {
+			disableCrypto();
+		}
 
 		// Reset WebRTC
 		if (this.dtls) {
@@ -507,7 +512,46 @@ public abstract class MediaChannel {
 	public RTPFormats getFormatMap() {
 		return this.rtpChannel.getFormatMap();
 	}
-	
+	public void enableCrypto(String externalAddress, boolean rtcpMux) {
+        if (!this.crypto) {
+        	
+            this.crypto = true;
+            this.rtcpMux = rtcpMux;
+            
+            // Enable ICE on RTP channels
+            this.rtpChannel.enableCrypto();
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug(this.mediaType + " channel " + this.ssrc + " enabled Crypto");
+            }
+        }
+    }
+
+    /**
+     * Disables ICE and closes ICE-related resources
+     */
+    public void disableCrypto() {
+        if (this.crypto) {
+            this.crypto = false;
+            
+            // Disable ICE on RTP channels
+            this.rtpChannel.disableCrypto();
+          
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(this.mediaType + " channel " + this.ssrc + " disabled Crypto");
+            }
+        }
+    }
+
+	/**
+	 * Indicates whether ICE is active or not.
+	 * 
+	 * @return Returns true if ICE is enabled. Returns false otherwise.
+	 */
+	public boolean isCryptoEnabled() {
+		return this.crypto;
+	}
 	
 	/*
 	 * ICE
@@ -704,6 +748,20 @@ public abstract class MediaChannel {
 
 	public IceAuthenticator getIceAuthenticator() {
 		return iceAuthenticator;
+	}
+
+	public String getCryptoSuite() {
+		if(this.crypto) {
+			return this.rtpChannel.getSAVPLocalCryptoSuite().toString();
+		}
+		return "";
+	}
+
+	public String getMasterKey() {
+		if(this.crypto) {
+			return this.rtpChannel.getSAVPLocalMasterkey().toString();
+		}
+		return "";
 	}
 
 }

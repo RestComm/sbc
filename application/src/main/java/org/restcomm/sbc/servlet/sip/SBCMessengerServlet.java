@@ -66,9 +66,9 @@ public class SBCMessengerServlet extends SipServlet {
 		//ConfigurationCache.build(sipFactory, configuration);
 		
 		upChain=new UpstreamMessengerProcessorChain();
-		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
+		LOG.info("Loaded (v. "+upChain.getVersion()+") "+upChain.getName());
 		dwChain=new DownstreamMessengerProcessorChain();
-		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());
+		LOG.info("Loaded (v. "+dwChain.getVersion()+") "+dwChain.getName());
 		
 		
 		

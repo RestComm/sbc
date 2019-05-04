@@ -35,7 +35,8 @@ import org.mobicents.media.server.impl.rtp.RtpListener;
 import org.mobicents.media.server.impl.srtp.DtlsListener;
 import org.mobicents.media.server.io.network.channel.MultiplexedChannel;
 import org.mobicents.media.server.utils.Text;
-import org.restcomm.sbc.media.dtls.DtlsHandler;
+import org.restcomm.sbc.media.handlers.DtlsHandler;
+import org.restcomm.sbc.media.handlers.RtcpHandler;
 ;
 
 

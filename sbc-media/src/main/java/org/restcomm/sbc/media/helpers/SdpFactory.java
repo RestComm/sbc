@@ -17,11 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
  */
-package org.restcomm.sbc.media;
+package org.restcomm.sbc.media.helpers;
 
 import org.mobicents.media.io.ice.IceComponent;
 import org.mobicents.media.server.io.sdp.MediaProfile;
-import org.mobicents.media.server.io.sdp.SessionDescription;
 import org.mobicents.media.server.io.sdp.attributes.ConnectionModeAttribute;
 import org.mobicents.media.server.io.sdp.attributes.FormatParameterAttribute;
 import org.mobicents.media.server.io.sdp.attributes.PacketTimeAttribute;
@@ -30,7 +29,6 @@ import org.mobicents.media.server.io.sdp.attributes.SsrcAttribute;
 import org.mobicents.media.server.io.sdp.dtls.attributes.FingerprintAttribute;
 import org.mobicents.media.server.io.sdp.dtls.attributes.SetupAttribute;
 import org.mobicents.media.server.io.sdp.fields.ConnectionField;
-import org.mobicents.media.server.io.sdp.fields.MediaDescriptionField;
 import org.mobicents.media.server.io.sdp.fields.OriginField;
 import org.mobicents.media.server.io.sdp.fields.SessionNameField;
 import org.mobicents.media.server.io.sdp.fields.TimingField;
@@ -44,6 +42,8 @@ import org.mobicents.media.server.io.sdp.ice.attributes.IceUfragAttribute;
 import org.mobicents.media.server.io.sdp.rtcp.attributes.RtcpAttribute;
 import org.mobicents.media.server.io.sdp.rtcp.attributes.RtcpMuxAttribute;
 import org.mobicents.media.server.spi.format.AudioFormat;
+import org.restcomm.sbc.media.AudioChannel;
+import org.restcomm.sbc.media.MediaChannel;
 
 /**
  * Factory that produces SDP offers and answers.
@@ -63,9 +63,9 @@ public class SdpFactory {
      * @param channels The media channels to be included in the session description.
      * @return The Session Description object.
      */
-	public static SessionDescription buildSdp(boolean offer, String localAddress, String externalAddress, MediaChannel... channels) {
+	public static ExtendedSessionDescription buildSdp(boolean offer, String localAddress, String externalAddress, MediaChannel... channels) {
 		// Session-level fields
-		SessionDescription sd = new SessionDescription();
+		ExtendedSessionDescription sd = new ExtendedSessionDescription();
 		sd.setVersion(new VersionField((short) 0));
 		String originAddress = (externalAddress == null || externalAddress.isEmpty()) ? localAddress : externalAddress;
 		sd.setOrigin(new OriginField("-", String.valueOf(System.currentTimeMillis()), "1", "IN", "IP4", originAddress));
@@ -76,7 +76,7 @@ public class SdpFactory {
 		// Media Descriptions
 		boolean ice = false;
 		for (MediaChannel channel : channels) {
-			MediaDescriptionField md = buildMediaDescription(channel, offer);
+			ExtendedMediaDescriptionField md = buildMediaDescription(channel, offer);
 			md.setSession(sd);
 			sd.addMediaDescription(md);
 			
@@ -85,6 +85,7 @@ public class SdpFactory {
 				sd.getConnection().setAddress(md.getConnection().getAddress());
 				ice = true;
 			}
+			
 		}
 		
 		// Session-level ICE
@@ -102,8 +103,8 @@ public class SdpFactory {
 	 * @param media
 	 *            The offered media description to be rejected
 	 */
-	public static void rejectMediaField(SessionDescription answer, MediaDescriptionField media) {
-		MediaDescriptionField rejected = new MediaDescriptionField();
+	public static void rejectMediaField(ExtendedSessionDescription answer, ExtendedMediaDescriptionField media) {
+		ExtendedMediaDescriptionField rejected = new ExtendedMediaDescriptionField();
 		rejected.setMedia(media.getMedia());
 		rejected.setPort(0);
 		rejected.setProtocol(media.getProtocol());
@@ -120,12 +121,18 @@ public class SdpFactory {
 	 *            The channel to read information from
 	 * @return The SDP media description
 	 */
-	public static MediaDescriptionField buildMediaDescription(MediaChannel channel, boolean offer) {
-		MediaDescriptionField md = new MediaDescriptionField();
+	public static ExtendedMediaDescriptionField buildMediaDescription(MediaChannel channel, boolean offer) {
+		ExtendedMediaDescriptionField md = new ExtendedMediaDescriptionField();
 		
 		md.setMedia(channel.getMediaType());
 		md.setPort(channel.getRtpPort());
-		MediaProfile profile = channel.isDtlsEnabled() ? MediaProfile.RTP_SAVPF : MediaProfile.RTP_AVP;
+		MediaProfile profile;
+		if(channel.isDtlsEnabled())
+			profile=MediaProfile.RTP_SAVPF;
+		else if(channel.isCryptoEnabled())
+			profile=MediaProfile.RTP_SAVP;
+		else
+			profile=MediaProfile.RTP_AVP;
 		md.setProtocol(profile.getProfile());
         final String externalAddress = channel.getExternalAddress() == null || channel.getExternalAddress().isEmpty() ? null : channel.getExternalAddress();
         md.setConnection(new ConnectionField("IN", "IP4", externalAddress != null ? externalAddress : channel.getRtpAddress()));
@@ -134,7 +141,12 @@ public class SdpFactory {
 		if (channel.isRtcpMux()) {
 			md.setRtcpMux(new RtcpMuxAttribute());
 		}
-		
+		if(channel.isCryptoEnabled()) {
+			CryptoAttribute crypto = new CryptoAttribute();
+			crypto.setCryptoSuite(channel.getCryptoSuite());
+			crypto.setMasterKey(channel.getMasterKey());		
+			md.addCrypto(crypto);
+		}
 		// ICE attributes
 		if (channel.isIceEnabled()) {
 			md.setIceUfrag(new IceUfragAttribute(channel.getIceUfrag()));

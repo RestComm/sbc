@@ -23,6 +23,7 @@ package org.restcomm.chain.testsuite;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.impl.DefaultSerialProcessorChain;
 import org.restcomm.chain.processor.Message;
+import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 
 
@@ -70,10 +71,9 @@ public class EmptySerialProcessorChain extends DefaultSerialProcessorChain imple
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
-	
 
 }

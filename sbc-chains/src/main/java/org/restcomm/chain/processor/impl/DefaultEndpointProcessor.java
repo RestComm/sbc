@@ -47,7 +47,7 @@ public  abstract class DefaultEndpointProcessor extends DefaultDPIProcessor impl
 	}
 
 	@Override
-	public abstract String getVersion();
+	public abstract double getVersion();
 
 	@Override
 	public abstract String getName();

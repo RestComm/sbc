@@ -53,7 +53,6 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	 * 		
 	 */
 	private static transient Logger LOG = Logger.getLogger(InviteProcessor.class);
-	private String name="INVITE Processor";
 	
 	
 	private CallManager callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
@@ -176,9 +175,9 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	}
 
 
-
+	@Override
 	public String getName() {
-		return name;
+		return "INVITE Processor";
 	}
 
 	
@@ -248,8 +247,8 @@ public class InviteProcessor extends DefaultProcessor implements ProcessorCallBa
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 }
