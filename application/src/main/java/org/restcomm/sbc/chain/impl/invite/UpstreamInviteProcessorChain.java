@@ -91,7 +91,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 		}
 		
 		this.addProcessorListener(this);
-		
+		LOG.info("Loaded (v. "+getVersion()+") "+getName());
 	}
 	public SipServletMessage doProcess(SipServletMessage message) {
 		return message;
@@ -118,8 +118,8 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 	}
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 	
 	@Override
@@ -161,6 +161,7 @@ public class UpstreamInviteProcessorChain extends DefaultSerialProcessorChain im
 			LOG.debug(">>onProcessorUnlink() "+processor.getType()+"("+processor.getName()+")");
 		
 	}
+	
 	
 
 }

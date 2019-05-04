@@ -48,7 +48,7 @@ public class TopologyHideProcessor extends DefaultProcessor
 
 
 	private static transient Logger LOG = Logger.getLogger(TopologyHideProcessor.class);
-	private String name="Topology Hide Processor";
+
 	
 	public TopologyHideProcessor(ProcessorChain callback) {
 		super(callback);
@@ -59,7 +59,7 @@ public class TopologyHideProcessor extends DefaultProcessor
 	
 	
 	public String getName() {
-		return name;
+		return "Topology Hide Processor";
 	}
 
 
@@ -129,8 +129,8 @@ public class TopologyHideProcessor extends DefaultProcessor
 	
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 	
 	@Override

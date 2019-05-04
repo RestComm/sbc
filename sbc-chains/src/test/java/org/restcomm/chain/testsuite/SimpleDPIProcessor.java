@@ -24,6 +24,7 @@ package org.restcomm.chain.testsuite;
 import org.apache.log4j.Logger;
 import org.restcomm.chain.ProcessorChain;
 import org.restcomm.chain.processor.Message;
+import org.restcomm.chain.processor.Processor;
 import org.restcomm.chain.processor.ProcessorCallBack;
 import org.restcomm.chain.processor.impl.DefaultDPIProcessor;
 import org.restcomm.chain.processor.impl.ImmutableMessage;
@@ -98,9 +99,11 @@ public class SimpleDPIProcessor extends DefaultDPIProcessor implements Processor
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
+
+
 
 
 }

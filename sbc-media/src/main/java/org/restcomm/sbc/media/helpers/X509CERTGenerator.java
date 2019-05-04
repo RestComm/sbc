@@ -1,4 +1,4 @@
-package org.restcomm.sbc.media.srtp;
+package org.restcomm.sbc.media.helpers;
 
 import sun.security.x509.*;
 import java.security.cert.*;

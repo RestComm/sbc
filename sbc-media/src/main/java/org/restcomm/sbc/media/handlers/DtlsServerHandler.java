@@ -1,4 +1,4 @@
-package org.restcomm.sbc.media.dtls;
+package org.restcomm.sbc.media.handlers;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,6 +9,9 @@ import org.bouncycastle.crypto.tls.DTLSServerProtocol;
 import org.bouncycastle.crypto.tls.DTLSTransport;
 import org.bouncycastle.crypto.tls.DatagramTransport;
 import org.bouncycastle.crypto.tls.UDPTransport;
+import org.restcomm.sbc.media.dtls.DtlsConfiguration;
+import org.restcomm.sbc.media.dtls.DtlsSrtpServer;
+import org.restcomm.sbc.media.dtls.DtlsSrtpServerProvider;
 
 
 

@@ -37,7 +37,7 @@ import org.mobicents.media.server.io.network.channel.PacketHandlerException;
 import org.mobicents.media.server.io.sdp.SessionDescription;
 import org.mobicents.media.server.spi.ConnectionMode;
 import org.restcomm.sbc.ConfigurationCache;
-import org.restcomm.sbc.media.dtls.DtlsHandler;
+import org.restcomm.sbc.media.handlers.DtlsHandler;
 import org.restcomm.sbc.media.srtp.RtpConnection;
 
 
@@ -47,10 +47,10 @@ import org.restcomm.sbc.media.srtp.RtpConnection;
  * @class   CryptoMediaZone.java
  *
  */
-public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListener {
+public class WEBRTCMediaZone extends MediaZone implements DtlsListener, RtpListener {
 	
 	
-	private static transient Logger LOG = Logger.getLogger(CryptoMediaZone.class);
+	private static transient Logger LOG = Logger.getLogger(WEBRTCMediaZone.class);
 	
 	private MediaChannel mediaChannel;
 	private IceAuthenticator iceAuthenticator;
@@ -62,7 +62,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
     private Packet packetType;
 	
 	
-	public CryptoMediaZone(MediaController controller, Direction direction, String mediaType, String originalHost, int originalRtpPort, int originalRtcpPort, boolean canMux, int proxyPort) throws UnknownHostException {
+	public WEBRTCMediaZone(MediaController controller, Direction direction, String mediaType, String originalHost, int originalRtpPort, int originalRtcpPort, boolean canMux, int proxyPort) throws UnknownHostException {
 		super(controller, direction, mediaType, originalHost, originalRtpPort, originalRtcpPort, canMux, proxyPort);
 		
 		
@@ -172,7 +172,7 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 	public String toPrint() {
 		String value;
 		
-		value="(CMZ "+direction+") "+this.hashCode()+" "+mediaType+", Origin "+originalHost+":"+originalRtpPort+", LocalProxy "+proxyHost+":"+proxyPort;
+		value="(WEBRTCMZ "+direction+") "+this.hashCode()+" "+mediaType+", Origin "+originalHost+":"+originalRtpPort+", LocalProxy "+proxyHost+":"+proxyPort;
 		if(mediaZonePeer!=null)
 				value+="[("+mediaZonePeer.direction+") "+mediaZonePeer.hashCode()+" "+mediaZonePeer.mediaType+", Origin "+mediaZonePeer.originalHost+":"+mediaZonePeer.originalRtpPort+", LocalProxy "+mediaZonePeer.proxyHost+":"+mediaZonePeer.proxyPort+"]";
 		return value;
@@ -412,42 +412,16 @@ public class CryptoMediaZone extends MediaZone implements DtlsListener, RtpListe
 		}
 		
 	}
-	public enum Packet {
-		DTLS ("dtls"),
-        ICE("ice"),
-        RTCP("rtcp"),
-        RTP("rtp");
-
-        private final String text;
-
-        private Packet(final String text) {
-            this.text = text;
-        }
-
-        public static Packet getValueOf(final String text) {
-        	Packet[] values = values();
-            for (final Packet value : values) {
-                if (value.toString().equals(text)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(text + " is not a valid packet.");
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
+	
 	
 	
 	@Override
 	public boolean equals(Object zone) {
 
-		if (!(zone instanceof CryptoMediaZone)) {
+		if (!(zone instanceof WEBRTCMediaZone)) {
 			return false;
 		}
-		CryptoMediaZone otherZone=(CryptoMediaZone) zone;
+		WEBRTCMediaZone otherZone=(WEBRTCMediaZone) zone;
 		
 		if (otherZone.getOriginalHost().equals(this.getOriginalHost()) &&
 			otherZone.getController().equals(this.getController()) &&

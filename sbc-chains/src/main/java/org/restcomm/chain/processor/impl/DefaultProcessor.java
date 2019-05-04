@@ -52,7 +52,6 @@ public abstract class DefaultProcessor implements Processor {
 	
 	public DefaultProcessor() {
 		type=Type.CHAIN;
-		
 	}
 	
 	public DefaultProcessor(String name) {
@@ -64,7 +63,7 @@ public abstract class DefaultProcessor implements Processor {
 	public DefaultProcessor(ProcessorChain chain) {
 		this.chain=chain;
 		type=Type.SINGLE_PROCESSOR;
-		
+		LOG.info("****** "+this);
 	}
 	
 	
@@ -77,6 +76,12 @@ public abstract class DefaultProcessor implements Processor {
 		 if(LOG.isDebugEnabled())
 			 LOG.debug("Adding listener "+listener+" to "+this);
 	     listenerList.add(ProcessorListener.class, listener);
+	}
+	
+	public void removeProcessorListener(ProcessorListener listener) {
+		 if(LOG.isDebugEnabled())
+			 LOG.debug("Removing listener "+listener+" from "+this);
+	     listenerList.remove(ProcessorListener.class, listener);
 	}
 	
 	
@@ -187,7 +192,17 @@ public abstract class DefaultProcessor implements Processor {
 	
 
 	@Override
-	public abstract String getVersion();
+	public abstract double getVersion();
+	
+	@Override
+	public String getVendor() {
+		return "";
+	}
+	
+	@Override
+	public String toString() {
+		return "{ "+type.name()+": "+getName()+" v."+getVersion()+", "+getVendor()+" }";
+	}
 
 	@Override
 	public abstract String getName();

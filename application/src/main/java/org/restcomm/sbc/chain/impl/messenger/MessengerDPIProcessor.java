@@ -117,8 +117,8 @@ public class MessengerDPIProcessor extends DefaultDPIProcessor implements Proces
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 }

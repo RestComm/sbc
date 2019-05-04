@@ -72,17 +72,13 @@ public class SBCCallServlet extends SipServlet implements SipApplicationSessionL
 		
 		
 		callManager = (CallManager) ShiroResources.getInstance().get(CallManager.class);
-
-		LOG.info("Call sip servlet has been started");
 		
 		if(LOG.isInfoEnabled()){
 	          LOG.info(">> Call Servlet init()");
 	    }
 			
-		upChain=new UpstreamInviteProcessorChain();
-		LOG.info("Loading (v. "+upChain.getVersion()+") "+upChain.getName());
+		upChain=new UpstreamInviteProcessorChain();		
 		dwChain=new DownstreamInviteProcessorChain();
-		LOG.info("Loading (v. "+dwChain.getVersion()+") "+dwChain.getName());	
 		
 		
 	}

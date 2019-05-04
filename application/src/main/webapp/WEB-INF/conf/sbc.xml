@@ -46,7 +46,7 @@
                		<!-- <provider>org.restcomm.sbc.managers.controller.wildfly.Provider</provider> -->
                	</jmx-management>
                 
-                <domain>10.0.0.10</domain>
+                <domain>192.168.88.5</domain>
                 
                 <normalize-numbers-for-outbound-calls>true</normalize-numbers-for-outbound-calls>
                 

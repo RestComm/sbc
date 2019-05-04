@@ -42,7 +42,6 @@ import org.restcomm.chain.processor.impl.SIPMutableMessage;
  */
 public class DispatchDPIProcessor extends DefaultDPIProcessor implements ProcessorCallBack {
 
-	private String name="Dispatch DPI Processor";
 	private static transient Logger LOG = Logger.getLogger(DispatchDPIProcessor.class);
 
 	public DispatchDPIProcessor(ProcessorChain processorChain) {
@@ -54,13 +53,15 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 	}
 
 	public String getName() {
-		return name;
+		return "Dispatch DPI Processor";
 	}
 
 	public int getId() {
 		return this.hashCode();
 	}
 
+	
+	
 	public SipServletMessage doProcess(SIPMutableMessage message) throws ProcessorParsingException {
 		SipServletMessage m=(SipServletMessage) message.getContent();
 		SipServletResponse r=null;
@@ -112,8 +113,8 @@ public class DispatchDPIProcessor extends DefaultDPIProcessor implements Process
 	}
 	
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
 
 }

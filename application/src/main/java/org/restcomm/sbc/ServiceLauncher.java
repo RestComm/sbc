@@ -69,8 +69,6 @@ public final class ServiceLauncher extends SipServlet {
 		
         Monitor monitor=Monitor.getMonitor();
         monitor.start(sipFactory, configuration);
-		
-
         
         
     }

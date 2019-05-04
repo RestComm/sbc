@@ -54,6 +54,10 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 	private static transient Logger LOG = Logger.getLogger(NATHelperProcessor.class);
 	private LocationManager locationManager=LocationManager.getLocationManager();
 	
+	public NATHelperProcessor() {
+		// just to notify spi instantiation
+		super();
+	}
 
 	public NATHelperProcessor(ProcessorChain callback) {
 		super(callback);
@@ -190,10 +194,9 @@ public class NATHelperProcessor extends DefaultProcessor implements ProcessorCal
 
 
 	@Override
-	public String getVersion() {
-		return "1.0.0";
+	public double getVersion() {
+		return 1.0;
 	}
-
 	@Override
 	public void doProcess(Message message) throws ProcessorParsingException {
 		SIPMutableMessage m = (SIPMutableMessage) message;

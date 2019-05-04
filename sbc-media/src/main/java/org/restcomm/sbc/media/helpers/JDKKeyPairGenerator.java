@@ -1,4 +1,4 @@
-package org.restcomm.sbc.media.srtp;
+package org.restcomm.sbc.media.helpers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,8 +54,6 @@ import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
-
-
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair; 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator; 
 import org.bouncycastle.crypto.KeyGenerationParameters; 

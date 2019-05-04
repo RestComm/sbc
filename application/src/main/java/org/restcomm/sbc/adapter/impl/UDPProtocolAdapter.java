@@ -72,7 +72,11 @@ public class UDPProtocolAdapter extends ProtocolAdapter {
 	@Override
 	protected String adaptSdp(MediaController mediaController, String host) throws SdpException {
 
-		String sdpContent = mediaController.getAVPProxySdp(host);
+		String sdpContent;
+		if(mediaController.isSecure()) {
+			sdpContent = mediaController.getSAVPProxySdp(host);
+		}
+		sdpContent= mediaController.getAVPProxySdp(host);
 			
 		return sdpContent;
 

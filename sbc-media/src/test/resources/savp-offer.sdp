@@ -1,0 +1,16 @@
+v=0
+o=11 8000 8000 IN IP4 192.168.88.3
+s=SBC Call
+c=IN IP4 192.168.88.3
+t=0 0
+m=audio 10002 RTP/SAVP 18 4 3 0 8
+a=sendrecv
+a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:XK2+f3dMxqq9yfhYNSO3cwSnFACD+/h5xnXG15iQ
+a=crypto:2 AES_CM_128_HMAC_SHA1_32 inline:Fqpm95oH83bu61+saLnKi4NY0kzJ1fhwQS/DfxCz
+a=rtpmap:18 G729/8000
+a=rtpmap:4 G723/8000
+a=rtpmap:3 GSM/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:8 PCMA/8000
+a=ptime:20
+

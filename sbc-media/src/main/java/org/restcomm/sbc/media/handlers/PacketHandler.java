@@ -19,7 +19,7 @@
  */
 
 
-package org.restcomm.sbc.media;
+package org.restcomm.sbc.media.handlers;
 
 import java.net.InetSocketAddress;
 

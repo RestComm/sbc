@@ -1,4 +1,4 @@
-package org.restcomm.sbc.media.srtp;
+package org.restcomm.sbc.media.helpers;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;

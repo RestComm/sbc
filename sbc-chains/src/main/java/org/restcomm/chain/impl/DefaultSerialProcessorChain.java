@@ -88,6 +88,12 @@ public abstract class DefaultSerialProcessorChain extends DefaultProcessor
 		
 		
 	}
+	
+	public void relink(Processor processor, Processor nextInChain) throws MalformedProcessorChainException {
+		processors = new HashMap<Integer, Processor>();
+		startPoint = null;
+		this.link(processor, nextInChain);
+	}
 
 	public Processor getNextLink(Processor processor) {
 		return processors.get(processor.getId());

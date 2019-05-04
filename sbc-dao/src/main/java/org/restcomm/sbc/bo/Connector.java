@@ -223,7 +223,11 @@ public class Connector {
 
 	public InetSocketAddress getOutboundInterface() {
 		if(this.outboundInterface==null)
+			try {
 			this.outboundInterface = new InetSocketAddress(NetworkManager.getIpAddress(point), port);
+			} catch (Exception e) {
+				LOG.error("Cannot assign an outbound Interface yet!");
+			}
 		return outboundInterface;
 	}
 
