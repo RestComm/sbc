@@ -48,7 +48,7 @@ import org.restcomm.sbc.media.srtp.RtpConnection;
  */
 public class MediaZone  {
 	
-	protected static final int BUFFER=1500;
+	protected static final int BUFFER= 8 * 1024;
 	private static transient Logger LOG = Logger.getLogger(MediaZone.class);
 	
 	protected int originalRtpPort;
