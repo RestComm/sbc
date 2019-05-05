@@ -7,9 +7,8 @@
     <artifactId>restcomm-sbc</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.restcomm</groupId>
+  <groupId>org.restcomm.sbc</groupId>
   <artifactId>sbc-callmanager</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
   <name>RestComm SBC :: Apps :: ${project.artifactId}</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -32,5 +31,11 @@
     	<artifactId>sbc-media</artifactId>
     	<version>1.0.0-SNAPSHOT</version>
     </dependency>
+  	<dependency>
+	    <groupId>javax.servlet</groupId>
+	    <artifactId>servlet-api</artifactId>
+	    <version>2.5</version>
+	    <scope>provided</scope>
+	</dependency>
   </dependencies>
 </project>
